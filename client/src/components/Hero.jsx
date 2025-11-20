@@ -6,10 +6,10 @@ const Hero = () => {
 
   const navigate = useNavigate();
 
-  // Hàm này sẽ điều hướng người dùng đến trang tạo hợp đồng
+  // điều hướng người dùng đến trang tạo hợp đồng
   // (hoặc kích hoạt modal kết nối ví, tùy logic sau này)
   const handleStart = () => {
-    navigate('/owner');
+    navigate('/dashboard');
   };
 
   return (
@@ -38,10 +38,12 @@ const Hero = () => {
               hover:bg-gray-100 transition-all transform hover:scale-105'>
                 Bắt đầu ngay
               </button>
-              <button className='px-8 py-3 bg-blue-500 text-white font-semibold rounded-full 
-              border border-blue-400 hover:bg-blue-400 transition-all'>
+              <a 
+                href='#benefits'
+                className='px-8 py-3 bg-blue-500 text-white font-semibold rounded-full 
+                border border-blue-400 hover:bg-blue-400 transition-all'>
                 Tìm hiểu thêm
-              </button>
+              </a>
             </div>
 
           </div>

@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { useWeb3 } from '../context/Web3Context'; // (Chúng ta sẽ cần Context sau)
+import { useWeb3 } from '../context/Web3Context'; 
 // import { assets } from '../assets/assets'; // (Chưa cần assets)
 
-// Dữ liệu thống kê giả (Chúng ta sẽ thay bằng dữ liệu thật sau)
+// Dữ liệu giả
 const statsData = {
     client: {
         count: 5,
@@ -26,7 +26,6 @@ const DashboardOverview = () => {
 
     return (
         <div className="p-4">
-            {/* === Tiêu đề Chào mừng === */}
             <div className="mb-8">
                 <h1 className="text-3xl font-bold text-gray-900">
                     Chào Mừng Trở Lại!
@@ -36,7 +35,6 @@ const DashboardOverview = () => {
                 </p>
             </div>
 
-            {/* === Lưới Thẻ Thống kê === */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 
                 {/* Thẻ 1: Vai trò Khách hàng (Client) */}
@@ -93,7 +91,6 @@ const DashboardOverview = () => {
 
             </div>
 
-            {/* === Nút "Tạo Hợp đồng" (Call to Action) === */}
             <div className="mt-12 p-6 bg-gray-50 rounded-lg text-center">
                 <h2 className="text-xl font-semibold text-gray-900">Bạn có hợp đồng mới?</h2>
                 <p className="text-gray-600 mt-2 mb-4">
