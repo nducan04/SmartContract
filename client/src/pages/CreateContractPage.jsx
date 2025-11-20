@@ -26,6 +26,8 @@ const CreateContractPage = () => {
             setError('Vui lòng chọn một file điều khoản (PDF, JPG...)');
             return null;
         }
+        
+        console.log("Key của tôi là:", import.meta.env.VITE_PINATA_JWT);
 
         setStatus('Đang tải file điều khoản lên IPFS...');
         const url = `https://api.pinata.cloud/pinning/pinFileToIPFS`;

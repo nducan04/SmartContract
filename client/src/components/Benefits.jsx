@@ -22,7 +22,7 @@ const benefitData = [
 
 const Benefits = () => {
   return (
-    <section className='bg-gray-50 py-20 lg:py-24'>
+    <section id='benefits' className='bg-gray-50 py-20 lg:py-24'>
 
         <div className='container mx-auto px-6 lg:px-24'>
 

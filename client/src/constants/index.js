@@ -1,30 +1,6 @@
 
-// 1. Dán ABI của Hợp đồng MẸ (AgreementFactory.sol)
+// 1. ABI của Hợp đồng MẸ (AgreementFactory.sol)
 export const factoryABI = [
-    [
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "_receiver",
-				"type": "address"
-			},
-			{
-				"internalType": "string",
-				"name": "_agreementTerms",
-				"type": "string"
-			},
-			{
-				"internalType": "string",
-				"name": "_termsHash_IPFS",
-				"type": "string"
-			}
-		],
-		"name": "createAgreement",
-		"outputs": [],
-		"stateMutability": "payable",
-		"type": "function"
-	},
 	{
 		"anonymous": false,
 		"inputs": [
@@ -133,6 +109,29 @@ export const factoryABI = [
 		"inputs": [
 			{
 				"internalType": "address",
+				"name": "_receiver",
+				"type": "address"
+			},
+			{
+				"internalType": "string",
+				"name": "_agreementTerms",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "_termsHash_IPFS",
+				"type": "string"
+			}
+		],
+		"name": "createAgreement",
+		"outputs": [],
+		"stateMutability": "payable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
 				"name": "_client",
 				"type": "address"
 			}
@@ -193,16 +192,14 @@ export const factoryABI = [
 		"stateMutability": "view",
 		"type": "function"
 	}
-]
 ];
 
-// 2. Dán Địa chỉ của Hợp đồng MẸ sau khi deploy
-export const factoryAddress = "0x6917C38f5CB8F2b14BB387Cb2C4Ae9bBCFfa5632";
+// 2. Địa chỉ của Hợp đồng MẸ sau khi deploy
+export const factoryAddress = "0x3C31221FCD5dCcbe3aD58A63A5630e06cDeC4B9a";
 
-// 3. Dán ABI của Hợp đồng CON (EscrowAgreement.sol)
+// 3. ABI của Hợp đồng CON (EscrowAgreement.sol)
 // (Chúng ta sẽ cần cái này sau để tương tác với các hợp đồng con)
 export const agreementABI = [
-    [
 	{
 		"inputs": [
 			{
@@ -470,5 +467,4 @@ export const agreementABI = [
 		"stateMutability": "nonpayable",
 		"type": "function"
 	}
-]
 ];
