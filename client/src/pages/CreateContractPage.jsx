@@ -5,12 +5,15 @@ import { ethers } from "ethers";
 import axios from "axios";
 
 const CreateContractPage = () => {
+  // State form
   const [receiver, setReceiver] = useState("");
   const [terms, setTerms] = useState("");
   const [amount, setAmount] = useState("");
-  const [file, setFile] = useState(null); // State cho file PDF
+  const [deadline, setDeadline] = useState(""); // Mới: Hạn chót
+  const [penalty, setPenalty] = useState(""); // Mới: Tiền phạt
+  const [file, setFile] = useState(null);
 
-  // State cho Giao dịch
+  // State xử lý
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [status, setStatus] = useState("");
@@ -25,12 +28,9 @@ const CreateContractPage = () => {
       return null;
     }
 
-    console.log("Key của tôi là:", import.meta.env.VITE_PINATA_JWT);
-
     setStatus("Đang tải file điều khoản lên IPFS...");
     const url = `https://api.pinata.cloud/pinning/pinFileToIPFS`;
 
-    // Tạo dữ liệu form
     const formData = new FormData();
     formData.append("file", file);
 
@@ -42,8 +42,6 @@ const CreateContractPage = () => {
           Authorization: `Bearer ${import.meta.env.VITE_PINATA_JWT}`,
         },
       });
-
-      // Trả về Hash (còn gọi là CID)
       return response.data.IpfsHash;
     } catch (ipfsError) {
       console.error("Lỗi khi tải lên IPFS:", ipfsError);
@@ -58,50 +56,59 @@ const CreateContractPage = () => {
     setError("");
     setStatus("");
 
+    // --- Validate cơ bản ---
     if (!factoryContract || !signer) {
       setError("Vui lòng kết nối ví trước khi tạo hợp đồng.");
       return;
     }
-
-    // Kiểm tra địa chỉ ví hợp lệ
     if (!ethers.isAddress(receiver)) {
       setError("Địa chỉ ví Người nhận không hợp lệ.");
+      return;
+    }
+    if (parseFloat(penalty) > parseFloat(amount)) {
+      setError("Tiền phạt không được lớn hơn tổng số tiền ký quỹ.");
       return;
     }
 
     setLoading(true);
 
-    // BƯỚC A: Tải file lên IPFS
+    // --- BƯỚC A: Tải file lên IPFS ---
     const termsHash = await uploadToIPFS();
     if (!termsHash) {
       setLoading(false);
-      return; // Dừng lại nếu tải file thất bại
+      return;
     }
-
     setStatus(`File đã tải lên IPFS! Hash: ${termsHash}`);
 
     try {
-      // BƯỚC B: GỬI GIAO DỊCH LÊN BLOCKCHAIN
+      // --- BƯỚC B: CHUẨN BỊ DỮ LIỆU BLOCKCHAIN ---
       setStatus("Đang chuẩn bị giao dịch...");
 
-      // Chuyển đổi ETH sang Wei
+      // 1. Chuyển tiền sang Wei
       const amountInWei = ethers.parseEther(amount);
+      const penaltyInWei = ethers.parseEther(penalty);
 
-      // Gọi hàm createAgreement từ Hợp đồng MẸ
+      // 2. Chuyển đổi ngày giờ sang Unix Timestamp (giây)
+      const deadlineTimestamp = Math.floor(new Date(deadline).getTime() / 1000);
+
+      // --- BƯỚC C: GỌI SMART CONTRACT ---
+      // Hàm createAgreement mới nhận 5 tham số: receiver, terms, hash, deadline, penalty
       const tx = await factoryContract.createAgreement(
         receiver,
         terms,
         termsHash,
-        { value: amountInWei } // Gửi tiền ký quỹ kèm theo
+        deadlineTimestamp,
+        penaltyInWei,
+        { value: amountInWei } // Gửi kèm tiền ký quỹ
       );
 
       setStatus("Đang chờ xác nhận giao dịch (xin chờ)...");
-      await tx.wait(); // Chờ giao dịch được đào
+      await tx.wait();
 
       setLoading(false);
       setStatus("Thành công! Hợp đồng đã được tạo.");
 
-      // Chuyển hướng về trang quản lý sau 2 giây
+      // Chuyển hướng
       setTimeout(() => {
         navigate("/dashboard/contracts");
       }, 2000);
@@ -122,70 +129,93 @@ const CreateContractPage = () => {
         onSubmit={handleSubmit}
         className="space-y-6 bg-white p-8 shadow-lg rounded-lg border border-gray-200"
       >
+        {/* Địa chỉ người nhận */}
         <div>
-          <label
-            htmlFor="receiver"
-            className="block text-sm font-medium text-gray-700"
-          >
+          <label className="block text-sm font-medium text-gray-700">
             Địa chỉ ví người nhận (Receiver)
           </label>
           <input
-            id="receiver"
             type="text"
             required
             value={receiver}
             onChange={(e) => setReceiver(e.target.value)}
             placeholder="0x..."
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
 
+        {/* Mô tả */}
         <div>
-          <label
-            htmlFor="terms"
-            className="block text-sm font-medium text-gray-700"
-          >
+          <label className="block text-sm font-medium text-gray-700">
             Mô tả Dịch vụ / Hàng hóa
           </label>
           <textarea
-            id="terms"
             rows={3}
             required
             value={terms}
             onChange={(e) => setTerms(e.target.value)}
-            placeholder="Ví dụ: Vận chuyển 1 container hàng may mặc từ cảng A đến cảng B"
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+            placeholder="Ví dụ: Vận chuyển lô hàng A..."
+            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
 
+        {/* Lưới 2 cột cho Tiền và Phạt */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700">
+              Số tiền Ký quỹ (ETH)
+            </label>
+            <input
+              type="number"
+              step="0.0001"
+              required
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              placeholder="VD: 0.1"
+              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+            />
+          </div>
+
+          {/* INPUT MỚI: TIỀN PHẠT */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700">
+              Phạt nếu muộn (ETH)
+            </label>
+            <input
+              type="number"
+              step="0.0001"
+              required
+              value={penalty}
+              onChange={(e) => setPenalty(e.target.value)}
+              placeholder="VD: 0.01"
+              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-red-500 focus:border-red-500"
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              Sẽ trừ vào tiền ký quỹ nếu quá hạn.
+            </p>
+          </div>
+        </div>
+
+        {/* INPUT MỚI: THỜI HẠN */}
         <div>
-          <label
-            htmlFor="amount"
-            className="block text-sm font-medium text-gray-700"
-          >
-            Số tiền Ký quỹ (ETH)
+          <label className="block text-sm font-medium text-gray-700">
+            Thời hạn giao hàng (Deadline)
           </label>
           <input
-            id="amount"
-            type="number"
-            step="0.001"
+            type="datetime-local"
             required
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-            placeholder="Ví dụ: 1.5"
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+            value={deadline}
+            onChange={(e) => setDeadline(e.target.value)}
+            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
 
+        {/* File Upload */}
         <div>
-          <label
-            htmlFor="file"
-            className="block text-sm font-medium text-gray-700"
-          >
+          <label className="block text-sm font-medium text-gray-700">
             File Điều khoản (PDF, JPG...)
           </label>
           <input
-            id="file"
             type="file"
             required
             onChange={(e) => setFile(e.target.files[0])}
@@ -195,6 +225,7 @@ const CreateContractPage = () => {
           />
         </div>
 
+        {/* Submit Button */}
         <div>
           <button
             type="submit"
@@ -209,9 +240,13 @@ const CreateContractPage = () => {
             {loading ? "Đang xử lý..." : "Tạo Hợp đồng & Ký quỹ"}
           </button>
 
-          {/* Hiển thị thông báo trạng thái hoặc lỗi */}
-          {status && <p className="mt-4 text-sm text-green-600">{status}</p>}
-          {error && <p className="mt-4 text-sm text-red-600">{error}</p>}
+          {/* Error & Status Message */}
+          {status && (
+            <p className="mt-4 text-sm text-green-600 font-medium">{status}</p>
+          )}
+          {error && (
+            <p className="mt-4 text-sm text-red-600 font-medium">{error}</p>
+          )}
         </div>
       </form>
     </div>

@@ -24,38 +24,67 @@ const ContractDetailsPage = () => {
     "bg-blue-100 text-blue-800",
     "bg-purple-100 text-purple-800",
     "bg-yellow-100 text-yellow-800",
-    "bg-orange-100 text-orange-800",
     "bg-green-100 text-green-800",
+    "bg-gray-100 text-gray-800",
     "bg-red-100 text-red-800",
   ];
 
-  // LẤY DỮ LIỆU TỪ BLOCKCHAIN
+  // Hàm format ngày tháng
+  const formatDate = (timestamp) => {
+    if (!timestamp) return "N/A";
+    // Timestamp trong Blockchain là giây, JS là miligiây -> nhân 1000
+    return new Date(Number(timestamp) * 1000).toLocaleString();
+  };
+
+  const syncToBackend = async (newStatus, providerAddr = null) => {
+    try {
+      // Tạo payload gửi đi
+      const payload = {
+        contractAddress: id,
+        status: newStatus,
+      };
+
+      // Nếu có providerAddr (lúc chấp nhận), thêm vào payload
+      if (providerAddr) {
+        payload.provider = providerAddr;
+      }
+
+      await axios.put(
+        "http://localhost:5000/api/contracts/update-status",
+        payload
+      );
+      console.log("✅ Đã đồng bộ Database!");
+    } catch (error) {
+      console.error("❌ Lỗi đồng bộ:", error);
+    }
+  };
+
   const fetchDetails = async () => {
     if (!id || !getAgreementContract) return;
 
     try {
       setLoading(true);
       const contract = getAgreementContract(id);
-
       if (!contract) return;
 
+      // Gọi dữ liệu từ Blockchain (Bây giờ trả về 10 giá trị)
       const data = await contract.getAgreementDetails();
-
-      // Lấy trạng thái thực tế từ Blockchain
       const realState = Number(data[0]);
 
       setDetails({
-        state: realState, // Dùng trạng thái thực
+        state: realState,
         client: data[1],
         provider: data[2],
         receiver: data[3],
         amount: ethers.formatEther(data[4]),
         terms: data[5],
         termsHash: data[6],
+        // === CÁC TRƯỜNG MỚI ===
+        deadline: data[7], // Timestamp
+        penalty: ethers.formatEther(data[8]), // Tiền phạt
+        isLate: data[9], // Bool: Có bị muộn không?
       });
 
-      // 🔥 TÍNH NĂNG MỚI: TỰ ĐỘNG ĐỒNG BỘ 🔥
-      // Mỗi khi load trang, tự động báo cho Backend biết trạng thái mới nhất
       syncToBackend(realState);
     } catch (error) {
       console.error("Lỗi tải hợp đồng:", error);
@@ -65,36 +94,10 @@ const ContractDetailsPage = () => {
   };
 
   useEffect(() => {
-    if (walletAddress) {
-      fetchDetails();
-    }
+    if (walletAddress) fetchDetails();
   }, [id, walletAddress, getAgreementContract]);
 
-  // ĐỒNG BỘ VỀ SERVER
-  const syncToBackend = async (newStatus) => {
-    try {
-      // Chuẩn bị dữ liệu gửi đi
-      const payload = {
-        contractAddress: id,
-        status: newStatus,
-      };
-
-      // Nếu trạng thái là 1 (Accepted), gửi kèm địa chỉ Provider (chính là ví hiện tại)
-      if (newStatus === 1) {
-        payload.provider = walletAddress;
-      }
-
-      await axios.put(
-        "http://localhost:5000/api/contracts/update-status",
-        payload
-      );
-      console.log("✅ Đồng bộ thành công!");
-    } catch (error) {
-      console.error("❌ Lỗi đồng bộ:", error);
-    }
-  };
-
-  // 1. Nhà cung cấp CHẤP NHẬN
+  // === CÁC HÀM TƯƠNG TÁC (Giữ nguyên logic cũ) ===
   const handleAccept = async () => {
     try {
       setActionLoading(true);
@@ -102,7 +105,8 @@ const ContractDetailsPage = () => {
       const tx = await contract.acceptAgreement();
       await tx.wait();
 
-      await syncToBackend(1);
+      // 🔥 QUAN TRỌNG: Truyền walletAddress (Acc3) vào đây
+      await syncToBackend(1, walletAddress);
 
       alert("Đã chấp nhận hợp đồng thành công!");
       fetchDetails();
@@ -114,14 +118,12 @@ const ContractDetailsPage = () => {
     }
   };
 
-  // 2. Nhà cung cấp CẬP NHẬT TRẠNG THÁI
   const handleUpdateStatus = async (newStatusText) => {
     try {
       setActionLoading(true);
       const contract = getAgreementContract(id);
       let tx;
       let statusNumber;
-
       if (newStatusText === "InProgress") {
         tx = await contract.updateStatusInProgress();
         statusNumber = 2;
@@ -130,11 +132,8 @@ const ContractDetailsPage = () => {
         tx = await contract.updateStatusCompleted();
         statusNumber = 3;
       }
-
-      await tx.wait(); // Chờ Blockchain xác nhận
-
-      await syncToBackend(statusNumber); // Đồng bộ DB
-
+      await tx.wait();
+      await syncToBackend(statusNumber);
       alert("Đã cập nhật trạng thái!");
       fetchDetails();
     } catch (error) {
@@ -145,17 +144,14 @@ const ContractDetailsPage = () => {
     }
   };
 
-  // 3. Người nhận XÁC NHẬN & THANH TOÁN
   const handleConfirm = async () => {
     try {
       setActionLoading(true);
       const contract = getAgreementContract(id);
       const tx = await contract.confirmAndPay();
       await tx.wait();
-
       await syncToBackend(4);
-
-      alert("Đã xác nhận và thanh toán tiền cho Nhà cung cấp!");
+      alert("Đã xác nhận và thanh toán!");
       fetchDetails();
     } catch (error) {
       console.error(error);
@@ -165,40 +161,25 @@ const ContractDetailsPage = () => {
     }
   };
 
-  // === RENDER GIAO DIỆN ===
-
+  // === RENDER ===
   if (loading)
-    return (
-      <div className="p-8 text-center text-gray-500">
-        Đang tải thông tin từ Blockchain...
-      </div>
-    );
-
+    return <div className="p-8 text-center text-gray-500">Đang tải...</div>;
   if (!details)
     return (
-      <div className="p-8 text-center">
-        <p className="text-red-500 mb-4">
-          Không tìm thấy hợp đồng hoặc chưa kết nối ví!
-        </p>
-        {!walletAddress && (
-          <p className="text-gray-500 text-sm">
-            Vui lòng kiểm tra nút Ví ở góc phải.
-          </p>
-        )}
+      <div className="p-8 text-center text-red-500">
+        Không tìm thấy hợp đồng!
       </div>
     );
 
-  // Kiểm tra vai trò (Dùng .toLowerCase() để so sánh chính xác)
-  const currentWallet = walletAddress ? walletAddress.toLowerCase() : "";
-  const providerAddr = details.provider ? details.provider.toLowerCase() : "";
-  const clientAddr = details.client ? details.client.toLowerCase() : "";
-  const receiverAddr = details.receiver ? details.receiver.toLowerCase() : "";
-
+  const currentWallet = walletAddress?.toLowerCase();
   const isProvider =
-    currentWallet === providerAddr ||
-    (details.state === 0 && currentWallet !== clientAddr);
+    currentWallet === details.provider?.toLowerCase() ||
+    (details.state === 0 && currentWallet !== details.client?.toLowerCase());
+  const isReceiver = currentWallet === details.receiver?.toLowerCase();
 
-  const isReceiver = currentWallet === receiverAddr;
+  // Kiểm tra xem hiện tại đã quá hạn chưa (chỉ cảnh báo nếu chưa thanh toán)
+  const isOverdue =
+    Date.now() / 1000 > Number(details.deadline) && details.state < 4;
 
   return (
     <div className="p-6 max-w-4xl mx-auto">
@@ -210,13 +191,21 @@ const ContractDetailsPage = () => {
           </h1>
           <p className="text-sm text-gray-500 break-all">ID: {id}</p>
         </div>
-        <span
-          className={`px-4 py-2 rounded-full font-semibold ${
-            stateColors[details.state]
-          }`}
-        >
-          {stateLabels[details.state]}
-        </span>
+        <div className="text-right">
+          <span
+            className={`px-4 py-2 rounded-full font-semibold ${
+              stateColors[details.state]
+            }`}
+          >
+            {stateLabels[details.state]}
+          </span>
+          {/* HIỂN THỊ TRẠNG THÁI VI PHẠM */}
+          {details.isLate && (
+            <p className="mt-2 text-xs font-bold text-red-600 border border-red-200 bg-red-50 px-2 py-1 rounded">
+              ⚠ ĐÃ BỊ PHẠT VI PHẠM
+            </p>
+          )}
+        </div>
       </div>
 
       {/* Thông tin chính */}
@@ -236,9 +225,42 @@ const ContractDetailsPage = () => {
               {details.amount} ETH
             </p>
           </div>
+
+          {/* === THÔNG TIN THỜI GIAN & PHẠT (MỚI) === */}
+          <div className="bg-orange-50 p-4 rounded-lg border border-orange-200">
+            <h3 className="text-sm font-bold text-orange-800 uppercase flex items-center gap-2">
+              <i className="uil uil-clock"></i> Thời hạn cam kết
+            </h3>
+            <p
+              className={`text-lg font-mono mt-1 ${
+                isOverdue ? "text-red-600 font-bold" : "text-gray-800"
+              }`}
+            >
+              {formatDate(details.deadline)}
+            </p>
+            {isOverdue && (
+              <p className="text-xs text-red-500 font-bold mt-1">
+                ⚠ Đã quá hạn! Sẽ bị trừ tiền phạt khi thanh toán.
+              </p>
+            )}
+          </div>
+
+          <div className="bg-red-50 p-4 rounded-lg border border-red-200">
+            <h3 className="text-sm font-bold text-red-800 uppercase flex items-center gap-2">
+              <i className="uil uil-bill"></i> Mức phạt vi phạm
+            </h3>
+            <p className="text-lg font-mono text-gray-800 mt-1">
+              -{details.penalty} ETH
+            </p>
+            <p className="text-xs text-gray-500 mt-1">
+              Trừ vào tiền công nếu giao muộn.
+            </p>
+          </div>
+          {/* ========================================= */}
+
           <div className="md:col-span-2">
             <h3 className="text-sm font-medium text-gray-500 uppercase">
-              File đính kèm (IPFS)
+              File đính kèm
             </h3>
             <a
               href={`https://gateway.pinata.cloud/ipfs/${details.termsHash}`}
@@ -246,7 +268,6 @@ const ContractDetailsPage = () => {
               rel="noreferrer"
               className="mt-1 inline-flex items-center text-blue-600 hover:underline"
             >
-              <i className="uil uil-file-download-alt mr-2"></i>
               Xem tài liệu điều khoản
             </a>
           </div>
@@ -258,11 +279,11 @@ const ContractDetailsPage = () => {
         <h3 className="font-bold text-gray-900 mb-4">Các bên tham gia</h3>
         <div className="space-y-3">
           <div className="flex justify-between">
-            <span className="text-gray-600">Người tạo (Client):</span>
+            <span className="text-gray-600">Client:</span>
             <span className="font-mono text-sm">{details.client}</span>
           </div>
           <div className="flex justify-between">
-            <span className="text-gray-600">Nhà vận chuyển (Provider):</span>
+            <span className="text-gray-600">Provider:</span>
             <span className="font-mono text-sm">
               {details.provider === "0x0000000000000000000000000000000000000000"
                 ? "(Chưa có)"
@@ -270,17 +291,17 @@ const ContractDetailsPage = () => {
             </span>
           </div>
           <div className="flex justify-between">
-            <span className="text-gray-600">Người nhận (Receiver):</span>
+            <span className="text-gray-600">Receiver:</span>
             <span className="font-mono text-sm">{details.receiver}</span>
           </div>
         </div>
       </div>
 
-      {/* === KHU VỰC HÀNH ĐỘNG (Nút bấm) === */}
+      {/* Khu vực hành động */}
       <div className="flex justify-end gap-4">
-        {/* 1. Nút cho Provider CHẤP NHẬN */}
         {details.state === 0 &&
-          currentWallet !== details.client?.toLowerCase() && (
+          currentWallet !== details.client?.toLowerCase() &&
+          currentWallet !== details.receiver?.toLowerCase() && (
             <button
               onClick={handleAccept}
               disabled={actionLoading}
@@ -289,8 +310,6 @@ const ContractDetailsPage = () => {
               {actionLoading ? "Đang xử lý..." : "Chấp nhận Hợp đồng này"}
             </button>
           )}
-
-        {/* 2. Nút cho Provider CẬP NHẬT TIẾN ĐỘ */}
         {details.state === 1 && isProvider && (
           <button
             onClick={() => handleUpdateStatus("InProgress")}
@@ -300,7 +319,6 @@ const ContractDetailsPage = () => {
             Cập nhật: Đang thực hiện
           </button>
         )}
-
         {details.state === 2 && isProvider && (
           <button
             onClick={() => handleUpdateStatus("Completed")}
@@ -310,16 +328,25 @@ const ContractDetailsPage = () => {
             Cập nhật: Đã hoàn thành
           </button>
         )}
-
-        {/* 3. Nút cho Receiver XÁC NHẬN & THANH TOÁN */}
         {details.state === 3 && isReceiver && (
-          <button
-            onClick={handleConfirm}
-            disabled={actionLoading}
-            className="px-6 py-3 bg-purple-600 text-white rounded-lg font-bold hover:bg-purple-700 disabled:bg-gray-400"
-          >
-            {actionLoading ? "Đang xử lý..." : "Xác nhận & Thanh toán"}
-          </button>
+          <div className="flex flex-col items-end gap-2">
+            {isOverdue && (
+              <span className="text-red-600 font-bold text-sm">
+                ⚠ Cảnh báo: Đơn hàng đã quá hạn. Hệ thống sẽ tự động trừ phạt.
+              </span>
+            )}
+            <button
+              onClick={handleConfirm}
+              disabled={actionLoading}
+              className="px-6 py-3 bg-purple-600 text-white rounded-lg font-bold hover:bg-purple-700 disabled:bg-gray-400"
+            >
+              {actionLoading
+                ? "Đang xử lý..."
+                : isOverdue
+                ? `Xác nhận & Phạt (${details.penalty} ETH)`
+                : "Xác nhận & Thanh toán"}
+            </button>
+          </div>
         )}
       </div>
     </div>

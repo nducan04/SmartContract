@@ -3,20 +3,21 @@ import { useWeb3 } from "../context/Web3Context";
 import { ethers } from "ethers";
 import { agreementABI } from "../constants";
 import { useNavigate } from "react-router-dom";
-import axios from "axios"; // 1. Import axios
+import axios from "axios";
 
 const TrackingPage = () => {
   const { provider, connectWallet, walletAddress } = useWeb3();
+
   const [searchId, setSearchId] = useState("");
   const [contractData, setContractData] = useState(null);
+  const [recentContracts, setRecentContracts] = useState([]);
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // State cho danh sách gợi ý
-  const [recentContracts, setRecentContracts] = useState([]);
-
   const navigate = useNavigate();
 
+  // Mapping trạng thái hiển thị
   const stateMap = [
     {
       text: "Mới tạo",
@@ -50,15 +51,16 @@ const TrackingPage = () => {
     },
   ];
 
-  // 2. Fetch danh sách hợp đồng gần đây của user để gợi ý
+  // 1. Lấy danh sách hợp đồng gần đây từ Backend (MongoDB)
   useEffect(() => {
     const fetchRecents = async () => {
       if (walletAddress) {
         try {
+          // Gọi API Backend
           const response = await axios.get(
             `http://localhost:5000/api/contracts?wallet=${walletAddress}`
           );
-          // Lấy 3 hợp đồng mới nhất
+          // Lấy 3 cái đầu tiên (mới nhất)
           setRecentContracts(response.data.slice(0, 3));
         } catch (err) {
           console.error("Lỗi tải gợi ý:", err);
@@ -68,6 +70,7 @@ const TrackingPage = () => {
     fetchRecents();
   }, [walletAddress]);
 
+  // 2. Hàm xử lý tra cứu từ Blockchain
   const handleSearch = async (e) => {
     e.preventDefault();
     setError("");
@@ -80,13 +83,14 @@ const TrackingPage = () => {
     }
 
     if (!ethers.isAddress(searchId)) {
-      setError("Địa chỉ hợp đồng không hợp lệ.");
+      setError("Địa chỉ hợp đồng không hợp lệ (Phải bắt đầu bằng 0x...).");
       return;
     }
 
     setLoading(true);
 
     try {
+      // Kết nối Hợp đồng Con (Read-only)
       const contract = new ethers.Contract(searchId, agreementABI, provider);
       const data = await contract.getAgreementDetails();
 
@@ -102,18 +106,19 @@ const TrackingPage = () => {
       });
     } catch (err) {
       console.error(err);
-      setError("Không tìm thấy hợp đồng này trên hệ thống.");
+      setError("Không tìm thấy hợp đồng này trên hệ thống Blockchain.");
     } finally {
       setLoading(false);
     }
   };
 
-  // Hàm chọn nhanh từ danh sách gợi ý
-  const selectContract = (id) => {
-    setSearchId(id);
-    // Tự động trigger tìm kiếm luôn nếu muốn (hoặc để user bấm Tra cứu)
+  // 3. Hàm xử lý khi click vào Hợp đồng gần đây
+  const handleRecentClick = (contractAddress) => {
+    // Chuyển hướng thẳng vào trang Dashboard chi tiết để quản lý
+    navigate(`/dashboard/contract/${contractAddress}`);
   };
 
+  // Kiểm tra xem người đang xem có phải là người trong cuộc không
   const isParticipant =
     contractData &&
     walletAddress &&
@@ -124,16 +129,17 @@ const TrackingPage = () => {
   return (
     <div className="min-h-[80vh] bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-3xl mx-auto">
+        {/* Header & Search Bar */}
         <div className="text-center mb-10">
           <h1 className="text-3xl font-bold text-gray-900 mb-4">
             Tra cứu Trạng thái Hợp đồng
           </h1>
           <p className="text-gray-600 mb-8">
-            Nhập địa chỉ hợp đồng (ID) để xem chi tiết.
+            Nhập địa chỉ hợp đồng (ID) để xem chi tiết tiến độ.
           </p>
 
           <form onSubmit={handleSearch} className="relative max-w-xl mx-auto">
-            <div className="flex shadow-lg rounded-full overflow-hidden">
+            <div className="flex shadow-lg rounded-full overflow-hidden bg-white">
               <input
                 type="text"
                 value={searchId}
@@ -163,11 +169,11 @@ const TrackingPage = () => {
           </form>
         </div>
 
-        {/* === 3. PHẦN GỢI Ý / DANH SÁCH GẦN ĐÂY === */}
+        {/* === PHẦN DANH SÁCH GỢI Ý (NẾU CHƯA TRA CỨU) === */}
         {!contractData && (
           <div className="mt-12">
             {walletAddress && recentContracts.length > 0 ? (
-              <div>
+              <div className="animate-fade-in-up">
                 <h3 className="text-lg font-semibold text-gray-700 mb-4 text-center">
                   Hợp đồng gần đây của bạn
                 </h3>
@@ -175,35 +181,36 @@ const TrackingPage = () => {
                   {recentContracts.map((contract) => (
                     <div
                       key={contract._id}
-                      onClick={() => selectContract(contract.contractAddress)}
+                      onClick={() =>
+                        handleRecentClick(contract.contractAddress)
+                      }
                       className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm hover:shadow-md hover:border-blue-300 cursor-pointer transition-all flex justify-between items-center group"
                     >
-                      <div>
-                        <p className="font-bold text-gray-800 group-hover:text-blue-600 transition-colors">
+                      <div className="flex-grow overflow-hidden">
+                        <p className="font-bold text-gray-800 group-hover:text-blue-600 transition-colors truncate">
                           {contract.terms}
                         </p>
-                        <p className="text-xs text-gray-400 font-mono mt-1">
+                        <p className="text-xs text-gray-400 font-mono mt-1 truncate">
                           {contract.contractAddress}
                         </p>
                       </div>
-                      <div className="flex items-center gap-4">
+                      <div className="flex items-center gap-4 flex-shrink-0 ml-4">
                         <span
-                          className={`px-3 py-1 rounded-full text-xs font-bold ${
+                          className={`px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap ${
                             stateMap[contract.status]?.color || "bg-gray-100"
                           }`}
                         >
                           {stateMap[contract.status]?.text || "Không rõ"}
                         </span>
-                        <i className="uil uil-angle-right text-xl text-gray-400 group-hover:translate-x-1 transition-transform"></i>
+                        <i className="uil uil-arrow-right text-xl text-gray-400 group-hover:text-blue-600 group-hover:translate-x-1 transition-transform"></i>
                       </div>
                     </div>
                   ))}
                 </div>
               </div>
             ) : (
-              // Nếu chưa kết nối hoặc chưa có hợp đồng: Hiện hướng dẫn
               <div className="text-center text-gray-400 mt-16">
-                <i className="uil uil-box text-6xl mb-4 block opacity-20"></i>
+                <i className="uil uil-box text-6xl mb-4 block opacity-20 mx-auto"></i>
                 <p>Kết nối ví để xem danh sách hợp đồng của bạn</p>
                 <p className="text-sm mt-2">
                   Hoặc nhập ID bất kỳ để tra cứu công khai
@@ -213,30 +220,32 @@ const TrackingPage = () => {
           </div>
         )}
 
-        {/* Kết quả Tra cứu (Giữ nguyên) */}
+        {/* === PHẦN KẾT QUẢ TRA CỨU (NẾU CÓ DATA) === */}
         {contractData && (
           <div className="bg-white shadow-xl rounded-2xl overflow-hidden border border-gray-100 animation-fade-in mt-8">
+            {/* Banner Điều hướng cho người trong cuộc */}
             {isParticipant && (
-              <div className="bg-indigo-50 px-8 py-4 border-b border-indigo-100 flex justify-between items-center">
-                <span className="text-indigo-700 font-medium flex items-center gap-2">
+              <div className="bg-indigo-50 px-8 py-4 border-b border-indigo-100 flex justify-between items-center flex-wrap gap-2">
+                <span className="text-indigo-700 font-medium flex items-center gap-2 text-sm sm:text-base">
                   <i className="uil uil-user-circle text-xl"></i>
-                  Bạn là một bên tham gia
+                  Bạn là một bên tham gia hợp đồng này
                 </span>
                 <button
                   onClick={() =>
                     navigate(`/dashboard/contract/${contractData.address}`)
                   }
-                  className="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-indigo-700 transition-all shadow-md hover:shadow-lg"
+                  className="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-indigo-700 transition-all shadow-md hover:shadow-lg flex items-center"
                 >
-                  Quản lý <i className="uil uil-arrow-right ml-1"></i>
+                  Đi tới Quản lý <i className="uil uil-arrow-right ml-1"></i>
                 </button>
               </div>
             )}
 
+            {/* Header Kết quả */}
             <div className="bg-gray-50 px-8 py-6 border-b border-gray-200 flex flex-col sm:flex-row justify-between items-center gap-4">
-              <div>
+              <div className="text-center sm:text-left">
                 <p className="text-sm text-gray-500 uppercase font-bold tracking-wide">
-                  Trạng thái hiện tại
+                  Trạng thái
                 </p>
                 <div
                   className={`mt-2 inline-flex items-center px-4 py-2 rounded-full font-bold text-sm ${
@@ -251,9 +260,9 @@ const TrackingPage = () => {
                   {stateMap[contractData.state].text}
                 </div>
               </div>
-              <div className="text-right">
+              <div className="text-center sm:text-right">
                 <p className="text-sm text-gray-500 uppercase font-bold tracking-wide">
-                  Giá trị Hợp đồng
+                  Giá trị
                 </p>
                 <p className="text-2xl font-bold text-blue-600">
                   {contractData.amount} ETH
@@ -261,19 +270,21 @@ const TrackingPage = () => {
               </div>
             </div>
 
+            {/* Nội dung chi tiết */}
             <div className="px-8 py-8 space-y-6">
               <div>
                 <h3 className="text-gray-900 font-bold text-lg mb-2">
                   Nội dung Hợp đồng
                 </h3>
-                <p className="text-gray-600 bg-gray-50 p-4 rounded-lg border border-gray-100">
-                  {contractData.terms}
+                <p className="text-gray-600 bg-gray-50 p-4 rounded-lg border border-gray-100 italic">
+                  "{contractData.terms}"
                 </p>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="p-4 border rounded-xl text-center">
-                  <div className="w-10 h-10 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-3">
+                {/* Client Card */}
+                <div className="p-4 border rounded-xl text-center hover:border-blue-200 transition-colors group">
+                  <div className="w-10 h-10 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
                     <i className="uil uil-user"></i>
                   </div>
                   <p className="text-xs text-gray-400 uppercase font-bold">
@@ -283,8 +294,10 @@ const TrackingPage = () => {
                     {contractData.client}
                   </p>
                 </div>
-                <div className="p-4 border rounded-xl text-center">
-                  <div className="w-10 h-10 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-3">
+
+                {/* Provider Card */}
+                <div className="p-4 border rounded-xl text-center hover:border-green-200 transition-colors group">
+                  <div className="w-10 h-10 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
                     <i className="uil uil-truck"></i>
                   </div>
                   <p className="text-xs text-gray-400 uppercase font-bold">
@@ -292,13 +305,17 @@ const TrackingPage = () => {
                   </p>
                   <p className="text-xs text-gray-800 font-mono mt-1 break-all">
                     {contractData.provider ===
-                    "0x0000000000000000000000000000000000000000"
-                      ? "Chưa có"
-                      : contractData.provider}
+                    "0x0000000000000000000000000000000000000000" ? (
+                      <span className="text-gray-400 italic">Chưa có</span>
+                    ) : (
+                      contractData.provider
+                    )}
                   </p>
                 </div>
-                <div className="p-4 border rounded-xl text-center">
-                  <div className="w-10 h-10 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center mx-auto mb-3">
+
+                {/* Receiver Card */}
+                <div className="p-4 border rounded-xl text-center hover:border-purple-200 transition-colors group">
+                  <div className="w-10 h-10 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
                     <i className="uil uil-home"></i>
                   </div>
                   <p className="text-xs text-gray-400 uppercase font-bold">
@@ -317,8 +334,8 @@ const TrackingPage = () => {
                   rel="noreferrer"
                   className="inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-800 transition-colors"
                 >
-                  <i className="uil uil-file-alt mr-2"></i> Xem tài liệu gốc
-                  trên IPFS
+                  <i className="uil uil-file-alt mr-2"></i>
+                  Xem tài liệu gốc trên IPFS
                 </a>
               </div>
             </div>

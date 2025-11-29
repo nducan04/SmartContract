@@ -40,36 +40,32 @@ export const updateStatus = async (req, res) => {
     // Tạo object chứa dữ liệu cần update
     let updateData = { status: status };
 
-    // Nếu có gửi kèm provider (thường là lúc bấm Chấp nhận), thì update luôn vào DB
-    // Quan trọng: Chuyển về chữ thường (toLowerCase) để đồng bộ với Schema
+    // QUAN TRỌNG: Nếu có gửi kèm provider (lúc bấm Chấp nhận), thì update vào DB
+    // Chuyển về chữ thường để đồng bộ
     if (provider) {
       updateData.provider = provider.toLowerCase();
     }
 
     // Tìm và cập nhật
     const updatedContract = await Contract.findOneAndUpdate(
-      { contractAddress: contractAddress }, // Tìm theo địa chỉ hợp đồng
-      updateData, // Cập nhật object dữ liệu mới
+      { contractAddress: contractAddress },
+      updateData,
       { new: true }
     );
 
     if (!updatedContract) {
-      return res
-        .status(404)
-        .json({ message: "Không tìm thấy hợp đồng trong DB" });
+      return res.status(404).json({ message: "Không tìm thấy hợp đồng" });
     }
 
     console.log(
-      `🔄 Đã cập nhật hợp đồng ${contractAddress}: Status=${status} ${
-        provider ? `, Provider=${provider}` : ""
+      `🔄 Đã cập nhật: ${contractAddress} -> Status: ${status}, Provider: ${
+        provider || "Giữ nguyên"
       }`
     );
 
-    res
-      .status(200)
-      .json({ message: "Cập nhật thành công", contract: updatedContract });
+    res.status(200).json({ message: "Success", contract: updatedContract });
   } catch (error) {
-    console.error("Lỗi cập nhật trạng thái:", error);
+    console.error("Lỗi update:", error);
     res.status(500).json({ message: "Lỗi Server" });
   }
 };

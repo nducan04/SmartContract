@@ -17,6 +17,16 @@ export const factoryABI = [
         name: "_termsHash_IPFS",
         type: "string",
       },
+      {
+        internalType: "uint256",
+        name: "_deliveryDeadline",
+        type: "uint256",
+      },
+      {
+        internalType: "uint256",
+        name: "_penaltyAmount",
+        type: "uint256",
+      },
     ],
     name: "createAgreement",
     outputs: [],
@@ -55,6 +65,18 @@ export const factoryABI = [
         internalType: "string",
         name: "termsHash_IPFS",
         type: "string",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "deliveryDeadline",
+        type: "uint256",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "penaltyAmount",
+        type: "uint256",
       },
     ],
     name: "NewAgreementCreated",
@@ -194,10 +216,9 @@ export const factoryABI = [
 ];
 
 // 2. Địa chỉ của Hợp đồng MẸ sau khi deploy
-export const factoryAddress = "0x2eF031b983e977F0FD0De43660e4dD46e51D437F";
+export const factoryAddress = "0x1e68d9AE7Aa89a581C971471741Baa976195A312";
 
 // 3. ABI của Hợp đồng CON (EscrowAgreement.sol)
-// (Chúng ta sẽ cần cái này sau để tương tác với các hợp đồng con)
 export const agreementABI = [
   {
     inputs: [
@@ -220,6 +241,16 @@ export const agreementABI = [
         internalType: "string",
         name: "_termsHash_IPFS",
         type: "string",
+      },
+      {
+        internalType: "uint256",
+        name: "_deliveryDeadline",
+        type: "uint256",
+      },
+      {
+        internalType: "uint256",
+        name: "_penaltyAmount",
+        type: "uint256",
       },
     ],
     stateMutability: "payable",
@@ -269,8 +300,20 @@ export const agreementABI = [
       {
         indexed: false,
         internalType: "uint256",
-        name: "amount",
+        name: "amountPaid",
         type: "uint256",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "penaltyRefunded",
+        type: "uint256",
+      },
+      {
+        indexed: false,
+        internalType: "bool",
+        name: "isLate",
+        type: "bool",
       },
     ],
     name: "ContractPaid",
@@ -351,6 +394,19 @@ export const agreementABI = [
   },
   {
     inputs: [],
+    name: "deliveryDeadline",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
     name: "getAgreementDetails",
     outputs: [
       {
@@ -388,13 +444,41 @@ export const agreementABI = [
         name: "",
         type: "string",
       },
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+      {
+        internalType: "bool",
+        name: "",
+        type: "bool",
+      },
     ],
     stateMutability: "view",
     type: "function",
   },
   {
     inputs: [],
-    name: "getBalance",
+    name: "isLate",
+    outputs: [
+      {
+        internalType: "bool",
+        name: "",
+        type: "bool",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "paymentAmount",
     outputs: [
       {
         internalType: "uint256",
@@ -407,7 +491,7 @@ export const agreementABI = [
   },
   {
     inputs: [],
-    name: "paymentAmount",
+    name: "penaltyAmount",
     outputs: [
       {
         internalType: "uint256",
