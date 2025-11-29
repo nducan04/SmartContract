@@ -1,7 +1,7 @@
 import { ethers } from "ethers";
 import Contract from "../models/Contract.js"; // Import Model MongoDB
 
-const factoryAddress = "0x3C31221FCD5dCcbe3aD58A63A5630e06cDeC4B9a";
+const factoryAddress = "0x2eF031b983e977F0FD0De43660e4dD46e51D437F";
 
 const factoryABI = [
   "event NewAgreementCreated(address indexed contractAddress, address indexed client, address indexed receiver, uint256 paymentAmount, string termsHash_IPFS)",

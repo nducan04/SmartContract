@@ -25,11 +25,16 @@ const ContractListPage = () => {
   // Xác định vai trò của mình trong hợp đồng
   const getMyRoleLabel = (contract) => {
     if (!walletAddress) return "Khách";
-    const currentWallet = walletAddress.toLowerCase();
+    const currentWallet = walletAddress.toLowerCase(); // Chuẩn hóa ví hiện tại
 
-    if (contract.client === currentWallet) return "Người Tạo (Client)";
-    if (contract.provider === currentWallet) return "Nhà Vận Chuyển (Provider)";
-    if (contract.receiver === currentWallet) return "Người Nhận (Receiver)";
+    // Chuẩn hóa dữ liệu từ DB (đề phòng DB lưu chữ hoa)
+    const clientDB = contract.client ? contract.client.toLowerCase() : "";
+    const providerDB = contract.provider ? contract.provider.toLowerCase() : "";
+    const receiverDB = contract.receiver ? contract.receiver.toLowerCase() : "";
+
+    if (clientDB === currentWallet) return "Người Tạo (Client)";
+    if (providerDB === currentWallet) return "Nhà Vận Chuyển (Provider)";
+    if (receiverDB === currentWallet) return "Người Nhận (Receiver)";
     return "Liên quan";
   };
 
@@ -38,9 +43,13 @@ const ContractListPage = () => {
     if (!walletAddress) return "";
     const currentWallet = walletAddress.toLowerCase();
 
-    if (contract.client === currentWallet) return "client";
-    if (contract.provider === currentWallet) return "provider";
-    if (contract.receiver === currentWallet) return "receiver";
+    const clientDB = contract.client ? contract.client.toLowerCase() : "";
+    const providerDB = contract.provider ? contract.provider.toLowerCase() : "";
+    const receiverDB = contract.receiver ? contract.receiver.toLowerCase() : "";
+
+    if (clientDB === currentWallet) return "client";
+    if (providerDB === currentWallet) return "provider";
+    if (receiverDB === currentWallet) return "receiver";
     return "";
   };
 

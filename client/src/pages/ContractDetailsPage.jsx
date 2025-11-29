@@ -189,13 +189,16 @@ const ContractDetailsPage = () => {
     );
 
   // Kiểm tra vai trò (Dùng .toLowerCase() để so sánh chính xác)
-  const currentWallet = walletAddress?.toLowerCase();
+  const currentWallet = walletAddress ? walletAddress.toLowerCase() : "";
+  const providerAddr = details.provider ? details.provider.toLowerCase() : "";
+  const clientAddr = details.client ? details.client.toLowerCase() : "";
+  const receiverAddr = details.receiver ? details.receiver.toLowerCase() : "";
 
   const isProvider =
-    currentWallet === details.provider?.toLowerCase() ||
-    (details.state === 0 && currentWallet !== details.client?.toLowerCase());
+    currentWallet === providerAddr ||
+    (details.state === 0 && currentWallet !== clientAddr);
 
-  const isReceiver = currentWallet === details.receiver?.toLowerCase();
+  const isReceiver = currentWallet === receiverAddr;
 
   return (
     <div className="p-6 max-w-4xl mx-auto">

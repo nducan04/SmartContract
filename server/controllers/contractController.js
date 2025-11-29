@@ -50,7 +50,7 @@ export const updateStatus = async (req, res) => {
     const updatedContract = await Contract.findOneAndUpdate(
       { contractAddress: contractAddress }, // Tìm theo địa chỉ hợp đồng
       updateData, // Cập nhật object dữ liệu mới
-      { new: true } // Trả về dữ liệu mới sau khi update
+      { new: true }
     );
 
     if (!updatedContract) {

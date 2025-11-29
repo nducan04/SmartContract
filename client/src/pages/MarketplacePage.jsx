@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
+import { useWeb3 } from "../context/Web3Context";
 
 const MarketplacePage = () => {
+  const { walletAddress } = useWeb3();
   const [contracts, setContracts] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -11,6 +13,7 @@ const MarketplacePage = () => {
       try {
         setLoading(true);
         // Gọi API lấy hợp đồng chưa có người nhận (status = 0)
+        // Lưu ý: Đảm bảo Server Backend đang chạy ở port 5000
         const response = await axios.get(
           "http://localhost:5000/api/contracts/available"
         );
@@ -49,48 +52,63 @@ const MarketplacePage = () => {
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-6">
-          {contracts.map((contract) => (
-            <div
-              key={contract._id}
-              className="bg-white p-6 rounded-lg shadow-md border border-gray-100 hover:shadow-lg transition-all flex flex-col md:flex-row justify-between items-start md:items-center gap-4"
-            >
-              <div className="flex-grow">
-                <div className="flex items-center gap-3 mb-2">
-                  <span className="bg-blue-100 text-blue-800 text-xs font-bold px-2 py-1 rounded-full uppercase">
-                    Mới tạo
-                  </span>
-                  <span className="text-gray-400 text-xs font-mono">
-                    ID: {contract.contractAddress.substring(0, 8)}...
-                  </span>
-                </div>
-                <h3 className="text-lg font-bold text-gray-900">
-                  {contract.terms}
-                </h3>
-                <div className="text-sm text-gray-500 mt-1 flex flex-col sm:flex-row gap-2 sm:gap-6">
-                  <span>
-                    <i className="uil uil-user mr-1"></i> Khách hàng:{" "}
-                    {contract.client.substring(0, 6)}...
-                  </span>
-                  <span>
-                    <i className="uil uil-map-marker mr-1"></i> Người nhận:{" "}
-                    {contract.receiver.substring(0, 6)}...
-                  </span>
-                </div>
-              </div>
+          {contracts.map((contract) => {
+            // 3. Logic kiểm tra: Đây có phải hợp đồng do chính mình tạo không?
+            const isMyContract =
+              walletAddress &&
+              contract.client.toLowerCase() === walletAddress.toLowerCase();
 
-              <div className="flex flex-col items-end gap-3 min-w-[150px]">
-                <span className="text-2xl font-bold text-blue-600">
-                  {contract.amount} ETH
-                </span>
-                <Link
-                  to={`/dashboard/contract/${contract.contractAddress}`}
-                  className="bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700 transition-colors w-full text-center"
-                >
-                  Xem & Nhận việc
-                </Link>
+            return (
+              <div
+                key={contract._id}
+                className="bg-white p-6 rounded-lg shadow-md border border-gray-100 hover:shadow-lg transition-all flex flex-col md:flex-row justify-between items-start md:items-center gap-4"
+              >
+                <div className="flex-grow">
+                  <div className="flex items-center gap-3 mb-2">
+                    <span className="bg-blue-100 text-blue-800 text-xs font-bold px-2 py-1 rounded-full uppercase">
+                      Mới tạo
+                    </span>
+                    <span className="text-gray-400 text-xs font-mono">
+                      ID: {contract.contractAddress.substring(0, 8)}...
+                    </span>
+                  </div>
+                  <h3 className="text-lg font-bold text-gray-900">
+                    {contract.terms}
+                  </h3>
+                  <div className="text-sm text-gray-500 mt-1 flex flex-col sm:flex-row gap-2 sm:gap-6">
+                    <span>
+                      <i className="uil uil-user mr-1"></i> Khách hàng:{" "}
+                      {contract.client.substring(0, 6)}...
+                    </span>
+                    <span>
+                      <i className="uil uil-map-marker mr-1"></i> Người nhận:{" "}
+                      {contract.receiver.substring(0, 6)}...
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex flex-col items-end gap-3 min-w-[150px]">
+                  <span className="text-2xl font-bold text-blue-600">
+                    {contract.amount} ETH
+                  </span>
+
+                  {/* 4. Hiển thị nút bấm dựa trên điều kiện */}
+                  {!isMyContract ? (
+                    <Link
+                      to={`/dashboard/contract/${contract.contractAddress}`}
+                      className="bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700 transition-colors w-full text-center shadow-sm"
+                    >
+                      Xem & Nhận việc
+                    </Link>
+                  ) : (
+                    <span className="text-gray-400 text-sm font-medium italic border border-gray-200 px-4 py-2 rounded-lg bg-gray-50 w-full text-center">
+                      (Hợp đồng của bạn)
+                    </span>
+                  )}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

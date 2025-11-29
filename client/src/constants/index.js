@@ -1,6 +1,29 @@
 // 1. ABI của Hợp đồng MẸ (AgreementFactory.sol)
 export const factoryABI = [
   {
+    inputs: [
+      {
+        internalType: "address",
+        name: "_receiver",
+        type: "address",
+      },
+      {
+        internalType: "string",
+        name: "_agreementTerms",
+        type: "string",
+      },
+      {
+        internalType: "string",
+        name: "_termsHash_IPFS",
+        type: "string",
+      },
+    ],
+    name: "createAgreement",
+    outputs: [],
+    stateMutability: "payable",
+    type: "function",
+  },
+  {
     anonymous: false,
     inputs: [
       {
@@ -108,29 +131,6 @@ export const factoryABI = [
     inputs: [
       {
         internalType: "address",
-        name: "_receiver",
-        type: "address",
-      },
-      {
-        internalType: "string",
-        name: "_agreementTerms",
-        type: "string",
-      },
-      {
-        internalType: "string",
-        name: "_termsHash_IPFS",
-        type: "string",
-      },
-    ],
-    name: "createAgreement",
-    outputs: [],
-    stateMutability: "payable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "address",
         name: "_client",
         type: "address",
       },
@@ -194,13 +194,18 @@ export const factoryABI = [
 ];
 
 // 2. Địa chỉ của Hợp đồng MẸ sau khi deploy
-export const factoryAddress = "0x3C31221FCD5dCcbe3aD58A63A5630e06cDeC4B9a";
+export const factoryAddress = "0x2eF031b983e977F0FD0De43660e4dD46e51D437F";
 
 // 3. ABI của Hợp đồng CON (EscrowAgreement.sol)
 // (Chúng ta sẽ cần cái này sau để tương tác với các hợp đồng con)
 export const agreementABI = [
   {
     inputs: [
+      {
+        internalType: "address",
+        name: "_client",
+        type: "address",
+      },
       {
         internalType: "address",
         name: "_receiver",
