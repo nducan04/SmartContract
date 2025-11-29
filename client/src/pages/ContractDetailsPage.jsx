@@ -2,13 +2,14 @@ import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { useWeb3 } from "../context/Web3Context";
 import { ethers } from "ethers";
+import axios from "axios";
 
 const ContractDetailsPage = () => {
-  const { id } = useParams(); // Lấy ID từ URL
+  const { id } = useParams();
   const { walletAddress, getAgreementContract } = useWeb3();
 
   const [details, setDetails] = useState(null);
-  const [loading, setLoading] = useState(true); // Mặc định đang tải
+  const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
 
   const stateLabels = [
@@ -28,26 +29,23 @@ const ContractDetailsPage = () => {
     "bg-red-100 text-red-800",
   ];
 
-  // Hàm lấy dữ liệu hợp đồng
+  // LẤY DỮ LIỆU TỪ BLOCKCHAIN
   const fetchDetails = async () => {
-    // 1. Nếu chưa có hàm lấy hợp đồng (Context chưa load xong), dừng lại
     if (!id || !getAgreementContract) return;
 
     try {
       setLoading(true);
       const contract = getAgreementContract(id);
 
-      // 2. QUAN TRỌNG: Nếu chưa kết nối ví, contract sẽ là null -> Dừng lại, không báo lỗi
-      if (!contract) {
-        // console.log("Đang chờ kết nối ví...");
-        return;
-      }
+      if (!contract) return;
 
-      // 3. Gọi dữ liệu từ Blockchain
       const data = await contract.getAgreementDetails();
 
+      // Lấy trạng thái thực tế từ Blockchain
+      const realState = Number(data[0]);
+
       setDetails({
-        state: Number(data[0]),
+        state: realState, // Dùng trạng thái thực
         client: data[1],
         provider: data[2],
         receiver: data[3],
@@ -55,6 +53,10 @@ const ContractDetailsPage = () => {
         terms: data[5],
         termsHash: data[6],
       });
+
+      // 🔥 TÍNH NĂNG MỚI: TỰ ĐỘNG ĐỒNG BỘ 🔥
+      // Mỗi khi load trang, tự động báo cho Backend biết trạng thái mới nhất
+      syncToBackend(realState);
     } catch (error) {
       console.error("Lỗi tải hợp đồng:", error);
     } finally {
@@ -62,21 +64,46 @@ const ContractDetailsPage = () => {
     }
   };
 
-  // Chạy lại khi ID thay đổi HOẶC khi ví thay đổi (kết nối thành công)
   useEffect(() => {
     if (walletAddress) {
       fetchDetails();
     }
   }, [id, walletAddress, getAgreementContract]);
 
-  // === CÁC HÀM TƯƠNG TÁC ===
+  // ĐỒNG BỘ VỀ SERVER
+  const syncToBackend = async (newStatus) => {
+    try {
+      // Chuẩn bị dữ liệu gửi đi
+      const payload = {
+        contractAddress: id,
+        status: newStatus,
+      };
 
+      // Nếu trạng thái là 1 (Accepted), gửi kèm địa chỉ Provider (chính là ví hiện tại)
+      if (newStatus === 1) {
+        payload.provider = walletAddress;
+      }
+
+      await axios.put(
+        "http://localhost:5000/api/contracts/update-status",
+        payload
+      );
+      console.log("✅ Đồng bộ thành công!");
+    } catch (error) {
+      console.error("❌ Lỗi đồng bộ:", error);
+    }
+  };
+
+  // 1. Nhà cung cấp CHẤP NHẬN
   const handleAccept = async () => {
     try {
       setActionLoading(true);
       const contract = getAgreementContract(id);
       const tx = await contract.acceptAgreement();
       await tx.wait();
+
+      await syncToBackend(1);
+
       alert("Đã chấp nhận hợp đồng thành công!");
       fetchDetails();
     } catch (error) {
@@ -87,17 +114,27 @@ const ContractDetailsPage = () => {
     }
   };
 
-  const handleUpdateStatus = async (newStatus) => {
+  // 2. Nhà cung cấp CẬP NHẬT TRẠNG THÁI
+  const handleUpdateStatus = async (newStatusText) => {
     try {
       setActionLoading(true);
       const contract = getAgreementContract(id);
       let tx;
-      if (newStatus === "InProgress")
-        tx = await contract.updateStatusInProgress();
-      if (newStatus === "Completed")
-        tx = await contract.updateStatusCompleted();
+      let statusNumber;
 
-      await tx.wait();
+      if (newStatusText === "InProgress") {
+        tx = await contract.updateStatusInProgress();
+        statusNumber = 2;
+      }
+      if (newStatusText === "Completed") {
+        tx = await contract.updateStatusCompleted();
+        statusNumber = 3;
+      }
+
+      await tx.wait(); // Chờ Blockchain xác nhận
+
+      await syncToBackend(statusNumber); // Đồng bộ DB
+
       alert("Đã cập nhật trạng thái!");
       fetchDetails();
     } catch (error) {
@@ -108,12 +145,16 @@ const ContractDetailsPage = () => {
     }
   };
 
+  // 3. Người nhận XÁC NHẬN & THANH TOÁN
   const handleConfirm = async () => {
     try {
       setActionLoading(true);
       const contract = getAgreementContract(id);
       const tx = await contract.confirmAndPay();
       await tx.wait();
+
+      await syncToBackend(4);
+
       alert("Đã xác nhận và thanh toán tiền cho Nhà cung cấp!");
       fetchDetails();
     } catch (error) {
@@ -139,7 +180,6 @@ const ContractDetailsPage = () => {
         <p className="text-red-500 mb-4">
           Không tìm thấy hợp đồng hoặc chưa kết nối ví!
         </p>
-        {/* Nút hỗ trợ kết nối lại nếu cần */}
         {!walletAddress && (
           <p className="text-gray-500 text-sm">
             Vui lòng kiểm tra nút Ví ở góc phải.
@@ -148,14 +188,14 @@ const ContractDetailsPage = () => {
       </div>
     );
 
-  // Kiểm tra vai trò
-  const isProvider =
-    walletAddress?.toLowerCase() === details.provider?.toLowerCase() ||
-    (details.state === 0 &&
-      walletAddress?.toLowerCase() !== details.client?.toLowerCase());
+  // Kiểm tra vai trò (Dùng .toLowerCase() để so sánh chính xác)
+  const currentWallet = walletAddress?.toLowerCase();
 
-  const isReceiver =
-    walletAddress?.toLowerCase() === details.receiver?.toLowerCase();
+  const isProvider =
+    currentWallet === details.provider?.toLowerCase() ||
+    (details.state === 0 && currentWallet !== details.client?.toLowerCase());
+
+  const isReceiver = currentWallet === details.receiver?.toLowerCase();
 
   return (
     <div className="p-6 max-w-4xl mx-auto">
@@ -233,25 +273,26 @@ const ContractDetailsPage = () => {
         </div>
       </div>
 
-      {/* === KHU VỰC HÀNH ĐỘNG === */}
+      {/* === KHU VỰC HÀNH ĐỘNG (Nút bấm) === */}
       <div className="flex justify-end gap-4">
-        {/* Nhà cung cấp chấp nhận */}
-        {details.state === 0 && walletAddress !== details.client && (
-          <button
-            onClick={handleAccept}
-            disabled={actionLoading}
-            className="px-6 py-3 bg-blue-600 text-white rounded-lg font-bold hover:bg-blue-700 disabled:bg-gray-400"
-          >
-            {actionLoading ? "Đang xử lý..." : "Chấp nhận Hợp đồng này"}
-          </button>
-        )}
+        {/* 1. Nút cho Provider CHẤP NHẬN */}
+        {details.state === 0 &&
+          currentWallet !== details.client?.toLowerCase() && (
+            <button
+              onClick={handleAccept}
+              disabled={actionLoading}
+              className="px-6 py-3 bg-blue-600 text-white rounded-lg font-bold hover:bg-blue-700 disabled:bg-gray-400"
+            >
+              {actionLoading ? "Đang xử lý..." : "Chấp nhận Hợp đồng này"}
+            </button>
+          )}
 
-        {/* Cập nhật trạng thái */}
+        {/* 2. Nút cho Provider CẬP NHẬT TIẾN ĐỘ */}
         {details.state === 1 && isProvider && (
           <button
             onClick={() => handleUpdateStatus("InProgress")}
             disabled={actionLoading}
-            className="px-6 py-3 bg-blue-500 text-white rounded-lg font-bold hover:bg-blue-800 disabled:bg-gray-400 cursor-pointer"
+            className="px-6 py-3 bg-yellow-500 text-white rounded-lg font-bold hover:bg-yellow-600 disabled:bg-gray-400"
           >
             Cập nhật: Đang thực hiện
           </button>
@@ -261,13 +302,13 @@ const ContractDetailsPage = () => {
           <button
             onClick={() => handleUpdateStatus("Completed")}
             disabled={actionLoading}
-            className="px-6 py-3 bg-green-500 text-white rounded-lg font-bold hover:bg-green-700 disabled:bg-gray-400 cursor-pointer"
+            className="px-6 py-3 bg-green-500 text-white rounded-lg font-bold hover:bg-green-600 disabled:bg-gray-400"
           >
             Cập nhật: Đã hoàn thành
           </button>
         )}
 
-        {/* Người nhận xác nhận */}
+        {/* 3. Nút cho Receiver XÁC NHẬN & THANH TOÁN */}
         {details.state === 3 && isReceiver && (
           <button
             onClick={handleConfirm}

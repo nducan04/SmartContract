@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useWeb3 } from "../context/Web3Context";
 import { ethers } from "ethers";
 import { agreementABI } from "../constants";
 import { useNavigate } from "react-router-dom";
+import axios from "axios"; // 1. Import axios
 
 const TrackingPage = () => {
   const { provider, connectWallet, walletAddress } = useWeb3();
@@ -10,6 +11,9 @@ const TrackingPage = () => {
   const [contractData, setContractData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  // State cho danh sách gợi ý
+  const [recentContracts, setRecentContracts] = useState([]);
 
   const navigate = useNavigate();
 
@@ -46,6 +50,24 @@ const TrackingPage = () => {
     },
   ];
 
+  // 2. Fetch danh sách hợp đồng gần đây của user để gợi ý
+  useEffect(() => {
+    const fetchRecents = async () => {
+      if (walletAddress) {
+        try {
+          const response = await axios.get(
+            `http://localhost:5000/api/contracts?wallet=${walletAddress}`
+          );
+          // Lấy 3 hợp đồng mới nhất
+          setRecentContracts(response.data.slice(0, 3));
+        } catch (err) {
+          console.error("Lỗi tải gợi ý:", err);
+        }
+      }
+    };
+    fetchRecents();
+  }, [walletAddress]);
+
   const handleSearch = async (e) => {
     e.preventDefault();
     setError("");
@@ -76,7 +98,7 @@ const TrackingPage = () => {
         amount: ethers.formatEther(data[4]),
         terms: data[5],
         termsHash: data[6],
-        address: searchId, // Lưu lại địa chỉ để dùng
+        address: searchId,
       });
     } catch (err) {
       console.error(err);
@@ -86,7 +108,12 @@ const TrackingPage = () => {
     }
   };
 
-  // 4. Kiểm tra xem người xem có phải là người trong cuộc không
+  // Hàm chọn nhanh từ danh sách gợi ý
+  const selectContract = (id) => {
+    setSearchId(id);
+    // Tự động trigger tìm kiếm luôn nếu muốn (hoặc để user bấm Tra cứu)
+  };
+
   const isParticipant =
     contractData &&
     walletAddress &&
@@ -97,7 +124,6 @@ const TrackingPage = () => {
   return (
     <div className="min-h-[80vh] bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-3xl mx-auto">
-        {/* Header & Search Bar (Giữ nguyên) */}
         <div className="text-center mb-10">
           <h1 className="text-3xl font-bold text-gray-900 mb-4">
             Tra cứu Trạng thái Hợp đồng
@@ -112,8 +138,8 @@ const TrackingPage = () => {
                 type="text"
                 value={searchId}
                 onChange={(e) => setSearchId(e.target.value)}
-                placeholder="Ví dụ: 0x51da..."
-                className="grow px-6 py-4 outline-none text-gray-700"
+                placeholder="Dán ID hợp đồng (0x...)"
+                className="flex-grow px-6 py-4 outline-none text-gray-700"
               />
               <button
                 type="submit"
@@ -137,15 +163,64 @@ const TrackingPage = () => {
           </form>
         </div>
 
-        {/* Kết quả Tra cứu */}
+        {/* === 3. PHẦN GỢI Ý / DANH SÁCH GẦN ĐÂY === */}
+        {!contractData && (
+          <div className="mt-12">
+            {walletAddress && recentContracts.length > 0 ? (
+              <div>
+                <h3 className="text-lg font-semibold text-gray-700 mb-4 text-center">
+                  Hợp đồng gần đây của bạn
+                </h3>
+                <div className="grid gap-4">
+                  {recentContracts.map((contract) => (
+                    <div
+                      key={contract._id}
+                      onClick={() => selectContract(contract.contractAddress)}
+                      className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm hover:shadow-md hover:border-blue-300 cursor-pointer transition-all flex justify-between items-center group"
+                    >
+                      <div>
+                        <p className="font-bold text-gray-800 group-hover:text-blue-600 transition-colors">
+                          {contract.terms}
+                        </p>
+                        <p className="text-xs text-gray-400 font-mono mt-1">
+                          {contract.contractAddress}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-4">
+                        <span
+                          className={`px-3 py-1 rounded-full text-xs font-bold ${
+                            stateMap[contract.status]?.color || "bg-gray-100"
+                          }`}
+                        >
+                          {stateMap[contract.status]?.text || "Không rõ"}
+                        </span>
+                        <i className="uil uil-angle-right text-xl text-gray-400 group-hover:translate-x-1 transition-transform"></i>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              // Nếu chưa kết nối hoặc chưa có hợp đồng: Hiện hướng dẫn
+              <div className="text-center text-gray-400 mt-16">
+                <i className="uil uil-box text-6xl mb-4 block opacity-20"></i>
+                <p>Kết nối ví để xem danh sách hợp đồng của bạn</p>
+                <p className="text-sm mt-2">
+                  Hoặc nhập ID bất kỳ để tra cứu công khai
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Kết quả Tra cứu (Giữ nguyên) */}
         {contractData && (
-          <div className="bg-white shadow-xl rounded-2xl overflow-hidden border border-gray-100 animation-fade-in">
-            {/* 5. PHẦN MỚI: NÚT ĐI TỚI TRANG QUẢN LÝ */}
+          <div className="bg-white shadow-xl rounded-2xl overflow-hidden border border-gray-100 animation-fade-in mt-8">
             {isParticipant && (
               <div className="bg-indigo-50 px-8 py-4 border-b border-indigo-100 flex justify-between items-center">
                 <span className="text-indigo-700 font-medium flex items-center gap-2">
                   <i className="uil uil-user-circle text-xl"></i>
-                  Bạn Là Một Bên Tham Gia Hợp Đồng Này
+                  Bạn là một bên tham gia
                 </span>
                 <button
                   onClick={() =>
@@ -153,15 +228,12 @@ const TrackingPage = () => {
                   }
                   className="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-indigo-700 transition-all shadow-md hover:shadow-lg"
                 >
-                  Quản lý & Thao tác{" "}
-                  <i className="uil uil-arrow-right ml-1"></i>
+                  Quản lý <i className="uil uil-arrow-right ml-1"></i>
                 </button>
               </div>
             )}
-            {/* --------------------------------------- */}
 
             <div className="bg-gray-50 px-8 py-6 border-b border-gray-200 flex flex-col sm:flex-row justify-between items-center gap-4">
-              {/* ... (Giữ nguyên phần hiển thị trạng thái và giá trị) ... */}
               <div>
                 <p className="text-sm text-gray-500 uppercase font-bold tracking-wide">
                   Trạng thái hiện tại
@@ -190,7 +262,6 @@ const TrackingPage = () => {
             </div>
 
             <div className="px-8 py-8 space-y-6">
-              {/* ... (Giữ nguyên phần Nội dung hợp đồng) ... */}
               <div>
                 <h3 className="text-gray-900 font-bold text-lg mb-2">
                   Nội dung Hợp đồng
@@ -200,9 +271,8 @@ const TrackingPage = () => {
                 </p>
               </div>
 
-              {/* ... (Giữ nguyên phần Grid User) ... */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="p-4 border rounded-xl text-center hover:border-blue-200 transition-colors">
+                <div className="p-4 border rounded-xl text-center">
                   <div className="w-10 h-10 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-3">
                     <i className="uil uil-user"></i>
                   </div>
@@ -213,7 +283,7 @@ const TrackingPage = () => {
                     {contractData.client}
                   </p>
                 </div>
-                <div className="p-4 border rounded-xl text-center hover:border-green-200 transition-colors">
+                <div className="p-4 border rounded-xl text-center">
                   <div className="w-10 h-10 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-3">
                     <i className="uil uil-truck"></i>
                   </div>
@@ -227,7 +297,7 @@ const TrackingPage = () => {
                       : contractData.provider}
                   </p>
                 </div>
-                <div className="p-4 border rounded-xl text-center hover:border-purple-200 transition-colors">
+                <div className="p-4 border rounded-xl text-center">
                   <div className="w-10 h-10 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center mx-auto mb-3">
                     <i className="uil uil-home"></i>
                   </div>
@@ -240,7 +310,6 @@ const TrackingPage = () => {
                 </div>
               </div>
 
-              {/* ... (Giữ nguyên Link IPFS) ... */}
               <div className="pt-4 border-t border-gray-100 flex justify-center">
                 <a
                   href={`https://gateway.pinata.cloud/ipfs/${contractData.termsHash}`}

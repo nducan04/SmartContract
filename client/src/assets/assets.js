@@ -89,6 +89,12 @@ export const ownerMenuLinks = [
     coloredIcon: statusUpdate,
   },
   {
+    name: "Sàn Hợp Đồng",
+    path: "/dashboard/marketplace",
+    icon: search_icon, // Hoặc icon nào bạn thích
+    coloredIcon: search_icon,
+  },
+  {
     name: "Tạo Hợp đồng mới",
     path: "/dashboard/create",
     icon: contractSetup,

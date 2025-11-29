@@ -27,3 +27,65 @@ export const getMyContracts = async (req, res) => {
     res.status(500).json({ message: "Lỗi Server" });
   }
 };
+
+export const updateStatus = async (req, res) => {
+  try {
+    // Lấy thêm 'provider' từ request body
+    const { contractAddress, status, provider } = req.body;
+
+    if (!contractAddress || status === undefined) {
+      return res.status(400).json({ message: "Thiếu thông tin cần thiết" });
+    }
+
+    // Tạo object chứa dữ liệu cần update
+    let updateData = { status: status };
+
+    // Nếu có gửi kèm provider (thường là lúc bấm Chấp nhận), thì update luôn vào DB
+    // Quan trọng: Chuyển về chữ thường (toLowerCase) để đồng bộ với Schema
+    if (provider) {
+      updateData.provider = provider.toLowerCase();
+    }
+
+    // Tìm và cập nhật
+    const updatedContract = await Contract.findOneAndUpdate(
+      { contractAddress: contractAddress }, // Tìm theo địa chỉ hợp đồng
+      updateData, // Cập nhật object dữ liệu mới
+      { new: true } // Trả về dữ liệu mới sau khi update
+    );
+
+    if (!updatedContract) {
+      return res
+        .status(404)
+        .json({ message: "Không tìm thấy hợp đồng trong DB" });
+    }
+
+    console.log(
+      `🔄 Đã cập nhật hợp đồng ${contractAddress}: Status=${status} ${
+        provider ? `, Provider=${provider}` : ""
+      }`
+    );
+
+    res
+      .status(200)
+      .json({ message: "Cập nhật thành công", contract: updatedContract });
+  } catch (error) {
+    console.error("Lỗi cập nhật trạng thái:", error);
+    res.status(500).json({ message: "Lỗi Server" });
+  }
+};
+
+// Theo Dõi Hợp Đồng
+export const getAvailableContracts = async (req, res) => {
+  try {
+    // Tìm tất cả hợp đồng có status = 0 (Mới tạo)
+    // Sắp xếp mới nhất lên đầu
+    const contracts = await Contract.find({ status: 0 }).sort({
+      createdAt: -1,
+    });
+
+    res.status(200).json(contracts);
+  } catch (error) {
+    console.error("Lỗi lấy danh sách sẵn có:", error);
+    res.status(500).json({ message: "Lỗi Server" });
+  }
+};

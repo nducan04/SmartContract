@@ -10,6 +10,7 @@ import CreateContractPage from "./pages/CreateContractPage";
 import ContractDetailsPage from "./pages/ContractDetailsPage";
 import TrackingPage from "./pages/TrackingPage";
 import NotFound from "./pages/NotFound";
+import MarketplacePage from "./pages/MarketplacePage";
 
 const App = () => {
   const location = useLocation();
@@ -32,6 +33,8 @@ const App = () => {
             <Route path="create" element={<CreateContractPage />} />
 
             <Route path="contract/:id" element={<ContractDetailsPage />} />
+
+            <Route path="marketplace" element={<MarketplacePage />} />
           </Route>
 
           <Route path="*" element={<NotFound />} />
