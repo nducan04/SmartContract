@@ -1,64 +1,62 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useWeb3 } from "../context/Web3Context";
 import axios from "axios";
 
+import StatsCard from "../components/StatsCard";
+import ContractStepper from "../components/ContractStepper";
+import AddressDisplay from "../components/AddressDisplay";
+import ContractStatusChart from "../components/ContractStatusChart";
+
 const DashboardOverview = () => {
   const { walletAddress } = useWeb3();
+  const navigate = useNavigate();
 
-  // State lưu thống kê
   const [stats, setStats] = useState({
     client: 0,
     provider: 0,
     receiver: 0,
+    totalContracts: 0,
   });
+  const [recentList, setRecentList] = useState([]);
+  const [allContracts, setAllContracts] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchStats = async () => {
-      // Nếu chưa kết nối ví thì không làm gì cả
+    const fetchData = async () => {
       if (!walletAddress) return;
 
       try {
         setLoading(true);
-
-        // 1. Gọi API lấy toàn bộ hợp đồng có liên quan đến ví này
-        // Lưu ý: Đảm bảo Server (Backend) đang chạy ở port 5000
         const response = await axios.get(
           `http://localhost:5000/api/contracts?wallet=${walletAddress}`
         );
         const contracts = response.data;
 
-        // 2. Tính toán số lượng CHÍNH XÁC theo trạng thái và vai trò
+        setAllContracts(contracts); // <--- 3. Lưu dữ liệu vào state
+
         const currentWallet = walletAddress.toLowerCase();
-
-        // --- LOGIC ĐẾM ---
-
-        // A. Client (Người tạo): Đếm tất cả hợp đồng mình đã tạo (bất kể trạng thái)
         const clientCount = contracts.filter(
           (c) => c.client === currentWallet
         ).length;
-
-        // B. Provider (Nhà vận chuyển): Chỉ đếm những hợp đồng ĐÃ CHẤP NHẬN trở đi
-        // (Status >= 1: Đã chấp nhận, Đang làm, Xong, Đã trả...)
-        // Bỏ qua Status 0 (Mới tạo) vì lúc đó chưa ai nhận
         const providerCount = contracts.filter(
           (c) => c.provider === currentWallet && c.status >= 1
         ).length;
-
-        // C. Receiver (Người nhận): Chỉ đếm những hợp đồng ĐANG CHỜ XÁC NHẬN
-        // (Status == 3: Đã hoàn thành công việc -> Chờ trả tiền)
-        // Nếu đã trả tiền (Status 4) thì không đếm vào đây nữa (để nhắc nhở người dùng việc cần làm)
         const receiverCount = contracts.filter(
           (c) => c.receiver === currentWallet && c.status === 3
         ).length;
 
-        // 3. Cập nhật State
         setStats({
           client: clientCount,
           provider: providerCount,
           receiver: receiverCount,
+          totalContracts: contracts.length,
         });
+
+        const sorted = [...contracts].sort(
+          (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+        );
+        setRecentList(sorted.slice(0, 2));
       } catch (error) {
         console.error("Lỗi tải thống kê:", error);
       } finally {
@@ -66,129 +64,142 @@ const DashboardOverview = () => {
       }
     };
 
-    fetchStats();
-  }, [walletAddress]); // Chạy lại khi địa chỉ ví thay đổi
-
-  // Dữ liệu hiển thị cho các thẻ
-  const statsData = {
-    client: {
-      count: stats.client,
-      label: "Hợp đồng bạn đã tạo",
-      link: "/dashboard/contracts?role=client",
-      color: "bg-blue-100 text-blue-600",
-      icon: "uil-file-plus-alt",
-    },
-    provider: {
-      count: stats.provider,
-      label: "Hợp đồng bạn đã chấp nhận",
-      link: "/dashboard/contracts?role=provider",
-      color: "bg-green-100 text-green-600",
-      icon: "uil-truck",
-    },
-    receiver: {
-      count: stats.receiver,
-      label: "Hợp đồng chờ bạn xác nhận",
-      link: "/dashboard/contracts?role=receiver",
-      color: "bg-yellow-100 text-yellow-600",
-      icon: "uil-check-circle",
-    },
-  };
+    fetchData();
+  }, [walletAddress]);
 
   return (
-    <div className="p-4">
-      {/* === Tiêu đề Chào mừng === */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Chào mừng trở lại!</h1>
-        <p className="text-gray-600 mt-1">
-          Đây là tổng quan về các hoạt động hợp đồng của bạn.
-        </p>
-      </div>
-
-      {/* === Lưới Thẻ Thống kê === */}
-      {loading ? (
-        <div className="text-center py-10">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="text-gray-500 mt-2">Đang tải số liệu...</p>
+    <div className="p-2 space-y-8">
+      {/* HEADER */}
+      <div className="flex flex-col md:flex-row justify-between items-end md:items-center gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-800">
+            Tổng quan Hệ thống
+          </h1>
+          <p className="text-gray-500 text-sm mt-1">
+            Theo dõi hiệu suất chuỗi cung ứng của bạn
+          </p>
         </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Thẻ Client */}
-          <Link
-            to={statsData.client.link}
-            className="block p-6 bg-white rounded-lg shadow-lg border border-gray-100 hover:shadow-xl transition-all"
-          >
-            <div className="flex items-center space-x-4">
-              <div className={`p-3 rounded-full ${statsData.client.color}`}>
-                <i className={`uil ${statsData.client.icon} text-2xl`}></i>
-              </div>
-              <div>
-                <p className="text-3xl font-bold text-gray-900">
-                  {statsData.client.count}
-                </p>
-                <p className="text-sm font-medium text-gray-500">
-                  {statsData.client.label}
-                </p>
-              </div>
-            </div>
-          </Link>
-
-          {/* Thẻ Provider */}
-          <Link
-            to={statsData.provider.link}
-            className="block p-6 bg-white rounded-lg shadow-lg border border-gray-100 hover:shadow-xl transition-all"
-          >
-            <div className="flex items-center space-x-4">
-              <div className={`p-3 rounded-full ${statsData.provider.color}`}>
-                <i className={`uil ${statsData.provider.icon} text-2xl`}></i>
-              </div>
-              <div>
-                <p className="text-3xl font-bold text-gray-900">
-                  {statsData.provider.count}
-                </p>
-                <p className="text-sm font-medium text-gray-500">
-                  {statsData.provider.label}
-                </p>
-              </div>
-            </div>
-          </Link>
-
-          {/* Thẻ Receiver */}
-          <Link
-            to={statsData.receiver.link}
-            className="block p-6 bg-white rounded-lg shadow-lg border border-gray-100 hover:shadow-xl transition-all"
-          >
-            <div className="flex items-center space-x-4">
-              <div className={`p-3 rounded-full ${statsData.receiver.color}`}>
-                <i className={`uil ${statsData.receiver.icon} text-2xl`}></i>
-              </div>
-              <div>
-                <p className="text-3xl font-bold text-gray-900">
-                  {statsData.receiver.count}
-                </p>
-                <p className="text-sm font-medium text-gray-500">
-                  {statsData.receiver.label}
-                </p>
-              </div>
-            </div>
-          </Link>
-        </div>
-      )}
-
-      {/* === Nút "Tạo Hợp đồng" (Call to Action) === */}
-      <div className="mt-12 p-6 bg-gray-50 rounded-lg text-center border border-gray-200">
-        <h2 className="text-xl font-semibold text-gray-900">
-          Bạn có hợp đồng mới?
-        </h2>
-        <p className="text-gray-600 mt-2 mb-4">
-          Bắt đầu một thỏa thuận mới an toàn và minh bạch ngay hôm nay.
-        </p>
         <Link
           to="/dashboard/create"
-          className="inline-block px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 transition-all"
+          className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-semibold shadow-lg shadow-blue-200 transition-all flex items-center gap-2 transform hover:-translate-y-1"
         >
-          Tạo Hợp đồng mới
+          <i className="uil uil-plus"></i> Tạo Hợp đồng
         </Link>
       </div>
+
+      {loading ? (
+        <div className="h-64 flex items-center justify-center">
+          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600"></div>
+        </div>
+      ) : (
+        <>
+          {/* PHẦN 1: THẺ THỐNG KÊ */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 auto-rows-fr">
+            <div
+              onClick={() => navigate("/dashboard/contracts?role=client")}
+              className="cursor-pointer h-full"
+            >
+              <StatsCard
+                title="Đơn hàng đã tạo"
+                value={stats.client}
+                icon="uil-file-plus-alt"
+                color="blue"
+              />
+            </div>
+            <div
+              onClick={() => navigate("/dashboard/contracts?role=provider")}
+              className="cursor-pointer h-full"
+            >
+              <StatsCard
+                title="Đơn hàng nhận vận chuyển"
+                value={stats.provider}
+                icon="uil-truck"
+                color="green"
+              />
+            </div>
+            <div
+              onClick={() => navigate("/dashboard/contracts?role=receiver")}
+              className="cursor-pointer h-full"
+            >
+              <StatsCard
+                title="Chờ xác nhận"
+                value={stats.receiver}
+                icon="uil-bell"
+                color="orange"
+              />
+            </div>
+            <div className="cursor-default h-full">
+              <StatsCard
+                title="Tổng hoạt động"
+                value={stats.totalContracts}
+                icon="uil-analytics"
+                color="purple"
+              />
+            </div>
+          </div>
+
+          {/* PHẦN 2: CHART & TIẾN ĐỘ */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Cột trái: TIẾN ĐỘ GẦN ĐÂY (2/3 chiều rộng) */}
+            <div className="lg:col-span-2 space-y-6">
+              <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+                <i className="uil uil-clock-three text-blue-500"></i> Hoạt động
+                gần đây
+              </h3>
+
+              {recentList.length > 0 ? (
+                recentList.map((contract) => (
+                  <div
+                    key={contract._id}
+                    className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:border-blue-200 transition-colors"
+                  >
+                    <div className="flex justify-between items-start mb-4">
+                      <div>
+                        <h4 className="font-bold text-gray-800 text-lg">
+                          {contract.terms}
+                        </h4>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className="text-xs text-gray-400">ID:</span>
+                          <AddressDisplay address={contract.contractAddress} />
+                        </div>
+                      </div>
+                      <span className="bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-xs font-bold">
+                        {contract.amount} ETH
+                      </span>
+                    </div>
+
+                    <ContractStepper currentStatus={contract.status} />
+
+                    <div className="mt-4 text-right">
+                      <button
+                        onClick={() =>
+                          navigate(
+                            `/dashboard/contract/${contract.contractAddress}`
+                          )
+                        }
+                        className="text-sm text-blue-600 font-semibold hover:text-blue-800 hover:underline"
+                      >
+                        Xem chi tiết &rarr;
+                      </button>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="bg-white p-8 rounded-2xl text-center border border-dashed border-gray-300">
+                  <p className="text-gray-400">
+                    Chưa có hoạt động nào gần đây.
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* Cột phải: BIỂU ĐỒ TRÒN (1/3 chiều rộng) - THAY CHO BANNER CŨ */}
+            <div className="lg:col-span-1 h-full">
+              <ContractStatusChart contracts={allContracts} />
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 };

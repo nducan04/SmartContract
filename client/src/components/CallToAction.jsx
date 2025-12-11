@@ -14,7 +14,7 @@ const CallToAction = () => {
       <div className="container mx-auto px-6 lg:px-24 py-20 lg:py-24">
         <div className="flex flex-col items-center text-center">
           <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-6">
-            Sẵn sàng để Minh bạch hóa Quy trình của bạn?
+            Sẵn sàng để minh bạch hóa quy trình của bạn?
           </h2>
 
           <p className="text-lg text-gray-600 opacity-90 max-w-2xl mb-8">

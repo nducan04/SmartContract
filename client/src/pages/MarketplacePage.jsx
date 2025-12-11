@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useWeb3 } from "../context/Web3Context";
+import AddressDisplay from "../components/AddressDisplay";
 
 const MarketplacePage = () => {
   const { walletAddress } = useWeb3();
   const [contracts, setContracts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState("newest"); // newest, high-price
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchAvailableContracts = async () => {
@@ -15,7 +18,15 @@ const MarketplacePage = () => {
         const response = await axios.get(
           "http://localhost:5000/api/contracts/available"
         );
-        setContracts(response.data);
+        let data = response.data;
+
+        if (filter === "newest") {
+          data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        } else if (filter === "high-price") {
+          data.sort((a, b) => Number(b.amount) - Number(a.amount));
+        }
+
+        setContracts(data);
       } catch (error) {
         console.error("Lỗi tải sàn hợp đồng:", error);
       } finally {
@@ -24,104 +35,153 @@ const MarketplacePage = () => {
     };
 
     fetchAvailableContracts();
-  }, []);
+  }, [filter]);
 
   return (
-    <div className="p-4">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">
-          Sàn Hợp Đồng (Tìm Việc)
-        </h1>
-        <p className="text-gray-600 mt-2">
-          Danh sách các đơn hàng đang chờ Nhà vận chuyển.
-        </p>
-      </div>
-
-      {loading ? (
-        <div className="text-center py-10">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="text-gray-500 mt-2">Đang tải danh sách...</p>
-        </div>
-      ) : contracts.length === 0 ? (
-        <div className="text-center py-10 bg-gray-50 rounded-lg border border-dashed border-gray-300">
-          <p className="text-gray-500">
-            Hiện tại không có hợp đồng nào cần vận chuyển.
+    <div className="p-2">
+      {/* HEADER + FILTER */}
+      <div className="flex flex-col md:flex-row justify-between items-end md:items-center mb-6 gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
+            <i className="uil uil-briefcase-alt text-blue-600"></i> Sàn Hợp Đồng
+          </h1>
+          <p className="text-gray-500 text-sm mt-1">
+            Danh sách các đơn hàng đang chờ Nhà vận chuyển.
           </p>
         </div>
-      ) : (
-        <div className="grid grid-cols-1 gap-6">
-          {contracts.map((contract) => {
-            const currentWallet = walletAddress
-              ? walletAddress.toLowerCase()
-              : "";
 
-            // 1. Kiểm tra Client (Người tạo)
-            const isClient = currentWallet === contract.client.toLowerCase();
-
-            // 2. Kiểm tra Receiver (Người nhận) - LOGIC MỚI THÊM
-            const isReceiver =
-              currentWallet === contract.receiver.toLowerCase();
-
-            return (
-              <div
-                key={contract._id}
-                className="bg-white p-6 rounded-lg shadow-md border border-gray-100 hover:shadow-lg transition-all flex flex-col md:flex-row justify-between items-start md:items-center gap-4"
-              >
-                <div className="grow">
-                  <div className="flex items-center gap-3 mb-2">
-                    <span className="bg-blue-100 text-blue-800 text-xs font-bold px-2 py-1 rounded-full uppercase">
-                      Mới tạo
-                    </span>
-                    <span className="text-gray-400 text-xs font-mono">
-                      ID: {contract.contractAddress.substring(0, 8)}...
-                    </span>
-                  </div>
-                  <h3 className="text-lg font-bold text-gray-900">
-                    {contract.terms}
-                  </h3>
-                  <div className="text-sm text-gray-500 mt-1 flex flex-col sm:flex-row gap-2 sm:gap-6">
-                    <span>
-                      <i className="uil uil-user mr-1"></i> Khách hàng:{" "}
-                      {contract.client.substring(0, 6)}...
-                    </span>
-                    <span>
-                      <i className="uil uil-map-marker mr-1"></i> Người nhận:{" "}
-                      {contract.receiver.substring(0, 6)}...
-                    </span>
-                  </div>
-                </div>
-
-                <div className="flex flex-col items-end gap-3 min-w-[200px]">
-                  <span className="text-2xl font-bold text-blue-600">
-                    {contract.amount} ETH
-                  </span>
-
-                  {/* LOGIC HIỂN THỊ NÚT */}
-                  {isClient ? (
-                    <span className="text-gray-400 text-sm font-medium italic border border-gray-200 px-4 py-2 rounded-lg bg-gray-50 w-full text-center">
-                      (Hợp đồng của bạn)
-                    </span>
-                  ) : isReceiver ? (
-                    // Hiển thị thông báo cho Người nhận
-                    <span className="text-purple-600 text-sm font-medium border border-purple-200 px-4 py-2 rounded-lg bg-purple-50 w-full text-center">
-                      <i className="uil uil-user-check mr-1"></i> Bạn là người
-                      nhận
-                    </span>
-                  ) : (
-                    // Chỉ hiện nút nhận việc cho người thứ 3 (Provider tiềm năng)
-                    <Link
-                      to={`/dashboard/contract/${contract.contractAddress}`}
-                      className="bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700 transition-colors w-full text-center shadow-sm"
-                    >
-                      Xem & Nhận việc
-                    </Link>
-                  )}
-                </div>
-              </div>
-            );
-          })}
+        <div className="flex bg-gray-100 p-1 rounded-xl">
+          <button
+            onClick={() => setFilter("newest")}
+            className={`px-4 py-2 text-sm font-medium rounded-lg transition-all cursor-pointer ${
+              filter === "newest"
+                ? "bg-white text-blue-600 shadow-sm"
+                : "text-gray-500 hover:text-gray-700"
+            }`}
+          >
+            Mới nhất
+          </button>
+          <button
+            onClick={() => setFilter("high-price")}
+            className={`px-4 py-2 text-sm font-medium rounded-lg transition-all cursor-pointer ${
+              filter === "high-price"
+                ? "bg-white text-blue-600 shadow-sm"
+                : "text-gray-500 hover:text-gray-700"
+            }`}
+          >
+            Giá cao nhất
+          </button>
         </div>
-      )}
+      </div>
+
+      {/* TABLE CONTENT */}
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+        {loading ? (
+          <div className="text-center py-20">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+          </div>
+        ) : contracts.length === 0 ? (
+          <div className="text-center py-16 text-gray-400">
+            <i className="uil uil-box text-4xl mb-2"></i>
+            <p>Hiện tại chưa có đơn hàng nào.</p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-gray-50 border-b border-gray-200 text-xs uppercase text-gray-500 font-bold tracking-wider">
+                  <th className="px-6 py-4">Nội dung đơn hàng</th>
+                  <th className="px-6 py-4">Khách hàng (Client)</th>
+                  <th className="px-6 py-4">Nơi nhận (Receiver)</th>
+                  <th className="px-6 py-4">Thù lao</th>
+                  <th className="px-6 py-4 text-center">Hành động</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {contracts.map((contract) => {
+                  const currentWallet = walletAddress
+                    ? walletAddress.toLowerCase()
+                    : "";
+                  const isClient =
+                    currentWallet === contract.client.toLowerCase();
+                  const isReceiver =
+                    currentWallet === contract.receiver.toLowerCase();
+
+                  return (
+                    <tr
+                      key={contract._id}
+                      className="hover:bg-blue-50/50 transition-colors group"
+                    >
+                      <td className="px-6 py-4 max-w-xs">
+                        <p
+                          className="text-sm font-bold text-gray-800 truncate mb-2"
+                          title={contract.terms}
+                        >
+                          {contract.terms}
+                        </p>
+
+                        <div className="flex items-center gap-2">
+                          <span className="shrink-0 text-[10px] bg-green-100 text-green-700 px-2 py-0.5 rounded font-bold border border-green-200 uppercase tracking-wide">
+                            Mới
+                          </span>
+
+                          <span className="text-xs text-gray-400 font-medium ml-1">
+                            ID:
+                          </span>
+
+                          <div className="-ml-1">
+                            <AddressDisplay
+                              address={contract.contractAddress}
+                            />
+                          </div>
+                        </div>
+                      </td>
+
+                      <td className="px-6 py-4">
+                        <AddressDisplay address={contract.client} />
+                      </td>
+
+                      <td className="px-6 py-4">
+                        <AddressDisplay address={contract.receiver} />
+                      </td>
+
+                      <td className="px-6 py-4">
+                        <span className="text-lg font-bold text-blue-600 bg-blue-50 px-3 py-1 rounded-lg">
+                          {contract.amount} <span className="text-xs">ETH</span>
+                        </span>
+                      </td>
+
+                      <td className="px-6 py-4 text-center">
+                        {isClient ? (
+                          <span className="text-xs font-bold text-gray-400 bg-gray-100 px-3 py-1.5 rounded-lg cursor-not-allowed">
+                            Hợp đồng của bạn
+                          </span>
+                        ) : isReceiver ? (
+                          <span className="text-xs font-bold text-purple-600 bg-purple-50 px-3 py-1.5 rounded-lg border border-purple-100">
+                            Bạn là người nhận
+                          </span>
+                        ) : (
+                          <button
+                            onClick={() =>
+                              navigate(
+                                `/dashboard/contract/${contract.contractAddress}`
+                              )
+                            }
+                            className="bg-blue-600 text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-blue-700 hover:shadow-lg 
+                            hover:shadow-blue-200 transition-all transform active:scale-95 cursor-pointer"
+                          >
+                            Nhận việc ngay
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

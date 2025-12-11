@@ -5,62 +5,81 @@ import { assets } from "../assets/assets";
 const Hero = () => {
   const navigate = useNavigate();
 
-  // điều hướng người dùng đến trang tạo hợp đồng
-  // (hoặc kích hoạt modal kết nối ví, tùy logic sau này)
-  const handleStart = () => {
-    navigate("/dashboard");
-  };
-
   return (
-    <section className="relative bg-linear-to-r from-blue-300 to-blue-400 text-white overflow-hidden">
-      <div className="absolute inset-0 opacity-10">
-        <svg
-          viewBox="0 0 1440 560"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            d="M0 480C240 360 480 240 720 360C960 480 1200 600 1440 480V560H0V480Z"
-            fill="white"
-          />
-        </svg>
-      </div>
+    <section className="relative bg-white overflow-hidden pt-10 pb-20 lg:pt-20 lg:pb-32">
+      {/* Background Decor */}
+      <div className="absolute top-0 right-0 -z-10 w-[800px] h-[800px] bg-blue-50 rounded-full blur-3xl opacity-50 translate-x-1/2 -translate-y-1/4"></div>
+      <div className="absolute bottom-0 left-0 -z-10 w-[600px] h-[600px] bg-purple-50 rounded-full blur-3xl opacity-50 -translate-x-1/2 translate-y-1/4"></div>
 
-      <div className="container mx-auto px-6 lg:px-24 py-20 lg:py-32 relative z-10">
-        <div className="flex flex-col lg:flex-row items-center justify-between gap-12">
-          <div className="lg:w-1/2 text-center lg:text-left">
-            <h1 className='className="text-4xl lg:text-5xl font-bold leading-tight mb-6'>
-              Quản Lý Hợp Đồng Thông Minh
+      <div className="container mx-auto px-6 lg:px-24">
+        <div className="flex flex-col lg:flex-row items-center gap-16">
+          {/* Content Bên Trái */}
+          <div className="lg:w-1/2 text-center lg:text-left z-10">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-50 border border-blue-100 text-blue-600 text-xs font-bold uppercase tracking-wider mb-6 animate-fade-in-up">
+              <span className="w-2 h-2 rounded-full bg-blue-600 animate-pulse"></span>
+              Công nghệ Blockchain 4.0
+            </div>
+
+            <h1 className="text-5xl lg:text-6xl font-extrabold text-gray-900 leading-[1.1] mb-6 tracking-tight">
+              Quản Lý Hợp Đồng <br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">
+                Minh Bạch & Tự Động
+              </span>
             </h1>
-            <p className="text-lg lg:text-xl text-blue-100 opacity-90 mb-8">
-              Nền tảng ứng dụng Blockchain đảm bảo tính minh bạch, tự động hóa
-              thanh toán và bảo mật tuyệt đối cho mọi thỏa thuận.
+
+            <p className="text-lg text-gray-600 mb-8 leading-relaxed max-w-xl mx-auto lg:mx-0">
+              Giải pháp tối ưu cho chuỗi cung ứng logistics. Loại bỏ trung gian,
+              giảm thiểu rủi ro và tự động hóa thanh toán với Smart Contract an
+              toàn tuyệt đối.
             </p>
 
-            <div className="flex justify-center lg:justify-start gap-4">
+            <div className="flex flex-col sm:flex-row justify-center lg:justify-start gap-4">
               <button
-                onClick={handleStart}
-                className="px-8 py-3 bg-white text-blue-700 font-semibold rounded-full shadow-lg 
-              hover:bg-gray-100 transition-all transform hover:scale-105"
+                onClick={() => navigate("/dashboard")}
+                className="px-8 py-4 bg-blue-600 text-white font-bold rounded-xl shadow-lg shadow-blue-200 hover:bg-blue-700 hover:scale-105 
+                transition-all flex items-center justify-center gap-2 cursor-pointer"
               >
-                Bắt đầu ngay
+                <i className="uil uil-rocket"></i> Bắt đầu ngay
               </button>
               <a
-                href="#benefits"
-                className="px-8 py-3 bg-blue-500 text-white font-semibold rounded-full 
-                border border-blue-400 hover:bg-blue-400 transition-all"
+                href="#how-it-works"
+                className="px-8 py-4 bg-white text-gray-700 font-bold rounded-xl border border-gray-200 hover:border-gray-300 hover:bg-gray-50 
+                transition-all flex items-center justify-center gap-2"
               >
-                Tìm hiểu thêm
+                <i className="uil uil-play-circle"></i> Xem quy trình
               </a>
+            </div>
+
+            {/* Stats nhỏ */}
+            <div className="mt-10 flex items-center justify-center lg:justify-start gap-8 pt-8 border-t border-gray-100">
+              <div>
+                <p className="text-3xl font-bold text-gray-900">100%</p>
+                <p className="text-sm text-gray-500 font-medium">Bảo mật</p>
+              </div>
+              <div className="w-px h-10 bg-gray-200"></div>
+              <div>
+                <p className="text-3xl font-bold text-gray-900">0s</p>
+                <p className="text-sm text-gray-500 font-medium">
+                  Độ trễ thanh toán
+                </p>
+              </div>
             </div>
           </div>
 
-          <div className="lg:w-1/2 flex justify-center">
-            <img
-              src={assets.characterImg}
-              alt="Logistics Blockchain"
-              className="w-full max-w-md lg:max-w-lg"
-            />
+          {/* Hình ảnh Bên Phải */}
+          <div className="lg:w-1/2 relative">
+            <div className="relative z-10 animate-float">
+              {" "}
+              {/* Hiệu ứng bay nhẹ */}
+              <img
+                src={assets.hero_img || assets.characterImg} // Ưu tiên ảnh Hero nếu có
+                alt="Blockchain Dashboard"
+                className="w-full max-w-lg mx-auto drop-shadow-2xl"
+              />
+            </div>
+
+            {/* Vòng tròn trang trí sau lưng ảnh */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-gradient-to-tr from-blue-100 to-purple-100 rounded-full opacity-60 blur-2xl -z-10"></div>
           </div>
         </div>
       </div>

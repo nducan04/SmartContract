@@ -4,6 +4,7 @@ import { ethers } from "ethers";
 import { agreementABI } from "../constants";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import AddressDisplay from "../components/AddressDisplay";
 
 const TrackingPage = () => {
   const { provider, connectWallet, walletAddress } = useWeb3();
@@ -51,16 +52,14 @@ const TrackingPage = () => {
     },
   ];
 
-  // 1. Lấy danh sách hợp đồng gần đây từ Backend (MongoDB)
+  // 1. Lấy danh sách hợp đồng gần đây từ Backend
   useEffect(() => {
     const fetchRecents = async () => {
       if (walletAddress) {
         try {
-          // Gọi API Backend
           const response = await axios.get(
             `http://localhost:5000/api/contracts?wallet=${walletAddress}`
           );
-          // Lấy 3 cái đầu tiên (mới nhất)
           setRecentContracts(response.data.slice(0, 3));
         } catch (err) {
           console.error("Lỗi tải gợi ý:", err);
@@ -90,7 +89,6 @@ const TrackingPage = () => {
     setLoading(true);
 
     try {
-      // Kết nối Hợp đồng Con (Read-only)
       const contract = new ethers.Contract(searchId, agreementABI, provider);
       const data = await contract.getAgreementDetails();
 
@@ -112,13 +110,10 @@ const TrackingPage = () => {
     }
   };
 
-  // 3. Hàm xử lý khi click vào Hợp đồng gần đây
   const handleRecentClick = (contractAddress) => {
-    // Chuyển hướng thẳng vào trang Dashboard chi tiết để quản lý
     navigate(`/dashboard/contract/${contractAddress}`);
   };
 
-  // Kiểm tra xem người đang xem có phải là người trong cuộc không
   const isParticipant =
     contractData &&
     walletAddress &&
@@ -169,7 +164,7 @@ const TrackingPage = () => {
           </form>
         </div>
 
-        {/* === PHẦN DANH SÁCH GỢI Ý (NẾU CHƯA TRA CỨU) === */}
+        {/* === PHẦN DANH SÁCH GỢI Ý === */}
         {!contractData && (
           <div className="mt-12">
             {walletAddress && recentContracts.length > 0 ? (
@@ -190,10 +185,13 @@ const TrackingPage = () => {
                         <p className="font-bold text-gray-800 group-hover:text-blue-600 transition-colors truncate">
                           {contract.terms}
                         </p>
-                        <p className="text-xs text-gray-400 font-mono mt-1 truncate">
-                          {contract.contractAddress}
-                        </p>
+
+                        {/* 2. ÁP DỤNG AddressDisplay CHO DANH SÁCH GẦN ĐÂY */}
+                        <div className="mt-1">
+                          <AddressDisplay address={contract.contractAddress} />
+                        </div>
                       </div>
+
                       <div className="flex items-center gap-4 flex-shrink-0 ml-4">
                         <span
                           className={`px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap ${
@@ -220,10 +218,10 @@ const TrackingPage = () => {
           </div>
         )}
 
-        {/* === PHẦN KẾT QUẢ TRA CỨU (NẾU CÓ DATA) === */}
+        {/* === PHẦN KẾT QUẢ TRA CỨU === */}
         {contractData && (
           <div className="bg-white shadow-xl rounded-2xl overflow-hidden border border-gray-100 animation-fade-in mt-8">
-            {/* Banner Điều hướng cho người trong cuộc */}
+            {/* Banner Điều hướng */}
             {isParticipant && (
               <div className="bg-indigo-50 px-8 py-4 border-b border-indigo-100 flex justify-between items-center flex-wrap gap-2">
                 <span className="text-indigo-700 font-medium flex items-center gap-2 text-sm sm:text-base">
@@ -282,17 +280,19 @@ const TrackingPage = () => {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {/* 3. ÁP DỤNG AddressDisplay CHO CÁC CARD CLIENT/PROVIDER/RECEIVER */}
+
                 {/* Client Card */}
                 <div className="p-4 border rounded-xl text-center hover:border-blue-200 transition-colors group">
                   <div className="w-10 h-10 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
                     <i className="uil uil-user"></i>
                   </div>
-                  <p className="text-xs text-gray-400 uppercase font-bold">
+                  <p className="text-xs text-gray-400 uppercase font-bold mb-2">
                     Người Gửi
                   </p>
-                  <p className="text-xs text-gray-800 font-mono mt-1 break-all">
-                    {contractData.client}
-                  </p>
+                  <div className="flex justify-center">
+                    <AddressDisplay address={contractData.client} />
+                  </div>
                 </div>
 
                 {/* Provider Card */}
@@ -300,17 +300,12 @@ const TrackingPage = () => {
                   <div className="w-10 h-10 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
                     <i className="uil uil-truck"></i>
                   </div>
-                  <p className="text-xs text-gray-400 uppercase font-bold">
+                  <p className="text-xs text-gray-400 uppercase font-bold mb-2">
                     Nhà Vận Chuyển
                   </p>
-                  <p className="text-xs text-gray-800 font-mono mt-1 break-all">
-                    {contractData.provider ===
-                    "0x0000000000000000000000000000000000000000" ? (
-                      <span className="text-gray-400 italic">Chưa có</span>
-                    ) : (
-                      contractData.provider
-                    )}
-                  </p>
+                  <div className="flex justify-center">
+                    <AddressDisplay address={contractData.provider} />
+                  </div>
                 </div>
 
                 {/* Receiver Card */}
@@ -318,12 +313,12 @@ const TrackingPage = () => {
                   <div className="w-10 h-10 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
                     <i className="uil uil-home"></i>
                   </div>
-                  <p className="text-xs text-gray-400 uppercase font-bold">
+                  <p className="text-xs text-gray-400 uppercase font-bold mb-2">
                     Người Nhận
                   </p>
-                  <p className="text-xs text-gray-800 font-mono mt-1 break-all">
-                    {contractData.receiver}
-                  </p>
+                  <div className="flex justify-center">
+                    <AddressDisplay address={contractData.receiver} />
+                  </div>
                 </div>
               </div>
 

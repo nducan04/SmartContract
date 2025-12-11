@@ -1,209 +1,228 @@
 import React, { useState, useEffect } from "react";
-import { useLocation, Link } from "react-router-dom";
 import { useWeb3 } from "../context/Web3Context";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import axios from "axios";
+import AddressDisplay from "../components/AddressDisplay";
 
 const ContractListPage = () => {
-  const { walletAddress } = useWeb3(); // Lấy địa chỉ ví hiện tại
+  const { walletAddress } = useWeb3();
   const [contracts, setContracts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
 
-  const location = useLocation();
-  const roleFilter = new URLSearchParams(location.search).get("role"); // Lấy role từ URL (client/provider/receiver)
+  const roleFilter = searchParams.get("role") || "all";
 
-  // Mapping trạng thái từ Số (DB) sang Chữ (Hiển thị)
-  const statusMap = {
-    0: { text: "Mới tạo", class: "bg-blue-100 text-blue-800" },
-    1: { text: "Đã chấp nhận", class: "bg-purple-100 text-purple-800" },
-    2: { text: "Đang thực hiện", class: "bg-yellow-100 text-yellow-800" },
-    3: { text: "Đã hoàn thành", class: "bg-green-100 text-green-800" },
-    4: { text: "Đã thanh toán", class: "bg-gray-100 text-gray-800" },
-    5: { text: "Đã hủy", class: "bg-red-100 text-red-800" },
-  };
-
-  // Xác định vai trò của mình trong hợp đồng
-  const getMyRoleLabel = (contract) => {
-    if (!walletAddress) return "Khách";
-    const currentWallet = walletAddress.toLowerCase(); // Chuẩn hóa ví hiện tại
-
-    // Chuẩn hóa dữ liệu từ DB (đề phòng DB lưu chữ hoa)
-    const clientDB = contract.client ? contract.client.toLowerCase() : "";
-    const providerDB = contract.provider ? contract.provider.toLowerCase() : "";
-    const receiverDB = contract.receiver ? contract.receiver.toLowerCase() : "";
-
-    if (clientDB === currentWallet) return "Người Tạo (Client)";
-    if (providerDB === currentWallet) return "Nhà Vận Chuyển (Provider)";
-    if (receiverDB === currentWallet) return "Người Nhận (Receiver)";
-    return "Liên quan";
-  };
-
-  // Xác định role code để lọc (client/provider/receiver)
-  const getMyRoleCode = (contract) => {
-    if (!walletAddress) return "";
-    const currentWallet = walletAddress.toLowerCase();
-
-    const clientDB = contract.client ? contract.client.toLowerCase() : "";
-    const providerDB = contract.provider ? contract.provider.toLowerCase() : "";
-    const receiverDB = contract.receiver ? contract.receiver.toLowerCase() : "";
-
-    if (clientDB === currentWallet) return "client";
-    if (providerDB === currentWallet) return "provider";
-    if (receiverDB === currentWallet) return "receiver";
-    return "";
+  // Config màu sắc cho Badge trạng thái (Giống mẫu)
+  const statusConfig = {
+    0: {
+      label: "Mới tạo",
+      bg: "bg-blue-50",
+      text: "text-blue-600",
+      dot: "bg-blue-600",
+    },
+    1: {
+      label: "Đã chấp nhận",
+      bg: "bg-purple-50",
+      text: "text-purple-600",
+      dot: "bg-purple-600",
+    },
+    2: {
+      label: "Đang thực hiện",
+      bg: "bg-yellow-50",
+      text: "text-yellow-600",
+      dot: "bg-yellow-600",
+    },
+    3: {
+      label: "Đã hoàn thành",
+      bg: "bg-green-50",
+      text: "text-green-600",
+      dot: "bg-green-600",
+    },
+    4: {
+      label: "Đã thanh toán",
+      bg: "bg-gray-100",
+      text: "text-gray-600",
+      dot: "bg-gray-600",
+    },
+    5: {
+      label: "Đã hủy",
+      bg: "bg-red-50",
+      text: "text-red-600",
+      dot: "bg-red-600",
+    },
   };
 
   useEffect(() => {
     const fetchContracts = async () => {
-      // Nếu chưa kết nối ví, không gọi API
-      if (!walletAddress) {
-        setLoading(false);
-        return;
-      }
-
+      if (!walletAddress) return;
       try {
         setLoading(true);
-        setError(null);
-
-        // 2. GỌI API TỪ BACKEND
-        // Lưu ý: Đảm bảo Server đang chạy ở port 5000
         const response = await axios.get(
           `http://localhost:5000/api/contracts?wallet=${walletAddress}`
         );
-        const allData = response.data;
+        let data = response.data;
 
-        // 3. LỌC DỮ LIỆU (Frontend Filter)
-        let filteredData = allData;
+        if (roleFilter === "client")
+          data = data.filter((c) => c.client === walletAddress.toLowerCase());
+        if (roleFilter === "provider")
+          data = data.filter((c) => c.provider === walletAddress.toLowerCase());
+        if (roleFilter === "receiver")
+          data = data.filter((c) => c.receiver === walletAddress.toLowerCase());
 
-        // Nếu trên URL có ?role=..., ta lọc bớt danh sách
-        if (roleFilter) {
-          filteredData = allData.filter(
-            (contract) => getMyRoleCode(contract) === roleFilter
-          );
-        }
-
-        setContracts(filteredData);
-      } catch (err) {
-        console.error("Lỗi gọi API:", err);
-        setError(
-          "Không thể tải danh sách hợp đồng. Hãy đảm bảo Server đang chạy."
+        setContracts(
+          data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
         );
+      } catch (error) {
+        console.error("Lỗi:", error);
       } finally {
         setLoading(false);
       }
     };
-
     fetchContracts();
   }, [walletAddress, roleFilter]);
 
   return (
-    <div className="p-4">
-      <h1 className="text-3xl font-bold text-gray-900 mb-6">
-        Quản Lý Hợp Đồng
-        {roleFilter && (
-          <span className="text-lg font-normal text-gray-500 ml-2">
-            (Đang lọc: {roleFilter})
-          </span>
-        )}
-      </h1>
+    <div className="p-2">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
+          <i className="uil uil-list-ul text-blue-600"></i> Quản lý Hợp đồng
+        </h1>
+        {/* Nút tạo nhanh */}
+        <button
+          onClick={() => navigate("/dashboard/create")}
+          className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-blue-700 transition-colors shadow-sm cursor-pointer"
+        >
+          + Tạo mới
+        </button>
+      </div>
 
-      {!walletAddress ? (
-        <div className="text-center py-10 bg-red-50 rounded-lg">
-          <p className="text-red-600">
-            Vui lòng kết nối ví để xem danh sách hợp đồng.
-          </p>
-        </div>
-      ) : loading ? (
-        <div className="text-center py-10">
-          <p className="text-gray-500">Đang tải dữ liệu từ Server...</p>
-        </div>
-      ) : error ? (
-        <div className="text-center py-10 bg-red-50 rounded-lg">
-          <p className="text-red-600">{error}</p>
-        </div>
-      ) : contracts.length === 0 ? (
-        <div className="text-center py-10 bg-gray-50 rounded-lg border border-dashed border-gray-300">
-          <p className="text-gray-500 mb-4">Không tìm thấy hợp đồng nào.</p>
-          <Link
-            to="/dashboard/create"
-            className="text-blue-600 font-semibold hover:underline"
+      {/* Tabs Filter */}
+      <div className="flex gap-1 bg-gray-100 p-1 rounded-xl w-fit mb-6">
+        {["all", "client", "provider", "receiver"].map((role) => (
+          <button
+            key={role}
+            onClick={() => navigate(`/dashboard/contracts?role=${role}`)}
+            className={`px-4 py-2 text-sm font-medium rounded-lg capitalize transition-all 
+            ${
+              roleFilter === role
+                ? "bg-white text-blue-600 shadow-sm"
+                : "text-gray-500 hover:text-gray-700"
+            }`}
           >
-            + Tạo hợp đồng mới
-          </Link>
-        </div>
-      ) : (
-        <div className="bg-white shadow-lg rounded-lg overflow-hidden border border-gray-200">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
-                  Mô tả
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
-                  Vai trò của bạn
-                </th>
-                <th className="px-6 py-3 text-center text-xs font-bold text-gray-500 uppercase tracking-wider">
-                  Trạng thái
-                </th>
-                <th className="px-6 py-3 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">
-                  Giá trị
-                </th>
-                <th className="px-6 py-3"></th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {contracts.map((contract) => {
-                const statusInfo = statusMap[contract.status] || {
-                  text: "Không rõ",
-                  class: "bg-gray-100",
-                };
+            {role === "all" ? "Tất cả" : role}
+          </button>
+        ))}
+      </div>
 
-                return (
-                  <tr
-                    key={contract._id}
-                    className="hover:bg-blue-50 transition-colors"
-                  >
-                    <td className="px-6 py-4">
-                      <p className="text-sm font-medium text-gray-900 truncate max-w-xs">
-                        {contract.terms}
-                      </p>
-                      <p className="text-xs text-gray-500 font-mono mt-1">
-                        ID: {contract.contractAddress.substring(0, 6)}...
-                        {contract.contractAddress.substring(38)}
-                      </p>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="text-sm text-gray-700 font-medium">
-                        {getMyRoleLabel(contract)}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-center">
-                      <span
-                        className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${statusInfo.class}`}
-                      >
-                        {statusInfo.text}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right">
-                      <span className="text-sm font-bold text-gray-900">
-                        {contract.amount} ETH
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      {/* Link trỏ đến trang chi tiết (dùng contractAddress) */}
-                      <Link
-                        to={`/dashboard/contract/${contract.contractAddress}`}
-                        className="text-indigo-600 hover:text-indigo-900 bg-indigo-50 px-3 py-1 rounded-md hover:bg-indigo-100 transition-all"
-                      >
-                        Chi tiết
-                      </Link>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+      {/* TABLE CONTENT */}
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+        {loading ? (
+          <div className="text-center py-20">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+          </div>
+        ) : contracts.length === 0 ? (
+          <div className="text-center py-16 text-gray-400">
+            <i className="uil uil-file-slash text-4xl mb-2"></i>
+            <p>Không tìm thấy dữ liệu.</p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-gray-50 border-b border-gray-200 text-xs uppercase text-gray-500 font-bold tracking-wider">
+                  <th className="px-6 py-4">ID Hợp đồng</th>
+                  <th className="px-6 py-4">Nội dung</th>
+                  <th className="px-6 py-4">Vai trò</th>
+                  <th className="px-6 py-4">Giá trị</th>
+                  <th className="px-6 py-4">Trạng thái</th>
+                  <th className="px-6 py-4 text-center">Hành động</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {contracts.map((contract) => {
+                  const status =
+                    statusConfig[contract.status] || statusConfig[0];
+
+                  // Xác định vai trò của mình trong hợp đồng này
+                  let myRole = "Liên quan";
+                  const currentWallet = walletAddress.toLowerCase();
+                  if (currentWallet === contract.client)
+                    myRole = "Người Gửi (Client)";
+                  else if (currentWallet === contract.provider)
+                    myRole = "Vận Chuyển (Provider)";
+                  else if (currentWallet === contract.receiver)
+                    myRole = "Người Nhận (Receiver)";
+
+                  return (
+                    <tr
+                      key={contract._id}
+                      className="hover:bg-blue-50/50 transition-colors group"
+                    >
+                      <td className="px-6 py-4">
+                        <AddressDisplay address={contract.contractAddress} />
+                      </td>
+
+                      <td className="px-6 py-4 max-w-xs">
+                        <p
+                          className="text-sm font-medium text-gray-900 truncate"
+                          title={contract.terms}
+                        >
+                          {contract.terms}
+                        </p>
+                        <p className="text-xs text-gray-400 mt-0.5">
+                          {new Date(contract.createdAt).toLocaleDateString()}
+                        </p>
+                      </td>
+
+                      <td className="px-6 py-4 text-sm text-gray-600">
+                        {myRole}
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="font-mono font-bold text-gray-800">
+                          {contract.amount} ETH
+                        </span>
+                      </td>
+
+                      <td className="px-6 py-4">
+                        <span
+                          className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold ${status.bg} ${status.text}`}
+                        >
+                          <span
+                            className={`w-1.5 h-1.5 rounded-full mr-2 ${status.dot}`}
+                          ></span>
+                          {status.label}
+                        </span>
+                      </td>
+
+                      <td className="px-6 py-4 text-center">
+                        <button
+                          onClick={() =>
+                            navigate(
+                              `/dashboard/contract/${contract.contractAddress}`
+                            )
+                          }
+                          className="group inline-flex items-center gap-1 bg-blue-50 text-blue-600 px-3 py-1.5 rounded-lg text-xs font-bold 
+                          hover:bg-blue-600 hover:text-white transition-all cursor-pointer"
+                        >
+                          Xem chi tiết
+                          <i className="uil uil-arrow-right text-lg transition-transform group-hover:translate-x-1"></i>
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      {/* Footer nhỏ đếm số lượng */}
+      {!loading && contracts.length > 0 && (
+        <p className="text-xs text-gray-400 mt-4 ml-2">
+          Hiển thị {contracts.length} bản ghi.
+        </p>
       )}
     </div>
   );

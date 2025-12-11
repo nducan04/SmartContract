@@ -7,15 +7,17 @@ const contractSchema = new mongoose.Schema(
 
     // 2. Các bên tham gia (Lưu địa chỉ ví)
     client: { type: String, required: true, lowercase: true, trim: true },
-
-    provider: { type: String, owercase: true, trim: true, default: null },
-
+    provider: { type: String, lowercase: true, trim: true, default: null },
     receiver: { type: String, required: true, lowercase: true, trim: true },
 
     // 3. Thông tin chi tiết
     amount: { type: String, required: true },
     terms: { type: String },
-    termsHash: { type: String },
+    termsHash: { type: String }, // Hash IPFS
+
+    deliveryDeadline: { type: Number },
+    penaltyAmount: { type: String },
+    isLate: { type: Boolean, default: false },
 
     // 4. Trạng thái (Mapping với Enum trong Solidity)
     // 0: Created, 1: Accepted, 2: InProgress, 3: Completed, 4: Paid, 5: Cancelled
@@ -24,7 +26,7 @@ const contractSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// Tạo index để tìm kiếm nhanh hơn (Ví dụ: tìm tất cả hợp đồng của 1 ông Client)
+// Tạo index để tìm kiếm nhanh hơn
 contractSchema.index({ client: 1 });
 contractSchema.index({ provider: 1 });
 contractSchema.index({ receiver: 1 });

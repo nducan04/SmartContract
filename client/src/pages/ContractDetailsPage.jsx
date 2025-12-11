@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import { useWeb3 } from "../context/Web3Context";
 import { ethers } from "ethers";
 import axios from "axios";
+import AddressDisplay from "../components/AddressDisplay"; // <--- 1. Import Component mới
 
 const ContractDetailsPage = () => {
   const { id } = useParams();
@@ -32,23 +33,18 @@ const ContractDetailsPage = () => {
   // Hàm format ngày tháng
   const formatDate = (timestamp) => {
     if (!timestamp) return "N/A";
-    // Timestamp trong Blockchain là giây, JS là miligiây -> nhân 1000
     return new Date(Number(timestamp) * 1000).toLocaleString();
   };
 
   const syncToBackend = async (newStatus, providerAddr = null) => {
     try {
-      // Tạo payload gửi đi
       const payload = {
         contractAddress: id,
         status: newStatus,
       };
-
-      // Nếu có providerAddr (lúc chấp nhận), thêm vào payload
       if (providerAddr) {
         payload.provider = providerAddr;
       }
-
       await axios.put(
         "http://localhost:5000/api/contracts/update-status",
         payload
@@ -67,7 +63,6 @@ const ContractDetailsPage = () => {
       const contract = getAgreementContract(id);
       if (!contract) return;
 
-      // Gọi dữ liệu từ Blockchain (Bây giờ trả về 10 giá trị)
       const data = await contract.getAgreementDetails();
       const realState = Number(data[0]);
 
@@ -79,10 +74,9 @@ const ContractDetailsPage = () => {
         amount: ethers.formatEther(data[4]),
         terms: data[5],
         termsHash: data[6],
-        // === CÁC TRƯỜNG MỚI ===
-        deadline: data[7], // Timestamp
-        penalty: ethers.formatEther(data[8]), // Tiền phạt
-        isLate: data[9], // Bool: Có bị muộn không?
+        deadline: data[7],
+        penalty: ethers.formatEther(data[8]),
+        isLate: data[9],
       });
 
       syncToBackend(realState);
@@ -97,17 +91,14 @@ const ContractDetailsPage = () => {
     if (walletAddress) fetchDetails();
   }, [id, walletAddress, getAgreementContract]);
 
-  // === CÁC HÀM TƯƠNG TÁC (Giữ nguyên logic cũ) ===
+  // === CÁC HÀM TƯƠNG TÁC ===
   const handleAccept = async () => {
     try {
       setActionLoading(true);
       const contract = getAgreementContract(id);
       const tx = await contract.acceptAgreement();
       await tx.wait();
-
-      // 🔥 QUAN TRỌNG: Truyền walletAddress (Acc3) vào đây
       await syncToBackend(1, walletAddress);
-
       alert("Đã chấp nhận hợp đồng thành công!");
       fetchDetails();
     } catch (error) {
@@ -176,8 +167,6 @@ const ContractDetailsPage = () => {
     currentWallet === details.provider?.toLowerCase() ||
     (details.state === 0 && currentWallet !== details.client?.toLowerCase());
   const isReceiver = currentWallet === details.receiver?.toLowerCase();
-
-  // Kiểm tra xem hiện tại đã quá hạn chưa (chỉ cảnh báo nếu chưa thanh toán)
   const isOverdue =
     Date.now() / 1000 > Number(details.deadline) && details.state < 4;
 
@@ -189,8 +178,14 @@ const ContractDetailsPage = () => {
           <h1 className="text-2xl font-bold text-gray-900">
             Chi tiết Hợp đồng
           </h1>
-          <p className="text-sm text-gray-500 break-all">ID: {id}</p>
+
+          {/* 2. THAY THẾ ID TEXT BẰNG ADDRESS DISPLAY */}
+          <div className="mt-1 flex items-center gap-2">
+            <span className="text-sm text-gray-500">ID:</span>
+            <AddressDisplay address={id} />
+          </div>
         </div>
+
         <div className="text-right">
           <span
             className={`px-4 py-2 rounded-full font-semibold ${
@@ -199,7 +194,6 @@ const ContractDetailsPage = () => {
           >
             {stateLabels[details.state]}
           </span>
-          {/* HIỂN THỊ TRẠNG THÁI VI PHẠM */}
           {details.isLate && (
             <p className="mt-2 text-xs font-bold text-red-600 border border-red-200 bg-red-50 px-2 py-1 rounded">
               ⚠ ĐÃ BỊ PHẠT VI PHẠM
@@ -226,7 +220,6 @@ const ContractDetailsPage = () => {
             </p>
           </div>
 
-          {/* === THÔNG TIN THỜI GIAN & PHẠT (MỚI) === */}
           <div className="bg-orange-50 p-4 rounded-lg border border-orange-200">
             <h3 className="text-sm font-bold text-orange-800 uppercase flex items-center gap-2">
               <i className="uil uil-clock"></i> Thời hạn cam kết
@@ -256,7 +249,6 @@ const ContractDetailsPage = () => {
               Trừ vào tiền công nếu giao muộn.
             </p>
           </div>
-          {/* ========================================= */}
 
           <div className="md:col-span-2">
             <h3 className="text-sm font-medium text-gray-500 uppercase">
@@ -277,22 +269,25 @@ const ContractDetailsPage = () => {
       {/* Các bên tham gia */}
       <div className="bg-gray-50 rounded-lg border border-gray-200 p-6 mb-6">
         <h3 className="font-bold text-gray-900 mb-4">Các bên tham gia</h3>
-        <div className="space-y-3">
-          <div className="flex justify-between">
-            <span className="text-gray-600">Client:</span>
-            <span className="font-mono text-sm">{details.client}</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-gray-600">Provider:</span>
-            <span className="font-mono text-sm">
-              {details.provider === "0x0000000000000000000000000000000000000000"
-                ? "(Chưa có)"
-                : details.provider}
+        <div className="space-y-4">
+          {/* 3. THAY THẾ CÁC DÒNG ĐỊA CHỈ BẰNG COMPONENT */}
+          <div className="flex justify-between items-center">
+            <span className="text-gray-600 font-medium">
+              Client (Người Gửi):
             </span>
+            <AddressDisplay address={details.client} />
           </div>
-          <div className="flex justify-between">
-            <span className="text-gray-600">Receiver:</span>
-            <span className="font-mono text-sm">{details.receiver}</span>
+          <div className="flex justify-between items-center">
+            <span className="text-gray-600 font-medium">
+              Provider (Vận Chuyển):
+            </span>
+            <AddressDisplay address={details.provider} />
+          </div>
+          <div className="flex justify-between items-center">
+            <span className="text-gray-600 font-medium">
+              Receiver (Người Nhận):
+            </span>
+            <AddressDisplay address={details.receiver} />
           </div>
         </div>
       </div>
