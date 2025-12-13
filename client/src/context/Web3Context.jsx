@@ -11,44 +11,45 @@ export const Web3Provider = ({ children }) => {
   const [signer, setSigner] = useState(null);
   const [factoryContract, setFactoryContract] = useState(null);
 
-  // === 1. HÀM KẾT NỐI VÍ (QUAN TRỌNG NHẤT) ===
-  const connectWallet = async () => {
-    if (!window.ethereum) {
-      alert("Không tìm thấy MetaMask! Vui lòng cài đặt extension.");
-      return;
-    }
-
+  // Hàm update lại state khi có thay đổi
+  const updateAccount = async (account) => {
+    if (!window.ethereum) return;
     try {
-      // Tạo provider từ MetaMask
       const ethProvider = new ethers.BrowserProvider(window.ethereum);
-
-      // --- DÒNG LỆNH NÀY SẼ MỞ POPUP METAMASK ---
-      const accounts = await ethProvider.send("eth_requestAccounts", []);
-
-      // Lấy tài khoản đầu tiên
-      const account = accounts[0];
-      setWalletAddress(account);
-
-      // Lấy số dư
       const balance = await ethProvider.getBalance(account);
-      setWalletBalance(ethers.formatEther(balance));
-
-      // Lấy Signer (Người ký) - quan trọng để tạo giao dịch
       const ethSigner = await ethProvider.getSigner();
-      setSigner(ethSigner);
-      setProvider(ethProvider);
 
-      // Kết nối với Hợp đồng Mẹ (Factory)
       const factory = new ethers.Contract(
         factoryAddress,
         factoryABI,
         ethSigner
       );
-      setFactoryContract(factory);
 
-      console.log("Đã kết nối ví:", account);
+      setWalletAddress(account);
+      setWalletBalance(ethers.formatEther(balance));
+      setSigner(ethSigner);
+      setProvider(ethProvider);
+      setFactoryContract(factory);
     } catch (error) {
-      console.error("Lỗi kết nối ví:", error);
+      console.error("Lỗi cập nhật tài khoản:", error);
+    }
+  };
+
+  const connectWallet = async () => {
+    if (!window.ethereum) {
+      alert("Vui lòng cài đặt MetaMask!");
+      return;
+    }
+
+    try {
+      const ethProvider = new ethers.BrowserProvider(window.ethereum);
+      const accounts = await ethProvider.send("eth_requestAccounts", []);
+
+      if (accounts.length > 0) {
+        await updateAccount(accounts[0]);
+      }
+    } catch (error) {
+      console.error("Lỗi kết nối:", error);
     }
   };
 
@@ -57,23 +58,48 @@ export const Web3Provider = ({ children }) => {
     setWalletBalance(null);
     setFactoryContract(null);
     setSigner(null);
+    // Lưu ý: Không thể ngắt kết nối thực sự từ phía dApp, chỉ có thể xóa state
   };
 
-  // Nếu  muốn khi reload trang mà vẫn giữ kết nối, hãy bỏ comment đoạn này
+  // --- PHẦN QUAN TRỌNG: TỰ ĐỘNG LẮNG NGHE SỰ KIỆN ---
   useEffect(() => {
+    if (window.ethereum) {
+      // 1. Nghe sự kiện đổi tài khoản
+      window.ethereum.on("accountsChanged", (accounts) => {
+        if (accounts.length > 0) {
+          updateAccount(accounts[0]);
+        } else {
+          disconnectWallet(); // Người dùng ngắt kết nối trong ví
+        }
+      });
+
+      // 2. Nghe sự kiện đổi mạng (Chain)
+      window.ethereum.on("chainChanged", () => {
+        window.location.reload(); // Reload trang để cập nhật provider mới
+      });
+    }
+
+    // Kiểm tra kết nối ngay khi vào trang
     const checkConnection = async () => {
       if (window.ethereum) {
         const ethProvider = new ethers.BrowserProvider(window.ethereum);
-        const accounts = await ethProvider.send("eth_accounts", []); // Chỉ kiểm tra, không yêu cầu popup
+        const accounts = await ethProvider.send("eth_accounts", []);
         if (accounts.length > 0) {
-          connectWallet();
+          await updateAccount(accounts[0]);
         }
       }
     };
     checkConnection();
+
+    // Cleanup listener khi unmount
+    return () => {
+      if (window.ethereum) {
+        window.ethereum.removeAllListeners("accountsChanged");
+        window.ethereum.removeAllListeners("chainChanged");
+      }
+    };
   }, []);
 
-  // === 4. HELPER: Lấy Hợp đồng Con ===
   const getAgreementContract = (address) => {
     if (!signer || !address) return null;
     return new ethers.Contract(address, agreementABI, signer);
