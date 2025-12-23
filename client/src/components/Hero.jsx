@@ -22,7 +22,7 @@ const Hero = () => {
 
             <h1 className="text-5xl lg:text-6xl font-extrabold text-gray-900 leading-[1.1] mb-6 tracking-tight">
               Quản Lý Hợp Đồng <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">
+              <span className="text-gray-900 bg-clip-text bg-linear-to-r">
                 Minh Bạch & Tự Động
               </span>
             </h1>
