@@ -64,6 +64,7 @@ const Navbar = () => {
         <div
           className={`
             fixed inset-0 z-50 bg-white flex flex-col p-10 gap-6 transition-transform duration-300
+            items-start /* <--- SỬA LỖI: Căn trái toàn bộ nội dung trên mobile */
             md:static md:bg-transparent md:flex-row md:p-0 md:gap-8 md:items-center md:translate-x-0
             ${mobileMenuOpen ? "translate-x-0" : "translate-x-full"}
         `}
@@ -82,13 +83,13 @@ const Navbar = () => {
               key={index}
               to={link.path}
               onClick={() => setMobileMenuOpen(false)}
-              className="text-gray-600 font-medium hover:text-blue-600 transition-colors"
+              className="text-gray-600 font-medium hover:text-blue-600 transition-colors text-lg md:text-base"
             >
               {link.name}
             </Link>
           ))}
 
-          {/* Search Bar */}
+          {/* Search Bar (Chỉ hiện trên Desktop LG) */}
           <form
             onSubmit={handleSearch}
             className="hidden lg:flex items-center text-sm gap-2 border border-borderColor px-3 rounded-full max-w-56"
@@ -112,7 +113,7 @@ const Navbar = () => {
           {/* Dashboard Button */}
           <button
             onClick={() => handleNavigate("/dashboard")}
-            className="text-gray-600 font-medium hover:text-blue-600 transition-colors cursor-pointer"
+            className="text-gray-600 font-medium hover:text-blue-600 transition-colors cursor-pointer text-left text-lg md:text-base"
           >
             Bảng Điều Khiển
           </button>

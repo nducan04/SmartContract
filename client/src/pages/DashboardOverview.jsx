@@ -29,7 +29,7 @@ const DashboardOverview = () => {
       try {
         setLoading(true);
         const response = await axios.get(
-          `http://localhost:5000/api/contracts?wallet=${walletAddress}`
+          `http://localhost:5000/api/contracts?wallet=${walletAddress}`,
         );
         const contracts = response.data;
 
@@ -37,13 +37,13 @@ const DashboardOverview = () => {
 
         const currentWallet = walletAddress.toLowerCase();
         const clientCount = contracts.filter(
-          (c) => c.client === currentWallet
+          (c) => c.client === currentWallet,
         ).length;
         const providerCount = contracts.filter(
-          (c) => c.provider === currentWallet && c.status >= 1
+          (c) => c.provider === currentWallet && c.status >= 1,
         ).length;
         const receiverCount = contracts.filter(
-          (c) => c.receiver === currentWallet && c.status === 3
+          (c) => c.receiver === currentWallet && c.status === 3,
         ).length;
 
         setStats({
@@ -54,7 +54,7 @@ const DashboardOverview = () => {
         });
 
         const sorted = [...contracts].sort(
-          (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+          (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
         );
         setRecentList(sorted.slice(0, 2));
       } catch (error) {
@@ -174,7 +174,7 @@ const DashboardOverview = () => {
                       <button
                         onClick={() =>
                           navigate(
-                            `/dashboard/contract/${contract.contractAddress}`
+                            `/dashboard/contract/${contract.contractAddress}`,
                           )
                         }
                         className="text-sm text-blue-600 font-semibold hover:text-blue-800 hover:underline"
@@ -194,7 +194,7 @@ const DashboardOverview = () => {
             </div>
 
             {/* Cột phải: BIỂU ĐỒ TRÒN (1/3 chiều rộng) - THAY CHO BANNER CŨ */}
-            <div className="lg:col-span-1 h-full">
+            <div className="lg:col-span-1 h-[400px] lg:h-full min-h-[400px]">
               <ContractStatusChart contracts={allContracts} />
             </div>
           </div>

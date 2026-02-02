@@ -1,7 +1,7 @@
 import React from "react";
 import AddressDisplay from "../AddressDisplay";
 
-// Cấu hình màu sắc trạng thái
+// (Giữ nguyên statusConfig cũ của bạn ở đây)
 const statusConfig = {
   0: {
     label: "Mới tạo",
@@ -48,106 +48,111 @@ const ContractTable = ({
   onShowQR,
   onViewDetails,
 }) => {
-  // Trạng thái Loading
-  if (loading) {
-    return (
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden text-center py-20">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-      </div>
-    );
-  }
+  if (loading) return <div className="text-center py-20">Loading...</div>;
+  if (contracts.length === 0)
+    return <div className="text-center py-10">Không có dữ liệu</div>;
 
-  // Trạng thái Trống
-  if (contracts.length === 0) {
-    return (
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden text-center py-16 text-gray-400">
-        <i className="uil uil-file-slash text-4xl mb-2"></i>
-        <p>Không tìm thấy dữ liệu.</p>
-      </div>
-    );
-  }
-
-  // Hiển thị Bảng
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
       <div className="overflow-x-auto">
-        <table className="w-full text-left border-collapse min-w-[800px]">
+        <table className="w-full text-left border-collapse">
           <thead>
             <tr className="bg-gray-50 border-b border-gray-200 text-xs uppercase text-gray-500 font-bold tracking-wider">
-              <th className="px-6 py-4">ID Hợp đồng</th>
-              <th className="px-6 py-4">Nội dung</th>
-              <th className="px-6 py-4">Vai trò</th>
-              <th className="px-6 py-4">Giá trị</th>
-              <th className="px-6 py-4">Trạng thái</th>
-              <th className="px-6 py-4 text-center">Hành động</th>
+              {/* Cột ID: Luôn hiện */}
+              <th className="px-4 py-4 md:px-6">ID</th>
+
+              {/* Cột Nội dung: Ẩn trên mobile (hidden), hiện trên Desktop (md:table-cell) */}
+              <th className="px-6 py-4 hidden md:table-cell">Nội dung</th>
+
+              {/* Cột Vai trò: Ẩn trên mobile */}
+              <th className="px-6 py-4 hidden md:table-cell">Vai trò</th>
+
+              {/* Cột Giá trị: Ẩn trên mobile */}
+              <th className="px-6 py-4 hidden md:table-cell">Giá trị</th>
+
+              {/* Cột Trạng thái: Luôn hiện */}
+              <th className="px-4 py-4 md:px-6">Trạng thái</th>
+
+              {/* Cột Hành động: Luôn hiện */}
+              <th className="px-4 py-4 md:px-6 text-center">Hành động</th>
             </tr>
           </thead>
+
           <tbody className="divide-y divide-gray-100">
             {contracts.map((contract) => {
               const status = statusConfig[contract.status] || statusConfig[0];
 
-              // Xác định vai trò của user hiện tại trong hợp đồng này
+              // (Giữ nguyên logic xác định vai trò myRole của bạn)
               let myRole = "Liên quan";
               const currentWallet = walletAddress
                 ? walletAddress.toLowerCase()
                 : "";
-              if (currentWallet === contract.client)
-                myRole = "Người Gửi (Client)";
-              else if (currentWallet === contract.provider)
-                myRole = "Vận Chuyển (Provider)";
-              else if (currentWallet === contract.receiver)
-                myRole = "Người Nhận (Receiver)";
+              if (currentWallet === contract.client) myRole = "Client";
+              else if (currentWallet === contract.provider) myRole = "Provider";
+              else if (currentWallet === contract.receiver) myRole = "Receiver";
 
               return (
                 <tr
                   key={contract._id}
-                  className="hover:bg-blue-50/50 transition-colors group"
+                  className="hover:bg-blue-50/50 transition-colors"
                 >
-                  <td className="px-6 py-4">
+                  {/* ID */}
+                  <td className="px-4 py-4 md:px-6">
                     <AddressDisplay address={contract.contractAddress} />
                   </td>
-                  <td className="px-6 py-4 max-w-xs">
-                    <p
-                      className="text-sm font-medium text-gray-900 truncate"
-                      title={contract.terms}
-                    >
+
+                  {/* Nội dung - Ẩn mobile */}
+                  <td className="px-6 py-4 max-w-xs hidden md:table-cell">
+                    <p className="text-sm font-medium text-gray-900 truncate">
                       {contract.terms}
                     </p>
-                    <p className="text-xs text-gray-400 mt-0.5">
+                    <p className="text-xs text-gray-400">
                       {new Date(contract.createdAt).toLocaleDateString()}
                     </p>
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-600">{myRole}</td>
-                  <td className="px-6 py-4">
+
+                  {/* Vai trò - Ẩn mobile */}
+                  <td className="px-6 py-4 text-sm text-gray-600 hidden md:table-cell">
+                    {myRole}
+                  </td>
+
+                  {/* Giá trị - Ẩn mobile */}
+                  <td className="px-6 py-4 hidden md:table-cell">
                     <span className="font-mono font-bold text-gray-800">
                       {contract.amount} ETH
                     </span>
                   </td>
-                  <td className="px-6 py-4">
+
+                  {/* Trạng thái */}
+                  <td className="px-4 py-4 md:px-6">
+                    {/* Trên mobile chỉ hiện chấm tròn màu, trên desktop hiện cả chữ */}
                     <span
                       className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold ${status.bg} ${status.text}`}
                     >
                       <span
-                        className={`w-1.5 h-1.5 rounded-full mr-2 ${status.dot}`}
+                        className={`w-2 h-2 rounded-full ${status.dot} mr-0 md:mr-2`}
                       ></span>
-                      {status.label}
+                      <span className="hidden md:inline">{status.label}</span>
                     </span>
                   </td>
-                  <td className="px-6 py-4 text-center">
-                    <div className="flex items-center justify-center gap-2">
+
+                  {/* Hành động - Làm gọn nút trên mobile */}
+                  <td className="px-4 py-4 md:px-6 text-center">
+                    <div className="flex items-center justify-end md:justify-center gap-2">
                       <button
                         onClick={() => onShowQR(contract.contractAddress)}
-                        className="w-8 h-8 flex items-center justify-center rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-800 hover:text-white transition-all shadow-sm cursor-pointer"
-                        title="Lấy mã QR"
+                        className="w-8 h-8 flex items-center justify-center rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-800 hover:text-white"
                       >
-                        <i className="uil uil-qrcode-scan text-lg"></i>
+                        <i className="uil uil-qrcode-scan"></i>
                       </button>
+
                       <button
                         onClick={() => onViewDetails(contract.contractAddress)}
-                        className="inline-flex items-center gap-1 bg-blue-50 text-blue-600 px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-blue-600 hover:text-white transition-all cursor-pointer"
+                        className="w-8 h-8 md:w-auto md:px-3 md:py-1.5 flex items-center justify-center bg-blue-50 text-blue-600 rounded-lg text-xs font-bold hover:bg-blue-600 hover:text-white"
                       >
-                        Xem chi tiết
-                        <i className="uil uil-arrow-right text-lg"></i>
+                        {/* Mobile hiện icon mũi tên, Desktop hiện chữ "Xem chi tiết" */}
+                        <i className="uil uil-arrow-right text-lg md:hidden"></i>
+                        <span className="hidden md:inline">Chi tiết</span>
                       </button>
                     </div>
                   </td>
