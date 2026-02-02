@@ -25,7 +25,13 @@ const ContractListPage = () => {
   // --- LOGIC 1: Lấy dữ liệu từ API ---
   useEffect(() => {
     const fetchContracts = async () => {
-      if (!walletAddress) return;
+      // SỬA QUAN TRỌNG: Nếu chưa có ví, dừng loading ngay lập tức
+      if (!walletAddress) {
+        setLoading(false);
+        setContracts([]); // Xóa dữ liệu cũ nếu có
+        return;
+      }
+
       try {
         setLoading(true);
         // Sử dụng biến môi trường để tránh hardcode localhost
@@ -83,17 +89,31 @@ const ContractListPage = () => {
         onFilterChange={handleFilterChange}
       />
 
-      {/* 3. Bảng Dữ liệu */}
-      <ContractTable
-        contracts={contracts}
-        loading={loading}
-        walletAddress={walletAddress}
-        onShowQR={handleShowQR}
-        onViewDetails={(addr) => navigate(`/dashboard/contract/${addr}`)}
-      />
+      {/* 3. Bảng Dữ liệu (Có xử lý trường hợp chưa kết nối ví) */}
+      {!walletAddress ? (
+        // Giao diện khi chưa kết nối ví
+        <div className="text-center py-16 bg-white rounded-2xl shadow-sm border border-gray-200">
+          <div className="w-16 h-16 bg-blue-50 text-blue-500 rounded-full flex items-center justify-center mx-auto mb-4">
+            <i className="uil uil-wallet text-3xl"></i>
+          </div>
+          <h3 className="text-lg font-bold text-gray-700">Chưa kết nối ví</h3>
+          <p className="text-gray-500 mt-2 px-4">
+            Vui lòng kết nối ví MetaMask để xem danh sách hợp đồng của bạn.
+          </p>
+        </div>
+      ) : (
+        // Giao diện bảng khi đã kết nối
+        <ContractTable
+          contracts={contracts}
+          loading={loading}
+          walletAddress={walletAddress}
+          onShowQR={handleShowQR}
+          onViewDetails={(addr) => navigate(`/dashboard/contract/${addr}`)}
+        />
+      )}
 
       {/* 4. Footer đếm số lượng */}
-      {!loading && contracts.length > 0 && (
+      {!loading && walletAddress && contracts.length > 0 && (
         <p className="text-xs text-gray-400 mt-4 ml-2">
           Hiển thị {contracts.length} bản ghi.
         </p>

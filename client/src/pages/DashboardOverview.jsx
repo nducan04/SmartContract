@@ -24,16 +24,27 @@ const DashboardOverview = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      if (!walletAddress) return;
+      // Nếu chưa có ví, tắt loading ngay và thoát hàm
+      if (!walletAddress) {
+        setLoading(false);
+        setAllContracts([]);
+        setRecentList([]);
+        setStats({ client: 0, provider: 0, receiver: 0, totalContracts: 0 });
+        return;
+      }
 
       try {
         setLoading(true);
+
+        // 2. SỬA LỖI URL: Dùng biến môi trường thay cho localhost
+        const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+
         const response = await axios.get(
-          `http://localhost:5000/api/contracts?wallet=${walletAddress}`,
+          `${API_URL}/api/contracts?wallet=${walletAddress}`,
         );
         const contracts = response.data;
 
-        setAllContracts(contracts); // <--- 3. Lưu dữ liệu vào state
+        setAllContracts(contracts);
 
         const currentWallet = walletAddress.toLowerCase();
         const clientCount = contracts.filter(
@@ -87,7 +98,18 @@ const DashboardOverview = () => {
         </Link>
       </div>
 
-      {loading ? (
+      {/* 3. XỬ LÝ GIAO DIỆN KHI CHƯA KẾT NỐI VÍ */}
+      {!walletAddress ? (
+        <div className="text-center py-20 bg-white rounded-2xl shadow-sm border border-gray-200">
+          <div className="w-16 h-16 bg-blue-50 text-blue-500 rounded-full flex items-center justify-center mx-auto mb-4">
+            <i className="uil uil-wallet text-3xl"></i>
+          </div>
+          <h3 className="text-lg font-bold text-gray-700">Chưa kết nối ví</h3>
+          <p className="text-gray-500 mt-2 px-4">
+            Vui lòng kết nối ví MetaMask để xem tổng quan hệ thống của bạn.
+          </p>
+        </div>
+      ) : loading ? (
         <div className="h-64 flex items-center justify-center">
           <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600"></div>
         </div>
@@ -193,7 +215,8 @@ const DashboardOverview = () => {
               )}
             </div>
 
-            {/* Cột phải: BIỂU ĐỒ TRÒN (1/3 chiều rộng) - THAY CHO BANNER CŨ */}
+            {/* Cột phải: BIỂU ĐỒ TRÒN */}
+            {/* Giữ nguyên fix chiều cao mobile mà bạn đã áp dụng */}
             <div className="lg:col-span-1 h-[400px] lg:h-full min-h-[400px]">
               <ContractStatusChart contracts={allContracts} />
             </div>
