@@ -13,17 +13,24 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
-// Kết nối Database
-await connectDB();
+connectDB();
 
-// API Routes
-app.get("/", (req, res) => res.send("Logistics DApp Backend is Running!"));
+app.get("/", (req, res) => {
+  res.send("Logistics DApp Backend is Running on Vercel!");
+});
 
 app.use("/api/contracts", contractRoutes);
 
-// Khởi chạy Server
-app.listen(PORT, () => {
-  console.log(`🚀 Server đang chạy tại port ${PORT}`);
-
+// 1. Nếu đang chạy ở máy cá nhân (Localhost), dùng app.listen()
+if (process.env.NODE_ENV !== "production") {
+  app.listen(PORT, () => {
+    console.log(`🚀 Server đang chạy tại port ${PORT}`);
+    startListener();
+  });
+}
+// 2. Nếu đang chạy trên Vercel (Production)
+else {
   startListener();
-});
+}
+
+export default app;
