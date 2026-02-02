@@ -47,8 +47,9 @@ const TrackingPage = () => {
       const fetchData = async () => {
         setLoading(true);
         setError("");
-        let activeProvider =
-          provider || new ethers.JsonRpcProvider("https://rpc.sepolia.org");
+        let activeProvider = new ethers.JsonRpcProvider(
+          "https://ethereum-sepolia-rpc.publicnode.com",
+        );
 
         try {
           const contract = new ethers.Contract(
