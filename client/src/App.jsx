@@ -14,26 +14,31 @@ import MarketplacePage from "./pages/MarketplacePage";
 
 const App = () => {
   const location = useLocation();
+  // Ẩn Navbar/Footer khi ở Dashboard hoặc khi đang xem chi tiết Tracking (để giống app mobile)
   const isDashboard = location.pathname.startsWith("/dashboard");
+  const isTrackingDetail = /^\/tracking\/0x/.test(location.pathname);
 
   return (
     <div className="flex flex-col min-h-screen bg-white text-gray-800">
-      {!isDashboard && <Navbar />}
+      {/* Ẩn Navbar ở Dashboard và Trang chi tiết Tracking (để tập trung vào timeline) */}
+      {!isDashboard && !isTrackingDetail && <Navbar />}
 
       <main className="grow">
         <Routes>
           <Route path="/" element={<Home />} />
+
+          {/* --- CẬP NHẬT PHẦN NÀY --- */}
+          {/* Route cho trang tìm kiếm thủ công */}
           <Route path="/tracking" element={<TrackingPage />} />
+          {/* Route cho quét mã QR (có ID) */}
+          <Route path="/tracking/:id" element={<TrackingPage />} />
+          {/* ------------------------- */}
 
           <Route path="/dashboard" element={<DashboardLayout />}>
             <Route index element={<DashboardOverview />} />
-
             <Route path="contracts" element={<ContractListPage />} />
-
             <Route path="create" element={<CreateContractPage />} />
-
             <Route path="contract/:id" element={<ContractDetailsPage />} />
-
             <Route path="marketplace" element={<MarketplacePage />} />
           </Route>
 
@@ -41,7 +46,7 @@ const App = () => {
         </Routes>
       </main>
 
-      {!isDashboard && <Footer />}
+      {!isDashboard && !isTrackingDetail && <Footer />}
     </div>
   );
 };

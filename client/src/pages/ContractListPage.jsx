@@ -3,6 +3,8 @@ import { useWeb3 } from "../context/Web3Context";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import axios from "axios";
 import AddressDisplay from "../components/AddressDisplay";
+// 1. IMPORT QR MODAL
+import QRModal from "../components/QRModal";
 
 const ContractListPage = () => {
   const { walletAddress } = useWeb3();
@@ -11,9 +13,13 @@ const ContractListPage = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
+  // 2. STATE CHO QR MODAL
+  const [showQRModal, setShowQRModal] = useState(false);
+  const [selectedContractAddress, setSelectedContractAddress] = useState(null);
+
   const roleFilter = searchParams.get("role") || "all";
 
-  // Config màu sắc cho Badge trạng thái (Giống mẫu)
+  // Config màu sắc cho Badge trạng thái
   const statusConfig = {
     0: {
       label: "Mới tạo",
@@ -59,7 +65,7 @@ const ContractListPage = () => {
       try {
         setLoading(true);
         const response = await axios.get(
-          `http://localhost:5000/api/contracts?wallet=${walletAddress}`
+          `http://localhost:5000/api/contracts?wallet=${walletAddress}`,
         );
         let data = response.data;
 
@@ -71,7 +77,7 @@ const ContractListPage = () => {
           data = data.filter((c) => c.receiver === walletAddress.toLowerCase());
 
         setContracts(
-          data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+          data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)),
         );
       } catch (error) {
         console.error("Lỗi:", error);
@@ -82,13 +88,23 @@ const ContractListPage = () => {
     fetchContracts();
   }, [walletAddress, roleFilter]);
 
+  // 3. HÀM XỬ LÝ MỞ/ĐÓNG MODAL
+  const handleShowQR = (address) => {
+    setSelectedContractAddress(address);
+    setShowQRModal(true);
+  };
+
+  const handleCloseQR = () => {
+    setShowQRModal(false);
+    setSelectedContractAddress(null);
+  };
+
   return (
-    <div className="p-2">
+    <div className="p-2 relative">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
           <i className="uil uil-list-ul text-blue-600"></i> Quản lý Hợp đồng
         </h1>
-        {/* Nút tạo nhanh */}
         <button
           onClick={() => navigate("/dashboard/create")}
           className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-blue-700 transition-colors shadow-sm cursor-pointer"
@@ -143,8 +159,6 @@ const ContractListPage = () => {
                 {contracts.map((contract) => {
                   const status =
                     statusConfig[contract.status] || statusConfig[0];
-
-                  // Xác định vai trò của mình trong hợp đồng này
                   let myRole = "Liên quan";
                   const currentWallet = walletAddress.toLowerCase();
                   if (currentWallet === contract.client)
@@ -196,18 +210,33 @@ const ContractListPage = () => {
                       </td>
 
                       <td className="px-6 py-4 text-center">
-                        <button
-                          onClick={() =>
-                            navigate(
-                              `/dashboard/contract/${contract.contractAddress}`
-                            )
-                          }
-                          className="group inline-flex items-center gap-1 bg-blue-50 text-blue-600 px-3 py-1.5 rounded-lg text-xs font-bold 
-                          hover:bg-blue-600 hover:text-white transition-all cursor-pointer"
-                        >
-                          Xem chi tiết
-                          <i className="uil uil-arrow-right text-lg transition-transform group-hover:translate-x-1"></i>
-                        </button>
+                        <div className="flex items-center justify-center gap-2">
+                          {/* 4. NÚT MỞ QR CODE */}
+                          <button
+                            onClick={() =>
+                              handleShowQR(contract.contractAddress)
+                            }
+                            className="w-8 h-8 flex items-center justify-center rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-500 
+                            hover:text-white transition-all shadow-sm cursor-pointer"
+                            title="Lấy mã QR"
+                          >
+                            <i className="uil uil-qrcode-scan text-lg"></i>
+                          </button>
+
+                          {/* Nút Xem chi tiết */}
+                          <button
+                            onClick={() =>
+                              navigate(
+                                `/dashboard/contract/${contract.contractAddress}`,
+                              )
+                            }
+                            className="inline-flex items-center gap-1 bg-blue-50 text-blue-600 px-3 py-1.5 rounded-lg text-xs font-bold 
+                            hover:bg-blue-600 hover:text-white transition-all cursor-pointer"
+                          >
+                            Xem chi tiết
+                            <i className="uil uil-arrow-right text-lg"></i>
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   );
@@ -218,12 +247,18 @@ const ContractListPage = () => {
         )}
       </div>
 
-      {/* Footer nhỏ đếm số lượng */}
       {!loading && contracts.length > 0 && (
         <p className="text-xs text-gray-400 mt-4 ml-2">
           Hiển thị {contracts.length} bản ghi.
         </p>
       )}
+
+      {/* 5. NHÚNG COMPONENT QR MODAL */}
+      <QRModal
+        show={showQRModal}
+        onClose={handleCloseQR}
+        contractId={selectedContractAddress}
+      />
     </div>
   );
 };
