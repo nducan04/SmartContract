@@ -48,7 +48,7 @@ const TrackingPage = () => {
         setLoading(true);
         setError("");
         let activeProvider = new ethers.JsonRpcProvider(
-          "https://ethereum-sepolia-rpc.publicnode.com",
+          "https://rpc.ankr.com/eth_sepolia",
         );
 
         try {
