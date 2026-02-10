@@ -4,10 +4,13 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import axios from "axios";
 import QRModal from "../components/QRModal";
 
-// Import các Components con đã tách
+// Import các Components con
 import ContractListHeader from "../components/contractList/ContractListHeader";
 import ContractFilters from "../components/contractList/ContractFilters";
 import ContractTable from "../components/contractList/ContractTable";
+
+// Import hàm xuất Excel vừa tạo
+import { exportContractToExcel } from "../utils/exportExcel";
 
 const ContractListPage = () => {
   const { walletAddress } = useWeb3();
@@ -25,16 +28,16 @@ const ContractListPage = () => {
   // --- LOGIC 1: Lấy dữ liệu từ API ---
   useEffect(() => {
     const fetchContracts = async () => {
-      // SỬA QUAN TRỌNG: Nếu chưa có ví, dừng loading ngay lập tức
+      // Nếu chưa có ví, dừng loading ngay
       if (!walletAddress) {
         setLoading(false);
-        setContracts([]); // Xóa dữ liệu cũ nếu có
+        setContracts([]);
         return;
       }
 
       try {
         setLoading(true);
-        // Sử dụng biến môi trường để tránh hardcode localhost
+        // Sử dụng biến môi trường
         const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
         const response = await axios.get(
@@ -78,10 +81,23 @@ const ContractListPage = () => {
     setSearchParams({ role });
   };
 
+  // Hàm xử lý khi bấm nút Xuất Excel
+  const handleExportExcel = () => {
+    if (contracts.length === 0) {
+      alert("Không có dữ liệu để xuất!");
+      return;
+    }
+    // Gọi hàm từ file utils, đặt tên file là "BaoCao_HopDong"
+    exportContractToExcel(contracts, "BaoCao_HopDong");
+  };
+
   return (
     <div className="p-2 relative">
-      {/* 1. Header & Nút Tạo */}
-      <ContractListHeader onCreate={() => navigate("/dashboard/create")} />
+      {/* 1. Header & Nút Tạo & Nút Export */}
+      <ContractListHeader
+        onCreate={() => navigate("/dashboard/create")}
+        onExport={handleExportExcel} // Truyền hàm xuống Header
+      />
 
       {/* 2. Bộ lọc */}
       <ContractFilters
