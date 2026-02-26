@@ -11,6 +11,7 @@ import ContractDetailsPage from "./pages/ContractDetailsPage";
 import TrackingPage from "./pages/TrackingPage";
 import NotFound from "./pages/NotFound";
 import MarketplacePage from "./pages/MarketplacePage";
+import AdminPage from "./pages/AdminPage";
 
 const App = () => {
   const location = useLocation();
@@ -27,12 +28,10 @@ const App = () => {
         <Routes>
           <Route path="/" element={<Home />} />
 
-          {/* --- CẬP NHẬT PHẦN NÀY --- */}
-          {/* Route cho trang tìm kiếm thủ công */}
           <Route path="/tracking" element={<TrackingPage />} />
-          {/* Route cho quét mã QR (có ID) */}
           <Route path="/tracking/:id" element={<TrackingPage />} />
           {/* ------------------------- */}
+          <Route path="/admin" element={<AdminPage />} />
 
           <Route path="/dashboard" element={<DashboardLayout />}>
             <Route index element={<DashboardOverview />} />

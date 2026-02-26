@@ -143,7 +143,7 @@ const ContractTable = ({
                         onClick={() => onShowQR(contract.contractAddress)}
                         className="w-8 h-8 flex items-center justify-center rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-800 hover:text-white"
                       >
-                        <i className="uil uil-qrcode-scan"></i>
+                        <i className="uil uil-qrcode-scan cursor-pointer"></i>
                       </button>
 
                       <button
@@ -152,7 +152,9 @@ const ContractTable = ({
                       >
                         {/* Mobile hiện icon mũi tên, Desktop hiện chữ "Xem chi tiết" */}
                         <i className="uil uil-arrow-right text-lg md:hidden"></i>
-                        <span className="hidden md:inline">Chi tiết</span>
+                        <span className="hidden md:inline cursor-pointer">
+                          Chi tiết
+                        </span>
                       </button>
                     </div>
                   </td>

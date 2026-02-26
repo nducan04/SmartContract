@@ -4,6 +4,7 @@ import {
   getMyContracts,
   updateStatus,
 } from "../controllers/contractController.js";
+import { getAllContractsForAdmin } from "../controllers/contractController.js";
 
 const router = express.Router();
 
@@ -12,5 +13,6 @@ router.get("/", getMyContracts);
 
 router.put("/update-status", updateStatus);
 router.get("/available", getAvailableContracts);
+router.get("/all-admin", getAllContractsForAdmin);
 
 export default router;

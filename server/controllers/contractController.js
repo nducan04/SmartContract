@@ -50,7 +50,7 @@ export const updateStatus = async (req, res) => {
     const updatedContract = await Contract.findOneAndUpdate(
       { contractAddress: contractAddress },
       updateData,
-      { new: true }
+      { new: true },
     );
 
     if (!updatedContract) {
@@ -60,7 +60,7 @@ export const updateStatus = async (req, res) => {
     console.log(
       `🔄 Đã cập nhật: ${contractAddress} -> Status: ${status}, Provider: ${
         provider || "Giữ nguyên"
-      }`
+      }`,
     );
 
     res.status(200).json({ message: "Success", contract: updatedContract });
@@ -83,5 +83,35 @@ export const getAvailableContracts = async (req, res) => {
   } catch (error) {
     console.error("Lỗi lấy danh sách sẵn có:", error);
     res.status(500).json({ message: "Lỗi Server" });
+  }
+};
+
+// 1. CHUẨN BỊ MẢNG VÍ ADMIN TRÊN SERVER
+const ADMIN_WALLETS_SERVER = [
+  "0xC64803Cad03E12c34EF3C822cCB4Cb78E9298091",
+  "0xFd8fe5838dC6934a400b2663C2FD348E16D1f4EC",
+  "0xDB45eB9DB7205eAd8003f3C4D578cd2078Ac4782",
+].map((addr) => addr.toLowerCase());
+
+export const getAllContractsForAdmin = async (req, res) => {
+  try {
+    // 2. Lấy địa chỉ ví gửi yêu cầu lên
+    const { requester } = req.query;
+
+    // 3. KIỂM TRA QUYỀN (Nếu không có ví gửi lên hoặc ví không nằm trong danh sách -> CẤM)
+    if (!requester || !ADMIN_WALLETS_SERVER.includes(requester.toLowerCase())) {
+      return res
+        .status(403)
+        .json({
+          message: "⛔ Quyền truy cập bị từ chối: Bạn không phải Admin!",
+        });
+    }
+
+    // 4. SỬA LỖI: Đổi ContractModel thành Contract (Vì bạn import ở trên là Contract)
+    const contracts = await Contract.find().sort({ createdAt: -1 });
+    res.status(200).json(contracts);
+  } catch (error) {
+    console.error("Lỗi lấy dữ liệu Admin:", error);
+    res.status(500).json({ message: error.message });
   }
 };

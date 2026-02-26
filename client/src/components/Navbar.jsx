@@ -16,6 +16,17 @@ const Navbar = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
 
+  // 1. DANH SÁCH VÍ ADMIN
+  const ADMIN_WALLETS = [
+    "0xC64803Cad03E12c34EF3C822cCB4Cb78E9298091",
+    "0xFd8fe5838dC6934a400b2663C2FD348E16D1f4EC",
+    "0xDB45eB9DB7205eAd8003f3C4D578cd2078Ac4782",
+  ].map((addr) => addr.toLowerCase());
+
+  // 2. BIẾN KIỂM TRA QUYỀN ADMIN
+  const isAdmin =
+    walletAddress && ADMIN_WALLETS.includes(walletAddress.toLowerCase());
+
   // Xử lý click ra ngoài để đóng dropdown
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -64,7 +75,7 @@ const Navbar = () => {
         <div
           className={`
             fixed inset-0 z-50 bg-white flex flex-col p-10 gap-6 transition-transform duration-300
-            items-start /* <--- SỬA LỖI: Căn trái toàn bộ nội dung trên mobile */
+            items-start 
             md:static md:bg-transparent md:flex-row md:p-0 md:gap-8 md:items-center md:translate-x-0
             ${mobileMenuOpen ? "translate-x-0" : "translate-x-full"}
         `}
@@ -109,6 +120,16 @@ const Navbar = () => {
               />
             </button>
           </form>
+
+          {/* CHỈ HIỆN ADMIN PANEL NẾU LÀ ADMIN */}
+          {isAdmin && (
+            <button
+              onClick={() => handleNavigate("/admin")}
+              className="text-gray-600 font-medium hover:bg-red-50 px-3 py-2 rounded-lg transition-colors text-left text-lg md:text-base cursor-pointer"
+            >
+              Trang Admin
+            </button>
+          )}
 
           {/* Dashboard Button */}
           <button
@@ -173,7 +194,6 @@ const Navbar = () => {
                       <p className="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1">
                         Địa chỉ ví
                       </p>
-                      {/* 2. SỬ DỤNG COMPONENT AddressDisplay */}
                       <div className="flex justify-start">
                         <AddressDisplay address={walletAddress} />
                       </div>
