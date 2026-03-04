@@ -14,20 +14,19 @@ const ContractListPage = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
 
-  // State quản lý dữ liệu gốc và dữ liệu hiển thị
   const [contracts, setContracts] = useState([]);
-  const [filteredContracts, setFilteredContracts] = useState([]); // Dữ liệu sau khi lọc
+  const [filteredContracts, setFilteredContracts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showQRModal, setShowQRModal] = useState(false);
   const [selectedContractAddress, setSelectedContractAddress] = useState(null);
 
   const roleFilter = searchParams.get("role") || "all";
 
-  // --- STATE CHO TÙY CHỌN BỘ LỌC XUẤT FILE ---
+  // --- STATE CHO BỘ LỌC NÂNG CAO ---
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
 
-  // --- LOGIC 1: Lấy dữ liệu từ API ---
   useEffect(() => {
     const fetchContracts = async () => {
       if (!walletAddress) {
@@ -44,7 +43,6 @@ const ContractListPage = () => {
           `${API_URL}/api/contracts?wallet=${walletAddress}`,
         );
 
-        // Sắp xếp mới nhất lên đầu ngay từ đầu
         const sortedData = response.data.sort(
           (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
         );
@@ -58,11 +56,10 @@ const ContractListPage = () => {
     fetchContracts();
   }, [walletAddress]);
 
-  // --- LOGIC 2: Lọc dữ liệu theo Role và Ngày tháng ---
+  // --- LOGIC LỌC ĐA ĐIỀU KIỆN ---
   useEffect(() => {
     let result = [...contracts];
 
-    // 1. Lọc theo vai trò (Tabs)
     if (roleFilter === "client")
       result = result.filter((c) => c.client === walletAddress.toLowerCase());
     if (roleFilter === "provider")
@@ -70,49 +67,48 @@ const ContractListPage = () => {
     if (roleFilter === "receiver")
       result = result.filter((c) => c.receiver === walletAddress.toLowerCase());
 
-    // 2. Lọc theo Ngày bắt đầu (Từ ngày)
+    if (statusFilter !== "all") {
+      result = result.filter((c) => c.status.toString() === statusFilter);
+    }
+
     if (startDate) {
       const start = new Date(startDate).getTime();
       result = result.filter((c) => new Date(c.createdAt).getTime() >= start);
     }
-
-    // 3. Lọc theo Ngày kết thúc (Đến ngày)
     if (endDate) {
-      // Cộng thêm 1 ngày (24h) để lấy trọn vẹn ngày kết thúc
       const end = new Date(endDate).getTime() + 86400000;
       result = result.filter((c) => new Date(c.createdAt).getTime() <= end);
     }
 
     setFilteredContracts(result);
-  }, [contracts, roleFilter, startDate, endDate, walletAddress]);
+  }, [contracts, roleFilter, startDate, endDate, statusFilter, walletAddress]);
 
-  // --- Các hàm xử lý sự kiện ---
+  // --- CÁC HÀM XỬ LÝ SỰ KIỆN ---
   const handleShowQR = (address) => {
     setSelectedContractAddress(address);
     setShowQRModal(true);
   };
 
-  const handleFilterChange = (role) => {
-    setSearchParams({ role });
+  // ĐÂY LÀ HÀM BỊ THIẾU ĐÃ ĐƯỢC THÊM LẠI
+  const handleCloseQR = () => {
+    setShowQRModal(false);
+    setSelectedContractAddress(null);
   };
 
-  // Hàm xuất Excel: Chỉ xuất danh sách đã lọc (filteredContracts)
   const handleExportExcel = () => {
     if (filteredContracts.length === 0) {
-      alert("Không có dữ liệu nào trong khoảng thời gian này để xuất!");
+      alert("Không có dữ liệu nào phù hợp với bộ lọc hiện tại để xuất!");
       return;
     }
 
-    // Đóng gói các tiêu chí lọc hiện tại
     const currentFilters = {
       role: roleFilter,
       startDate: startDate,
       endDate: endDate,
+      status: statusFilter,
     };
 
-    const fileName = `BaoCao_${startDate || "All"}đến${endDate || "All"}`;
-
-    // Truyền thêm currentFilters vào hàm
+    const fileName = `BaoCao_HD_Logistics`;
     exportContractToExcel(filteredContracts, currentFilters, fileName);
   };
 
@@ -123,45 +119,73 @@ const ContractListPage = () => {
         onExport={handleExportExcel}
       />
 
-      {/* --- KHU VỰC TÙY CHỌN LỌC (TIÊU CHÍ CHỌN) --- */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-4 bg-white p-4 rounded-xl shadow-sm border border-gray-100">
-        <ContractFilters
-          currentFilter={roleFilter}
-          onFilterChange={handleFilterChange}
-        />
+      {/* --- KHU VỰC BỘ LỌC NÂNG CAO --- */}
+      <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 mb-6">
+        <div className="flex items-center gap-2 mb-4">
+          <i className="uil uil-filter text-blue-600 text-lg"></i>
+          <h3 className="font-bold text-gray-800">
+            Bộ lọc & Trích xuất dữ liệu
+          </h3>
+        </div>
 
-        {/* Lọc theo ngày tháng */}
-        <div className="flex items-center gap-3 text-sm">
-          <div className="flex items-center gap-2">
-            <span className="text-gray-500 font-medium">Từ ngày:</span>
-            <input
-              type="date"
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
-              className="border border-gray-200 rounded-lg px-3 py-1.5 text-gray-700 outline-none focus:border-blue-500"
+        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
+          <div className="w-full lg:w-auto">
+            <ContractFilters
+              currentFilter={roleFilter}
+              onFilterChange={(role) => setSearchParams({ role })}
             />
           </div>
-          <div className="flex items-center gap-2">
-            <span className="text-gray-500 font-medium">Đến ngày:</span>
-            <input
-              type="date"
-              value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
-              className="border border-gray-200 rounded-lg px-3 py-1.5 text-gray-700 outline-none focus:border-blue-500"
-            />
+
+          <div className="flex flex-wrap items-center gap-4 text-sm w-full lg:w-auto p-4 bg-gray-50 rounded-xl">
+            <div className="flex items-center gap-2">
+              <span className="text-gray-500 font-medium">Trạng thái:</span>
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="border border-gray-200 rounded-lg px-3 py-2 text-gray-700 outline-none focus:border-blue-500 bg-white"
+              >
+                <option value="all">-- Tất cả --</option>
+                <option value="0">Mới tạo (Chờ nhận)</option>
+                <option value="1">Đã chấp nhận</option>
+                <option value="2">Đang thực hiện</option>
+                <option value="3">Đã hoàn thành (Chờ TT)</option>
+                <option value="4">Đã thanh toán (Xong)</option>
+                <option value="5">Đã hủy</option>
+              </select>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <span className="text-gray-500 font-medium">Từ:</span>
+              <input
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                className="border border-gray-200 rounded-lg px-3 py-1.5 text-gray-700 outline-none focus:border-blue-500 bg-white"
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-gray-500 font-medium">Đến:</span>
+              <input
+                type="date"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                className="border border-gray-200 rounded-lg px-3 py-1.5 text-gray-700 outline-none focus:border-blue-500 bg-white"
+              />
+            </div>
+
+            {(startDate || endDate || statusFilter !== "all") && (
+              <button
+                onClick={() => {
+                  setStartDate("");
+                  setEndDate("");
+                  setStatusFilter("all");
+                }}
+                className="text-red-500 hover:bg-red-50 px-3 py-2 rounded-lg transition-colors font-bold"
+              >
+                <i className="uil uil-times-circle"></i> Xóa lọc
+              </button>
+            )}
           </div>
-          {(startDate || endDate) && (
-            <button
-              onClick={() => {
-                setStartDate("");
-                setEndDate("");
-              }}
-              className="text-red-500 hover:bg-red-50 px-2 py-1.5 rounded-lg transition-colors font-medium cursor-pointer"
-              title="Xóa bộ lọc ngày"
-            >
-              Xóa lọc
-            </button>
-          )}
         </div>
       </div>
 
@@ -177,7 +201,7 @@ const ContractListPage = () => {
         </div>
       ) : (
         <ContractTable
-          contracts={filteredContracts} // <--- Truyền mảng đã lọc vào Table
+          contracts={filteredContracts}
           loading={loading}
           walletAddress={walletAddress}
           onShowQR={handleShowQR}
@@ -186,15 +210,16 @@ const ContractListPage = () => {
       )}
 
       {!loading && walletAddress && (
-        <p className="text-xs text-gray-400 mt-4 ml-2">
-          Đang hiển thị {filteredContracts.length} / {contracts.length} hợp
-          đồng.
+        <p className="text-xs text-gray-400 mt-4 ml-2 font-medium">
+          <i className="uil uil-info-circle"></i> Đang hiển thị{" "}
+          {filteredContracts.length} / {contracts.length} hợp đồng theo tiêu
+          chí.
         </p>
       )}
 
       <QRModal
         show={showQRModal}
-        onClose={() => setShowQRModal(false)}
+        onClose={handleCloseQR}
         contractId={selectedContractAddress}
       />
     </div>
