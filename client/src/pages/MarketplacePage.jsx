@@ -15,9 +15,8 @@ const MarketplacePage = () => {
     const fetchAvailableContracts = async () => {
       try {
         setLoading(true);
-        const response = await axios.get(
-          "http://localhost:5000/api/contracts/available"
-        );
+        const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+        const response = await axios.get(`${API_URL}/api/contracts/available`);
         let data = response.data;
 
         if (filter === "newest") {
@@ -164,7 +163,7 @@ const MarketplacePage = () => {
                           <button
                             onClick={() =>
                               navigate(
-                                `/dashboard/contract/${contract.contractAddress}`
+                                `/dashboard/contract/${contract.contractAddress}`,
                               )
                             }
                             className="bg-blue-600 text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-blue-700 hover:shadow-lg 

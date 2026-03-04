@@ -45,10 +45,9 @@ const ContractDetailsPage = () => {
       if (providerAddr) {
         payload.provider = providerAddr;
       }
-      await axios.put(
-        "http://localhost:5000/api/contracts/update-status",
-        payload
-      );
+
+      const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+      await axios.put(`${API_URL}/api/contracts/update-status`, payload);
       console.log("✅ Đã đồng bộ Database!");
     } catch (error) {
       console.error("❌ Lỗi đồng bộ:", error);
@@ -338,8 +337,8 @@ const ContractDetailsPage = () => {
               {actionLoading
                 ? "Đang xử lý..."
                 : isOverdue
-                ? `Xác nhận & Phạt (${details.penalty} ETH)`
-                : "Xác nhận & Thanh toán"}
+                  ? `Xác nhận & Phạt (${details.penalty} ETH)`
+                  : "Xác nhận & Thanh toán"}
             </button>
           </div>
         )}
