@@ -13,6 +13,7 @@
     "@tailwindcss/vite": "^4.1.17",
     "axios": "^1.13.2",
     "ethers": "^6.15.0",
+    "html2pdf.js": "^0.14.0",
     "qrcode.react": "^4.2.0",
     "react": "^19.2.0",
     "react-blockies": "^1.4.1",

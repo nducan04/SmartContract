@@ -1,8 +1,12 @@
 import * as XLSX from "xlsx";
 
-const formatDate = (dateString) => {
-  if (!dateString) return "";
-  return new Date(dateString).toLocaleDateString("vi-VN");
+const formatDate = (timestamp) => {
+  if (!timestamp) return "";
+  // Kiểm tra nếu là dạng timestamp giây (từ blockchain) hay dạng Date string (từ DB)
+  if (timestamp.toString().length === 10) {
+    return new Date(Number(timestamp) * 1000).toLocaleString("vi-VN");
+  }
+  return new Date(timestamp).toLocaleString("vi-VN");
 };
 
 const getStatusText = (status) => {
@@ -17,79 +21,88 @@ const getStatusText = (status) => {
   return statusMap[status] || "Không rõ";
 };
 
-// 1. THÊM THAM SỐ filters VÀO HÀM
 export const exportContractToExcel = (
   contracts,
   filters,
   fileName = "DanhSachHopDong",
 ) => {
-  // 2. CHUẨN BỊ THÔNG TIN "TIÊU CHÍ CHỌN" ĐỂ IN LÊN ĐẦU FILE
   const roleText =
     filters.role === "client"
-      ? "Người gửi (Client)"
+      ? "Người gửi"
       : filters.role === "provider"
-        ? "Vận chuyển (Provider)"
+        ? "Vận chuyển"
         : filters.role === "receiver"
-          ? "Người nhận (Receiver)"
+          ? "Người nhận"
           : "Tất cả";
+  const startText = filters.startDate ? filters.startDate : "Từ lúc bắt đầu";
+  const endText = filters.endDate ? filters.endDate : "Đến hiện tại";
+  const statusText =
+    filters.status !== "all"
+      ? getStatusText(Number(filters.status))
+      : "Tất cả trạng thái";
 
-  const startText = filters.startDate
-    ? formatDate(filters.startDate)
-    : "Từ lúc bắt đầu";
-  const endText = filters.endDate
-    ? formatDate(filters.endDate)
-    : "Đến hiện tại";
-
-  // Tạo mảng các dòng (Rows) chứa tiêu chí báo cáo
   const criteriaRows = [
     ["BÁO CÁO DANH SÁCH HỢP ĐỒNG LOGISTICS BLOCKCHAIN"],
-    [], // Dòng trống cho thoáng
-    ["--- BÁO CÁO TIÊU CHÍ CHỌN ---"],
-    ["Vai trò lọc:", roleText],
-    ["Khoảng thời gian:", `${startText}  đến  ${endText}`],
-    ["Tổng số hợp đồng:", `${contracts.length}`],
-    ["Ngày xuất báo cáo:", new Date().toLocaleString("vi-VN")],
-    [], // Dòng trống
+    [],
+    ["--- TIÊU CHÍ TRÍCH XUẤT ---"],
+    ["Vai trò tham gia:", roleText],
+    ["Trạng thái hợp đồng:", statusText], // Thêm dòng trạng thái
+    ["Khoảng thời gian tạo:", `${startText}  đến  ${endText}`],
+    ["Tổng số lượng HĐ:", `${contracts.length}`],
+    ["Ngày xuất dữ liệu:", new Date().toLocaleString("vi-VN")],
+    [],
   ];
 
-  // 3. Chuẩn bị dữ liệu bảng như cũ
-  const dataToExport = contracts.map((c, index) => ({
-    STT: index + 1,
-    "Mã Hợp Đồng": c.contractAddress,
-    "Nội dung": c.terms,
-    "Ngày tạo": formatDate(c.createdAt),
-    "Người Gửi (Client)": c.client,
-    "Vận Chuyển (Provider)": c.provider,
-    "Người Nhận (Receiver)": c.receiver,
-    "Giá trị (ETH)": c.amount,
-    "Trạng thái": getStatusText(c.status),
-    "Link Tài liệu (IPFS)": `https://gateway.pinata.cloud/ipfs/${c.termsHash}`,
-  }));
+  // THÊM NHIỀU CỘT DỮ LIỆU HƠN VÀO ĐÂY
+  const dataToExport = contracts.map((c, index) => {
+    // Tính toán trễ hạn: Nếu trạng thái chưa thanh toán (< 4) và hiện tại lớn hơn hạn chót
+    // Lưu ý: c.deadline lưu trong DB có thể không đồng bộ, nhưng nếu có ta sẽ tính
+    let isLateText = "Đúng hạn";
+    if (c.deadline && c.status < 4 && Date.now() / 1000 > c.deadline) {
+      isLateText = "⚠ ĐÃ TRỄ HẠN";
+    } else if (c.status >= 4 && c.isLate) {
+      isLateText = "Đã phạt trễ";
+    }
 
-  // 4. GHI DỮ LIỆU VÀO SHEET
-  // 4.1. Ghi phần tiêu chí lên trước
+    return {
+      STT: index + 1,
+      "Mã Hợp Đồng Blockchain": c.contractAddress,
+      "Tóm tắt Nội dung": c.terms,
+      "Ngày khởi tạo": formatDate(c.createdAt),
+      "Hạn chót cam kết (Deadline)": formatDate(c.deadline) || "Chưa đồng bộ", // Cột mới
+      "Bên Giao (Client)": c.client,
+      "Bên Vận Chuyển (Provider)": c.provider || "Chưa có",
+      "Bên Nhận (Receiver)": c.receiver,
+      "Giá trị (ETH)": c.amount,
+      "Phạt vi phạm (ETH)": c.penalty || 0, // Cột mới
+      "Trạng thái HĐ": getStatusText(c.status),
+      "Đánh giá tiến độ": isLateText, // Cột mới thể hiện có trễ hạn hay không
+      "Link File Gốc (IPFS)": `https://gateway.pinata.cloud/ipfs/${c.termsHash}`,
+    };
+  });
+
   const worksheet = XLSX.utils.aoa_to_sheet(criteriaRows);
+  XLSX.utils.sheet_add_json(worksheet, dataToExport, { origin: "A10" });
 
-  // 4.2. Nối cái bảng dữ liệu vào phía dưới tiêu chí (bắt đầu từ dòng số 9 - ô A9)
-  XLSX.utils.sheet_add_json(worksheet, dataToExport, { origin: "A9" });
-
-  // 5. Chỉnh độ rộng cột cho đẹp
+  // Mở rộng độ rộng các cột cho phù hợp
   const wscols = [
-    { wch: 20 }, // Cột A (Chứa tiêu đề tiêu chí)
+    { wch: 6 }, // STT
     { wch: 45 }, // ID
-    { wch: 30 }, // Nội dung
-    { wch: 15 }, // Ngày
+    { wch: 35 }, // Nội dung
+    { wch: 20 }, // Ngày tạo
+    { wch: 20 }, // Hạn chót
     { wch: 45 }, // Client
     { wch: 45 }, // Provider
     { wch: 45 }, // Receiver
-    { wch: 10 }, // Giá trị
+    { wch: 15 }, // Giá trị
+    { wch: 15 }, // Phạt
     { wch: 20 }, // Trạng thái
-    { wch: 50 }, // Link
+    { wch: 20 }, // Đánh giá tiến độ
+    { wch: 55 }, // Link
   ];
   worksheet["!cols"] = wscols;
 
-  // 6. Xuất file
   const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, "DS Hợp Đồng");
+  XLSX.utils.book_append_sheet(workbook, worksheet, "DS Hợp Đồng Chi Tiết");
   XLSX.writeFile(workbook, `${fileName}_${Date.now()}.xlsx`);
 };

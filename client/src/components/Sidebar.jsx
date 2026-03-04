@@ -19,12 +19,10 @@ const Sidebar = ({ isMobileOpen, closeMobileMenu }) => {
       <aside
         className={`
           fixed top-0 left-0 z-50 h-screen w-72 bg-white border-r border-gray-100 flex flex-col 
-          shadow-[4px_0_24px_rgba(0,0,0,0.02)] transition-transform duration-300 ease-in-out
+          shadow-[4px_0_24px_rgba(0,0,0,0.02)] transition-transform duration-300 ease-in-out print:hidden
           
-          /* Mobile: Ẩn/Hiện dựa vào biến isMobileOpen */
           ${isMobileOpen ? "translate-x-0" : "-translate-x-full"}
           
-          /* Desktop: Luôn hiển thị (Ghi đè trạng thái mobile) */
           md:translate-x-0
         `}
       >
