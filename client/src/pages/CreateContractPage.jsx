@@ -16,7 +16,7 @@ const CreateContractPage = () => {
   const [error, setError] = useState("");
   const [status, setStatus] = useState("");
 
-  const { factoryContract, signer, walletAddress } = useWeb3();
+  const { factoryContract, signer, walletAddress, walletBalance } = useWeb3();
   const navigate = useNavigate();
 
   const uploadToIPFS = async () => {
@@ -24,7 +24,7 @@ const CreateContractPage = () => {
       setError("Vui lòng chọn một file điều khoản.");
       return null;
     }
-    setStatus("⏳ Đang tải file lên IPFS...");
+    setStatus("Đang tải file lên IPFS...");
     const url = `https://api.pinata.cloud/pinning/pinFileToIPFS`;
     const formData = new FormData();
     formData.append("file", file);
@@ -40,7 +40,7 @@ const CreateContractPage = () => {
       return response.data.IpfsHash;
     } catch (err) {
       console.error(err);
-      setError("❌ Lỗi tải IPFS. Kiểm tra API Key.");
+      setError("Lỗi tải IPFS. Kiểm tra API Key.");
       return null;
     }
   };
@@ -58,7 +58,22 @@ const CreateContractPage = () => {
       setError("Địa chỉ ví không hợp lệ.");
       return;
     }
+    if (!amount || isNaN(amount)) {
+      alert("Vui lòng nhập số tiền ký quỹ hợp lệ!");
+      return;
+    }
 
+    // 2. Tính toán số dư (Cộng thêm 0.002 ETH làm phí Gas dự phòng)
+    const requiredAmount = parseFloat(amount) + 0.002;
+    const currentBalance = parseFloat(walletBalance);
+
+    // 3. So sánh
+    if (currentBalance < requiredAmount) {
+      setError(
+        `TÀI KHOẢN KHÔNG ĐỦ TIỀN!\n\nSố dư của bạn: ${currentBalance} ETH\nBạn cần ít nhất: ${requiredAmount.toFixed(4)} ETH (đã bao gồm ~0.002 ETH phí Gas).\n\nVui lòng nạp thêm tiền vào ví để tạo hợp đồng.`,
+      );
+      return;
+    }
     // Validate số tiền
     const amountNum = parseFloat(amount);
     const penaltyNum = parseFloat(penalty);
@@ -80,7 +95,7 @@ const CreateContractPage = () => {
     }
 
     try {
-      setStatus("✍ Đang ký xác nhận trên ví...");
+      setStatus("Đang ký xác nhận trên ví...");
       const amountInWei = ethers.parseEther(amount);
       const penaltyInWei = ethers.parseEther(penalty || "0");
       const deadlineTimestamp = Math.floor(new Date(deadline).getTime() / 1000);
@@ -91,17 +106,17 @@ const CreateContractPage = () => {
         termsHash,
         deadlineTimestamp,
         penaltyInWei,
-        { value: amountInWei }
+        { value: amountInWei },
       );
 
-      setStatus("🚀 Đang chờ Blockchain xác nhận...");
+      setStatus("Đang chờ Blockchain xác nhận...");
       await tx.wait();
 
-      setStatus("✅ Thành công! Đang chuyển hướng...");
+      setStatus("Thành công! Đang chuyển hướng...");
       setTimeout(() => navigate("/dashboard/contracts"), 2000);
     } catch (err) {
       console.error(err);
-      setError("❌ Giao dịch thất bại.");
+      setError("Giao dịch thất bại.");
     } finally {
       setLoading(false);
     }
