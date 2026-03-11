@@ -36,6 +36,19 @@ const MarketplacePage = () => {
     fetchAvailableContracts();
   }, [filter]);
 
+  // HÀM GIẢI MÃ JSON (Tương tự bên chi tiết)
+  const parseTerms = (termsString) => {
+    try {
+      const parsed = JSON.parse(termsString);
+      if (parsed && typeof parsed === "object" && "partyA_name" in parsed) {
+        return parsed;
+      }
+      return null;
+    } catch (error) {
+      return null;
+    }
+  };
+
   return (
     <div className="p-2">
       {/* HEADER + FILTER */}
@@ -90,9 +103,9 @@ const MarketplacePage = () => {
               <thead>
                 <tr className="bg-gray-50 border-b border-gray-200 text-xs uppercase text-gray-500 font-bold tracking-wider">
                   <th className="px-6 py-4">Nội dung đơn hàng</th>
-                  <th className="px-6 py-4">Khách hàng (Client)</th>
-                  <th className="px-6 py-4">Nơi nhận (Receiver)</th>
-                  <th className="px-6 py-4">Thù lao</th>
+                  <th className="px-6 py-4">Bên Giao (Client)</th>
+                  <th className="px-6 py-4">Bên Nhận (Receiver)</th>
+                  <th className="px-6 py-4">Thù lao / Ký quỹ</th>
                   <th className="px-6 py-4 text-center">Hành động</th>
                 </tr>
               </thead>
@@ -106,28 +119,40 @@ const MarketplacePage = () => {
                   const isReceiver =
                     currentWallet === contract.receiver.toLowerCase();
 
+                  // SỬ LÝ HIỂN THỊ TÊN THAY VÌ ĐỊA CHỈ VÍ
+                  const parsedTerms = parseTerms(contract.terms);
+                  const displayTitle = parsedTerms
+                    ? parsedTerms.art1_items
+                    : contract.terms;
+                  const clientName =
+                    parsedTerms && parsedTerms.partyA_name
+                      ? parsedTerms.partyA_name
+                      : null;
+                  const receiverName =
+                    parsedTerms && parsedTerms.partyB_name
+                      ? parsedTerms.partyB_name
+                      : null;
+
                   return (
                     <tr
                       key={contract._id}
                       className="hover:bg-blue-50/50 transition-colors group"
                     >
+                      {/* NỘI DUNG */}
                       <td className="px-6 py-4 max-w-xs">
                         <p
                           className="text-sm font-bold text-gray-800 truncate mb-2"
-                          title={contract.terms}
+                          title={displayTitle}
                         >
-                          {contract.terms}
+                          {displayTitle}
                         </p>
-
                         <div className="flex items-center gap-2">
                           <span className="shrink-0 text-[10px] bg-green-100 text-green-700 px-2 py-0.5 rounded font-bold border border-green-200 uppercase tracking-wide">
                             Mới
                           </span>
-
                           <span className="text-xs text-gray-400 font-medium ml-1">
                             ID:
                           </span>
-
                           <div className="-ml-1">
                             <AddressDisplay
                               address={contract.contractAddress}
@@ -136,20 +161,52 @@ const MarketplacePage = () => {
                         </div>
                       </td>
 
+                      {/* BÊN GIAO (BÊN A) */}
                       <td className="px-6 py-4">
-                        <AddressDisplay address={contract.client} />
+                        {clientName ? (
+                          <div>
+                            <p
+                              className="text-sm font-bold text-gray-800 truncate max-w-40"
+                              title={clientName}
+                            >
+                              {clientName}
+                            </p>
+                            <div className="text-xs text-gray-400 mt-1">
+                              <AddressDisplay address={contract.client} />
+                            </div>
+                          </div>
+                        ) : (
+                          <AddressDisplay address={contract.client} />
+                        )}
                       </td>
 
+                      {/* BÊN NHẬN (BÊN B) */}
                       <td className="px-6 py-4">
-                        <AddressDisplay address={contract.receiver} />
+                        {receiverName ? (
+                          <div>
+                            <p
+                              className="text-sm font-bold text-gray-800 truncate max-w-40"
+                              title={receiverName}
+                            >
+                              {receiverName}
+                            </p>
+                            <div className="text-xs text-gray-400 mt-1">
+                              <AddressDisplay address={contract.receiver} />
+                            </div>
+                          </div>
+                        ) : (
+                          <AddressDisplay address={contract.receiver} />
+                        )}
                       </td>
 
+                      {/* THÙ LAO */}
                       <td className="px-6 py-4">
-                        <span className="text-lg font-bold text-blue-600 bg-blue-50 px-3 py-1 rounded-lg">
+                        <span className="text-lg font-bold text-blue-600 bg-blue-50 px-3 py-1 rounded-lg border border-blue-100">
                           {contract.amount} <span className="text-xs">ETH</span>
                         </span>
                       </td>
 
+                      {/* NÚT HÀNH ĐỘNG */}
                       <td className="px-6 py-4 text-center">
                         {isClient ? (
                           <span className="text-xs font-bold text-gray-400 bg-gray-100 px-3 py-1.5 rounded-lg cursor-not-allowed">
@@ -166,8 +223,7 @@ const MarketplacePage = () => {
                                 `/dashboard/contract/${contract.contractAddress}`,
                               )
                             }
-                            className="bg-blue-600 text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-blue-700 hover:shadow-lg 
-                            hover:shadow-blue-200 transition-all transform active:scale-95 cursor-pointer"
+                            className="bg-blue-600 text-white px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-blue-700 hover:shadow-lg hover:shadow-blue-200 transition-all transform active:scale-95 cursor-pointer"
                           >
                             Nhận việc ngay
                           </button>

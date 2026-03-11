@@ -3,7 +3,6 @@ import { useParams } from "react-router-dom";
 import { useWeb3 } from "../context/Web3Context";
 import { ethers } from "ethers";
 import axios from "axios";
-import AddressDisplay from "../components/AddressDisplay";
 
 const ContractDetailsPage = () => {
   const { id } = useParams();
@@ -33,6 +32,20 @@ const ContractDetailsPage = () => {
   const formatDate = (timestamp) => {
     if (!timestamp) return "N/A";
     return new Date(Number(timestamp) * 1000).toLocaleString("vi-VN");
+  };
+
+  // --- HÀM MỚI: KIỂM TRA & GIẢI MÃ DỮ LIỆU JSON ---
+  const parseTerms = (termsString) => {
+    try {
+      const parsed = JSON.parse(termsString);
+      // Đảm bảo đây là cục JSON có cấu trúc form mới của mình
+      if (parsed && typeof parsed === "object" && "partyA_name" in parsed) {
+        return parsed;
+      }
+      return null;
+    } catch (error) {
+      return null; // Nếu lỗi parse (đây là chuỗi text của hợp đồng cũ) thì trả về null
+    }
   };
 
   const syncToBackend = async (newStatus, providerAddr = null) => {
@@ -136,9 +149,8 @@ const ContractDetailsPage = () => {
     }
   };
 
-  // --- SỬA HÀM XUẤT PDF TẠI ĐÂY ---
   const handleDownloadPDF = () => {
-    window.print(); // Gọi lệnh in siêu mượt của trình duyệt
+    window.print();
   };
 
   if (loading)
@@ -158,156 +170,339 @@ const ContractDetailsPage = () => {
   const isOverdue =
     Date.now() / 1000 > Number(details.deadline) && details.state < 4;
 
+  // Lấy dữ liệu JSON (Nếu có)
+  const parsedTerms = parseTerms(details.terms);
+
   return (
-    // Thêm print:p-0 print:m-0 để khi in nó tràn viền đẹp mắt
-    <div className="p-4 md:p-6 max-w-4xl mx-auto relative print:p-0 print:m-0 print:max-w-none">
-      {/* NÚT TẢI PDF - Thêm print:hidden để khi in không bị dính cái nút này vào giấy */}
-      <div className="flex justify-end mb-4 print:hidden">
+    <div className="p-4 md:p-6 max-w-5xl mx-auto relative print:p-0 print:m-0 print:max-w-none">
+      {/* HEADER & NÚT IN PDF NẰM NGOÀI BẢN IN */}
+      <div className="flex flex-wrap justify-between items-center mb-6 print:hidden gap-4">
+        <div className="flex items-center gap-3">
+          <span
+            className={`px-4 py-2 rounded-full font-bold text-sm ${stateColors[details.state]}`}
+          >
+            {stateLabels[details.state]}
+          </span>
+          {details.isLate && (
+            <span className="text-xs font-bold text-red-600 bg-red-50 px-2 py-1 rounded">
+              ⚠ Trễ hạn
+            </span>
+          )}
+        </div>
         <button
           onClick={handleDownloadPDF}
           className="bg-gray-800 text-white px-5 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2 hover:bg-gray-900 transition-all shadow-lg transform active:scale-95 cursor-pointer"
         >
-          <i className="uil uil-print text-lg"></i> In / Lưu PDF
+          <i className="uil uil-print text-lg"></i> In Báo Cáo / Lưu PDF
         </button>
       </div>
 
-      {/* VÙNG IN PDF */}
+      {/* VÙNG IN PDF - NỘI DUNG HỢP ĐỒNG */}
       <div
         id="printable-contract"
-        className="bg-white p-8 rounded-2xl shadow-sm border border-gray-200 print:shadow-none print:border-none print:p-0"
+        className="bg-white p-8 md:p-12 rounded-2xl shadow-sm border border-gray-200 print:shadow-none print:border-none print:p-0 text-gray-800"
       >
-        <div className="text-center mb-8 border-b-2 border-gray-800 pb-6">
-          <h2 className="text-2xl font-bold text-gray-800 uppercase tracking-wide">
-            Chứng Nhận Hợp Đồng Blockchain
-          </h2>
-          <p className="text-gray-500 mt-2 text-sm">
-            Được lưu trữ & xác thực minh bạch trên mạng lưới Ethereum (Sepolia
-            Testnet)
-          </p>
-        </div>
-
-        <div className="flex justify-between items-center mb-8">
-          <div>
-            <p className="text-sm text-gray-500 font-bold uppercase mb-1">
-              Mã Hợp Đồng (Smart Contract ID)
-            </p>
-            <p className="font-mono text-gray-800 font-bold text-sm bg-gray-100 px-3 py-1 rounded inline-block">
-              {id}
-            </p>
-          </div>
-          <div className="text-right">
-            <span
-              className={`px-4 py-2 rounded-full font-bold text-sm ${stateColors[details.state]}`}
-            >
-              {stateLabels[details.state]}
-            </span>
-            {details.isLate && (
-              <p className="mt-2 text-xs font-bold text-red-600">
-                ⚠ Đã ghi nhận vi phạm trễ hạn
+        {/* QUỐC HIỆU TIÊU NGỮ NẾU LÀ HỢP ĐỒNG MỚI */}
+        <div className="text-center mb-8">
+          {parsedTerms ? (
+            <>
+              <h2 className="text-lg font-bold uppercase">
+                Cộng hòa xã hội chủ nghĩa Việt Nam
+              </h2>
+              <p className="font-bold underline text-md mt-1">
+                Độc lập - Tự do - Hạnh phúc
               </p>
-            )}
-          </div>
+              <h1 className="text-2xl md:text-3xl font-bold mt-8 mb-2 uppercase">
+                Hợp đồng Giao nhận & Vận chuyển
+              </h1>
+              <p className="italic text-sm text-gray-500">
+                Mã số (Smart Contract ID): {id}
+              </p>
+            </>
+          ) : (
+            <div className="border-b-2 border-gray-800 pb-4">
+              <h2 className="text-2xl font-bold uppercase tracking-wide">
+                Chứng Nhận Hợp Đồng Blockchain
+              </h2>
+              <p className="text-sm text-gray-500 mt-2">Mã hợp đồng: {id}</p>
+            </div>
+          )}
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-          <div className="md:col-span-2 bg-gray-50 p-4 rounded-xl border border-gray-200 print:border print:border-gray-300">
-            <h3 className="text-xs font-bold text-gray-500 uppercase mb-2">
-              Tóm tắt nội dung dịch vụ
-            </h3>
-            <p className="text-gray-900 font-medium">{details.terms}</p>
-          </div>
-
-          <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 print:border print:border-gray-300">
-            <h3 className="text-xs font-bold text-blue-500 uppercase mb-1">
-              Giá trị ký quỹ / Thanh toán
-            </h3>
-            <p className="text-2xl font-bold text-blue-700">
-              {details.amount} ETH
+        {/* NẾU LÀ HỢP ĐỒNG MỚI ĐƯỢC TẠO THEO FORM CHUẨN */}
+        {parsedTerms ? (
+          <div className="space-y-6 text-sm md:text-base">
+            <p className="italic">
+              Hôm nay, ngày {formatDate(details.createdAt || Date.now() / 1000)}
+              , chúng tôi gồm có:
             </p>
-          </div>
 
-          <div
-            className={`${isOverdue ? "bg-red-50 border-red-200" : "bg-orange-50 border-orange-100"} p-4 rounded-xl border print:border print:border-gray-300`}
-          >
-            <h3
-              className={`text-xs font-bold uppercase mb-1 ${isOverdue ? "text-red-500" : "text-orange-600"}`}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-6">
+              {/* Bên A */}
+              <div>
+                <h3 className="font-bold text-lg uppercase mb-3 border-b border-gray-300 pb-1 text-blue-800">
+                  Bên Giao / Bên Bán (Bên A)
+                </h3>
+                <ul className="space-y-2">
+                  <li>
+                    <strong>Tên cá nhân/Tổ chức:</strong>{" "}
+                    {parsedTerms.partyA_name ||
+                      "..................................................."}
+                  </li>
+                  <li>
+                    <strong>Địa chỉ:</strong>{" "}
+                    {parsedTerms.partyA_address ||
+                      "..................................................."}
+                  </li>
+                  <li>
+                    <strong>Mã số thuế:</strong>{" "}
+                    {parsedTerms.partyA_mst ||
+                      "..................................................."}
+                  </li>
+                  <li>
+                    <strong>Người đại diện:</strong>{" "}
+                    {parsedTerms.partyA_rep ||
+                      "..................................................."}
+                  </li>
+                  <li className="break-all mt-2 pt-2 border-t border-dashed">
+                    <strong>Ví Blockchain xác thực:</strong>
+                    <br />
+                    <span className="font-mono text-xs text-gray-500">
+                      {details.client}
+                    </span>
+                  </li>
+                </ul>
+              </div>
+              {/* Bên B */}
+              <div>
+                <h3 className="font-bold text-lg uppercase mb-3 border-b border-gray-300 pb-1 text-blue-800">
+                  Bên Nhận / Bên Mua (Bên B)
+                </h3>
+                <ul className="space-y-2">
+                  <li>
+                    <strong>Tên cá nhân/Tổ chức:</strong>{" "}
+                    {parsedTerms.partyB_name ||
+                      "..................................................."}
+                  </li>
+                  <li>
+                    <strong>Địa chỉ:</strong>{" "}
+                    {parsedTerms.partyB_address ||
+                      "..................................................."}
+                  </li>
+                  <li>
+                    <strong>Mã số thuế:</strong>{" "}
+                    {parsedTerms.partyB_mst ||
+                      "..................................................."}
+                  </li>
+                  <li>
+                    <strong>Người đại diện:</strong>{" "}
+                    {parsedTerms.partyB_rep ||
+                      "..................................................."}
+                  </li>
+                  <li className="break-all mt-2 pt-2 border-t border-dashed">
+                    <strong>Ví Blockchain xác thực:</strong>
+                    <br />
+                    <span className="font-mono text-xs text-gray-500">
+                      {details.receiver}
+                    </span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            <p className="font-bold mt-6 mb-4">
+              Sau khi bàn bạc, hai bên thống nhất ký kết hợp đồng với những điều
+              khoản sau:
+            </p>
+
+            <div className="space-y-5 text-justify leading-relaxed">
+              <div>
+                <h4 className="font-bold underline">
+                  Điều 1: Tên hàng, số lượng, chất lượng
+                </h4>
+                <p className="whitespace-pre-wrap mt-1">
+                  {parsedTerms.art1_items}
+                </p>
+              </div>
+              <div>
+                <h4 className="font-bold underline">
+                  Điều 2: Quy cách đóng gói
+                </h4>
+                <p className="whitespace-pre-wrap mt-1">
+                  {parsedTerms.art2_packaging}
+                </p>
+              </div>
+              <div>
+                <h4 className="font-bold underline">
+                  Điều 3 & Điều 5: Giá cả và Phương thức thanh toán
+                </h4>
+                <p className="whitespace-pre-wrap mt-1">
+                  {parsedTerms.art3_price}
+                </p>
+                <div className="bg-gray-50 p-4 rounded-lg mt-3 border border-gray-200 print:border-gray-400">
+                  <p>
+                    🔹{" "}
+                    <strong>
+                      Giá trị thanh toán tự động qua Smart Contract:
+                    </strong>{" "}
+                    <span className="text-blue-700 font-bold text-lg">
+                      {details.amount} ETH
+                    </span>
+                  </p>
+                  <p>
+                    🔹 <strong>Phạt vi phạm (Khấu trừ nếu quá hạn):</strong>{" "}
+                    <span className="text-red-600 font-bold">
+                      {details.penalty} ETH
+                    </span>
+                  </p>
+                </div>
+              </div>
+              <div>
+                <h4 className="font-bold underline">
+                  Điều 4: Thời gian và Địa điểm giao hàng
+                </h4>
+                <p className="whitespace-pre-wrap mt-1">
+                  {parsedTerms.art4_delivery}
+                </p>
+                <p className="mt-2 font-bold text-red-600 bg-red-50 inline-block px-3 py-1 rounded print:border print:border-red-200">
+                  » Hạn chót cam kết ghi trên Blockchain:{" "}
+                  {formatDate(details.deadline)}
+                </p>
+              </div>
+              <div>
+                <h4 className="font-bold underline">
+                  Điều 6: Trách nhiệm mỗi bên
+                </h4>
+                <p className="mt-1 font-semibold">1. Trách nhiệm Bên A:</p>
+                <p className="whitespace-pre-wrap mb-2">
+                  {parsedTerms.art6_respA}
+                </p>
+                <p className="font-semibold">2. Trách nhiệm Bên B:</p>
+                <p className="whitespace-pre-wrap">{parsedTerms.art6_respB}</p>
+              </div>
+              <div>
+                <h4 className="font-bold underline">
+                  Điều 7: Điều khoản chung
+                </h4>
+                <p className="whitespace-pre-wrap mt-1">
+                  {parsedTerms.art7_general}
+                </p>
+              </div>
+              <div className="pt-4 mt-4 border-t border-gray-200 print:border-gray-400">
+                <h4 className="font-bold mb-1">
+                  🔗 Hồ sơ gốc đính kèm (Bản scan có chữ ký & dấu đỏ)
+                </h4>
+                <a
+                  href={`https://gateway.pinata.cloud/ipfs/${details.termsHash}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="break-all text-blue-600 hover:underline"
+                >
+                  https://gateway.pinata.cloud/ipfs/{details.termsHash}
+                </a>
+              </div>
+            </div>
+
+            {/* Chữ ký số */}
+            <div className="mt-12 grid grid-cols-2 text-center pb-12">
+              <div>
+                <p className="font-bold uppercase">Đại diện Bên A</p>
+                <p className="italic text-xs text-gray-500 mb-8">
+                  (Đã xác thực chữ ký điện tử)
+                </p>
+                <p className="font-mono text-xs font-bold text-blue-800 bg-blue-50 inline-block px-2 py-1 rounded break-all">
+                  {details.client}
+                </p>
+              </div>
+              <div>
+                <p className="font-bold uppercase">Đại diện Bên B</p>
+                <p className="italic text-xs text-gray-500 mb-8">
+                  (Đã xác thực chữ ký điện tử)
+                </p>
+                <p className="font-mono text-xs font-bold text-blue-800 bg-blue-50 inline-block px-2 py-1 rounded break-all">
+                  {details.receiver}
+                </p>
+              </div>
+            </div>
+          </div>
+        ) : (
+          /* NẾU LÀ HỢP ĐỒNG CŨ (KHÔNG PHẢI JSON) -> HIỂN THỊ GIAO DIỆN CŨ NHƯ TRƯỚC */
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <div className="md:col-span-2 bg-gray-50 p-4 rounded-xl border border-gray-200 print:border print:border-gray-300">
+              <h3 className="text-xs font-bold text-gray-500 uppercase mb-2">
+                Tóm tắt nội dung dịch vụ
+              </h3>
+              <p className="text-gray-900 font-medium">{details.terms}</p>
+            </div>
+            <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 print:border print:border-gray-300">
+              <h3 className="text-xs font-bold text-blue-500 uppercase mb-1">
+                Giá trị ký quỹ / Thanh toán
+              </h3>
+              <p className="text-2xl font-bold text-blue-700">
+                {details.amount} ETH
+              </p>
+            </div>
+            <div
+              className={`${isOverdue ? "bg-red-50 border-red-200" : "bg-orange-50 border-orange-100"} p-4 rounded-xl border print:border print:border-gray-300`}
             >
-              Thời hạn cam kết
-            </h3>
-            <p
-              className={`text-lg font-mono font-bold ${isOverdue ? "text-red-700" : "text-gray-800"}`}
-            >
-              {formatDate(details.deadline)}
-            </p>
+              <h3
+                className={`text-xs font-bold uppercase mb-1 ${isOverdue ? "text-red-500" : "text-orange-600"}`}
+              >
+                Thời hạn cam kết
+              </h3>
+              <p
+                className={`text-lg font-mono font-bold ${isOverdue ? "text-red-700" : "text-gray-800"}`}
+              >
+                {formatDate(details.deadline)}
+              </p>
+            </div>
+            <div className="bg-gray-50 p-4 rounded-xl border border-gray-200 print:border print:border-gray-300">
+              <h3 className="text-xs font-bold text-gray-500 uppercase mb-1">
+                Quy định phạt vi phạm
+              </h3>
+              <p className="text-lg font-mono text-gray-800 font-bold">
+                -{details.penalty} ETH
+              </p>
+            </div>
+            <div className="bg-gray-50 p-4 rounded-xl border border-gray-200 print:border print:border-gray-300">
+              <h3 className="text-xs font-bold text-gray-500 uppercase mb-1">
+                Tài liệu đính kèm (Bản gốc)
+              </h3>
+              <p className="text-xs text-blue-600 font-mono break-all mt-1">
+                https://gateway.pinata.cloud/ipfs/{details.termsHash}
+              </p>
+            </div>
+            {/* ... Phần bên tham gia của hợp đồng cũ ... */}
+            <div className="md:col-span-2 space-y-4 mt-4">
+              <div className="flex justify-between items-center border-b pb-2">
+                <span className="text-gray-600 font-bold text-sm">
+                  Bên Giao (Client):
+                </span>
+                <span className="font-mono text-sm text-gray-800">
+                  {details.client}
+                </span>
+              </div>
+              <div className="flex justify-between items-center border-b pb-2">
+                <span className="text-gray-600 font-bold text-sm">
+                  Bên Nhận (Receiver):
+                </span>
+                <span className="font-mono text-sm text-gray-800">
+                  {details.receiver}
+                </span>
+              </div>
+            </div>
           </div>
+        )}
 
-          <div className="bg-gray-50 p-4 rounded-xl border border-gray-200 print:border print:border-gray-300">
-            <h3 className="text-xs font-bold text-gray-500 uppercase mb-1">
-              Quy định phạt vi phạm
-            </h3>
-            <p className="text-lg font-mono text-gray-800 font-bold">
-              -{details.penalty} ETH{" "}
-              <span className="text-xs font-normal text-gray-500">
-                (nếu giao muộn)
-              </span>
-            </p>
-          </div>
-
-          <div className="bg-gray-50 p-4 rounded-xl border border-gray-200 print:border print:border-gray-300">
-            <h3 className="text-xs font-bold text-gray-500 uppercase mb-1">
-              Tài liệu đính kèm (Bản gốc)
-            </h3>
-            <p className="text-xs text-blue-600 font-mono break-all mt-1">
-              https://gateway.pinata.cloud/ipfs/{details.termsHash}
-            </p>
-          </div>
-        </div>
-
-        <h3 className="font-bold text-gray-900 mb-4 uppercase border-b pb-2">
-          Định danh các bên tham gia
-        </h3>
-        <div className="space-y-4 mb-8">
-          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center bg-gray-50 p-3 rounded-lg border border-gray-100 print:border print:border-gray-300">
-            <span className="text-gray-600 font-bold text-sm mb-1 sm:mb-0">
-              Bên Giao (Client):
-            </span>
-            <span className="font-mono text-sm text-gray-800">
-              {details.client}
-            </span>
-          </div>
-          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center bg-gray-50 p-3 rounded-lg border border-gray-100 print:border print:border-gray-300">
-            <span className="text-gray-600 font-bold text-sm mb-1 sm:mb-0">
-              Bên Vận Chuyển (Provider):
-            </span>
-            <span className="font-mono text-sm text-gray-800">
-              {details.provider === "0x0000000000000000000000000000000000000000"
-                ? "(Chưa có người nhận)"
-                : details.provider}
-            </span>
-          </div>
-          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center bg-gray-50 p-3 rounded-lg border border-gray-100 print:border print:border-gray-300">
-            <span className="text-gray-600 font-bold text-sm mb-1 sm:mb-0">
-              Bên Nhận (Receiver):
-            </span>
-            <span className="font-mono text-sm text-gray-800">
-              {details.receiver}
-            </span>
-          </div>
-        </div>
-
-        <div className="mt-12 text-center text-xs text-gray-400 italic">
+        <div className="mt-8 text-center text-xs text-gray-400 italic">
           <p>
-            Tài liệu này được trích xuất tự động từ Hệ thống Quản lý Logistics
+            Hợp đồng này được khởi tạo và bảo vệ bằng mật mã học trên
             Blockchain.
-          </p>
-          <p>
-            Dữ liệu mang tính chất tham chiếu, được bảo vệ bằng mật mã học và
-            không thể giả mạo.
           </p>
         </div>
       </div>
 
-      {/* KHU VỰC NÚT HÀNH ĐỘNG - Thêm print:hidden */}
+      {/* KHU VỰC NÚT HÀNH ĐỘNG */}
       <div className="flex flex-wrap justify-end gap-4 mt-6 print:hidden">
         {details.state === 0 &&
           currentWallet !== details.client?.toLowerCase() &&
@@ -317,7 +512,7 @@ const ContractDetailsPage = () => {
               disabled={actionLoading}
               className="px-6 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 shadow-lg cursor-pointer"
             >
-              {actionLoading ? "Đang xử lý..." : "Nhận đơn hàng này"}
+              {actionLoading ? "Đang xử lý..." : "Nhận vận chuyển đơn hàng này"}
             </button>
           )}
         {details.state === 1 && isProvider && (
@@ -342,7 +537,7 @@ const ContractDetailsPage = () => {
           <div className="flex flex-col items-end gap-2 w-full md:w-auto">
             {isOverdue && (
               <span className="text-red-600 font-bold text-sm bg-red-50 px-3 py-1 rounded-lg border border-red-100">
-                ⚠ Đơn hàng đã quá hạn. Hệ thống sẽ tự động trừ phạt.
+                ⚠ Đơn hàng quá hạn. Hệ thống sẽ tự động trừ tiền phạt.
               </span>
             )}
             <button
@@ -354,7 +549,7 @@ const ContractDetailsPage = () => {
                 ? "Đang xử lý..."
                 : isOverdue
                   ? `Xác nhận & Phạt (${details.penalty} ETH)`
-                  : "Xác nhận hàng & Thanh toán"}
+                  : "Xác nhận & Thanh toán cho Vận chuyển"}
             </button>
           </div>
         )}
