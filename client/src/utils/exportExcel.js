@@ -1,12 +1,12 @@
 import * as XLSX from "xlsx";
+import { ethers } from "ethers";
 
 const formatDate = (timestamp) => {
   if (!timestamp) return "";
-  // Kiểm tra nếu là dạng timestamp giây (từ blockchain) hay dạng Date string (từ DB)
   if (timestamp.toString().length === 10) {
-    return new Date(Number(timestamp) * 1000).toLocaleString("vi-VN");
+    return new Date(Number(timestamp) * 1000).toLocaleDateString("vi-VN");
   }
-  return new Date(timestamp).toLocaleString("vi-VN");
+  return new Date(timestamp).toLocaleDateString("vi-VN");
 };
 
 const getStatusText = (status) => {
@@ -21,62 +21,129 @@ const getStatusText = (status) => {
   return statusMap[status] || "Không rõ";
 };
 
-export const exportContractToExcel = (
+const parseTerms = (termsString) => {
+  try {
+    const parsed = JSON.parse(termsString);
+    if (parsed && typeof parsed === "object" && "partyA_name" in parsed)
+      return parsed;
+    return null;
+  } catch (error) {
+    return null;
+  }
+};
+
+export const exportContractToExcel = async (
   contracts,
   filters,
-  fileName = "DanhSachHopDong",
+  fileName = "BaoCao_HopDong",
 ) => {
-  const roleText =
-    filters.role === "client"
-      ? "Người gửi"
-      : filters.role === "provider"
-        ? "Vận chuyển"
-        : filters.role === "receiver"
-          ? "Người nhận"
-          : "Tất cả";
-  const startText = filters.startDate ? filters.startDate : "Từ lúc bắt đầu";
-  const endText = filters.endDate ? filters.endDate : "Đến hiện tại";
+  alert(
+    "⏳ Hệ thống đang trích xuất dữ liệu chi tiết từ Blockchain. Vui lòng đợi trong giây lát...",
+  );
+
+  // 1. KÉO DỮ LIỆU TỪ BLOCKCHAIN CHO CÁC HỢP ĐỒNG BỊ THIẾU JSON
+  const rpcProvider = new ethers.JsonRpcProvider(
+    "https://ethereum-sepolia-rpc.publicnode.com",
+  );
+  const abi = [
+    "function getAgreementDetails() view returns (uint8, address, address, address, uint256, string terms)",
+  ];
+
+  const hydratedContracts = await Promise.all(
+    contracts.map(async (c) => {
+      if (!c.terms || !c.terms.includes("partyA_name")) {
+        try {
+          const sc = new ethers.Contract(c.contractAddress, abi, rpcProvider);
+          const data = await sc.getAgreementDetails();
+          return { ...c, terms: data[5] };
+        } catch (e) {
+          return c;
+        }
+      }
+      return c;
+    }),
+  );
+
+  // 2. CHUẨN HÓA VĂN BẢN CHO TIÊU CHÍ LỌC (Fix lỗi lủng củng)
+  const roleMap = {
+    client: "Người giao (Bên A)",
+    provider: "Đơn vị vận chuyển",
+    receiver: "Người nhận (Bên B)",
+    all: "Tất cả các vai trò",
+  };
+  const roleText = roleMap[filters.role] || "Tất cả";
+
   const statusText =
     filters.status !== "all"
       ? getStatusText(Number(filters.status))
       : "Tất cả trạng thái";
 
+  // Xử lý logic câu chữ thời gian cho mượt mà
+  let timeText = "Toàn bộ thời gian";
+  if (filters.startDate || filters.endDate) {
+    const s = filters.startDate
+      ? new Date(filters.startDate).toLocaleDateString("vi-VN")
+      : "Bắt đầu";
+    const e = filters.endDate
+      ? new Date(filters.endDate).toLocaleDateString("vi-VN")
+      : "Hiện tại";
+    timeText = `Từ ngày ${s} đến ${e}`;
+  }
+
+  // 3. TẠO HEADER BÁO CÁO
   const criteriaRows = [
-    ["BÁO CÁO DANH SÁCH HỢP ĐỒNG LOGISTICS BLOCKCHAIN"],
+    ["BÁO CÁO TỔNG HỢP GIAO DỊCH LOGISTICS BLOCKCHAIN"],
     [],
-    ["--- TIÊU CHÍ TRÍCH XUẤT ---"],
+    ["--- TIÊU CHÍ LỌC DỮ LIỆU ---"],
     ["Vai trò tham gia:", roleText],
-    ["Trạng thái hợp đồng:", statusText], // Thêm dòng trạng thái
-    ["Khoảng thời gian tạo:", `${startText}  đến  ${endText}`],
-    ["Tổng số lượng HĐ:", `${contracts.length}`],
-    ["Ngày xuất dữ liệu:", new Date().toLocaleString("vi-VN")],
+    ["Trạng thái hợp đồng:", statusText],
+    ["Khoảng thời gian tạo:", timeText],
+    ["Tổng số lượng HĐ:", hydratedContracts.length],
+    ["Ngày xuất báo cáo:", new Date().toLocaleString("vi-VN")],
     [],
   ];
 
-  // THÊM NHIỀU CỘT DỮ LIỆU HƠN VÀO ĐÂY
-  const dataToExport = contracts.map((c, index) => {
-    // Tính toán trễ hạn: Nếu trạng thái chưa thanh toán (< 4) và hiện tại lớn hơn hạn chót
-    // Lưu ý: c.deadline lưu trong DB có thể không đồng bộ, nhưng nếu có ta sẽ tính
+  // 4. ĐỔ DỮ LIỆU VÀO CÁC CỘT
+  const dataToExport = hydratedContracts.map((c, index) => {
     let isLateText = "Đúng hạn";
     if (c.deadline && c.status < 4 && Date.now() / 1000 > c.deadline) {
       isLateText = "⚠ ĐÃ TRỄ HẠN";
     } else if (c.status >= 4 && c.isLate) {
-      isLateText = "Đã phạt trễ";
+      isLateText = "Đã bị phạt trễ";
     }
+
+    const parsedTerms = parseTerms(c.terms);
+    const clientDisplay = parsedTerms
+      ? `${parsedTerms.partyA_name}\n(Ví: ${c.client})`
+      : c.client;
+    const receiverDisplay = parsedTerms
+      ? `${parsedTerms.partyB_name}\n(Ví: ${c.receiver})`
+      : c.receiver;
+    const itemsDisplay = parsedTerms
+      ? parsedTerms.art1_items
+      : c.terms || "Không có nội dung";
+    const packagingDisplay = parsedTerms
+      ? parsedTerms.art2_packaging
+      : "Không có dữ liệu";
 
     return {
       STT: index + 1,
-      "Mã Hợp Đồng Blockchain": c.contractAddress,
-      "Tóm tắt Nội dung": c.terms,
-      "Ngày khởi tạo": formatDate(c.createdAt),
-      "Hạn chót cam kết (Deadline)": formatDate(c.deadline) || "Chưa đồng bộ", // Cột mới
-      "Bên Giao (Client)": c.client,
-      "Bên Vận Chuyển (Provider)": c.provider || "Chưa có",
-      "Bên Nhận (Receiver)": c.receiver,
+      "Mã Hợp Đồng (ID)": c.contractAddress,
+      "Tên Hàng Hóa / Dịch vụ": itemsDisplay,
+      "Quy cách đóng gói": packagingDisplay,
+      "Bên Giao (Bên A)": clientDisplay,
+      "Bên Vận Chuyển":
+        c.provider &&
+        c.provider !== "0x0000000000000000000000000000000000000000"
+          ? c.provider
+          : "Chưa nhận việc",
+      "Bên Nhận (Bên B)": receiverDisplay,
       "Giá trị (ETH)": c.amount,
-      "Phạt vi phạm (ETH)": c.penalty || 0, // Cột mới
-      "Trạng thái HĐ": getStatusText(c.status),
-      "Đánh giá tiến độ": isLateText, // Cột mới thể hiện có trễ hạn hay không
+      "Phạt vi phạm (ETH)": c.penalty || 0,
+      "Trạng thái": getStatusText(c.status),
+      "Tiến độ": isLateText,
+      "Ngày khởi tạo": formatDate(c.createdAt),
+      "Hạn chót cam kết": formatDate(c.deadline) || "Chưa đồng bộ",
       "Link File Gốc (IPFS)": `https://gateway.pinata.cloud/ipfs/${c.termsHash}`,
     };
   });
@@ -84,25 +151,26 @@ export const exportContractToExcel = (
   const worksheet = XLSX.utils.aoa_to_sheet(criteriaRows);
   XLSX.utils.sheet_add_json(worksheet, dataToExport, { origin: "A10" });
 
-  // Mở rộng độ rộng các cột cho phù hợp
+  // 5. CHỈNH ĐỘ RỘNG CỘT (Cho nội dung hiển thị thoải mái)
   const wscols = [
-    { wch: 6 }, // STT
+    { wch: 5 }, // STT
     { wch: 45 }, // ID
-    { wch: 35 }, // Nội dung
-    { wch: 20 }, // Ngày tạo
-    { wch: 20 }, // Hạn chót
-    { wch: 45 }, // Client
-    { wch: 45 }, // Provider
-    { wch: 45 }, // Receiver
+    { wch: 40 }, // Hàng hóa
+    { wch: 30 }, // Đóng gói
+    { wch: 45 }, // Bên A
+    { wch: 45 }, // Vận chuyển
+    { wch: 45 }, // Bên B
     { wch: 15 }, // Giá trị
-    { wch: 15 }, // Phạt
+    { wch: 18 }, // Phạt
     { wch: 20 }, // Trạng thái
-    { wch: 20 }, // Đánh giá tiến độ
-    { wch: 55 }, // Link
+    { wch: 18 }, // Tiến độ
+    { wch: 15 }, // Ngày tạo
+    { wch: 18 }, // Hạn chót
+    { wch: 60 }, // IPFS
   ];
   worksheet["!cols"] = wscols;
 
   const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, "DS Hợp Đồng Chi Tiết");
+  XLSX.utils.book_append_sheet(workbook, worksheet, "DS Hop Dong");
   XLSX.writeFile(workbook, `${fileName}_${Date.now()}.xlsx`);
 };
