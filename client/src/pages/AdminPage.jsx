@@ -140,21 +140,29 @@ const AdminPage = () => {
   const navigate = useNavigate();
   const [allContracts, setAllContracts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isAuth, setIsAuth] = useState(false); // Cờ xác thực an toàn
 
+  // KHAI BÁO CÁC VÍ ADMIN Ở ĐÂY
   const ADMIN_WALLETS = [
-    "0xC64803Cad03E12c34EF3C822cCB4Cb78E9298091",
-    "0xd526cD242d52EFb14686c95248453Afc656c6994",
+    "0xC64803Cad03E12c34EF3C822cCB4Cb78E9298091", // Admin 1
+    "0xd526cD242d52EFb14686c95248453Afc656c6994", // Admin 2 của bạn
+    "0xDB45eB9DB7205eAd8003f3C4D578cd2078Ac4782", // Admin dự phòng
   ].map((addr) => addr.toLowerCase());
 
   useEffect(() => {
-    if (
-      !walletAddress ||
-      !ADMIN_WALLETS.includes(walletAddress.toLowerCase())
-    ) {
+    // LUỒNG XÁC THỰC MỚI: Kiên nhẫn chờ MetaMask load xong
+    if (!walletAddress) {
+      return; // Dừng lại, không đá văng user ra ngoài ngay lập tức
+    }
+
+    if (!ADMIN_WALLETS.includes(walletAddress.toLowerCase())) {
       alert("⛔ Bạn không có quyền truy cập trang Quản trị!");
       navigate("/");
       return;
     }
+
+    // Vượt qua vòng kiểm duyệt -> Cho phép render dữ liệu
+    setIsAuth(true);
 
     const fetchAllData = async () => {
       try {
@@ -177,16 +185,31 @@ const AdminPage = () => {
     fetchAllData();
   }, [walletAddress, navigate]);
 
-  if (!walletAddress || !ADMIN_WALLETS.includes(walletAddress.toLowerCase()))
-    return null;
-
-  if (loading)
+  // UI 1: Khi mới vào trang, ví chưa kịp load
+  if (!walletAddress) {
     return (
-      <div className="flex justify-center items-center h-screen">
+      <div className="flex flex-col justify-center items-center h-screen bg-gray-50">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-6"></div>
+        <h2 className="text-xl font-bold text-gray-700">
+          Đang xác thực quyền Admin...
+        </h2>
+        <p className="text-gray-500 mt-2">
+          Hệ thống đang kết nối an toàn với ví MetaMask của bạn.
+        </p>
+      </div>
+    );
+  }
+
+  // UI 2: Khi đang tải dữ liệu từ Backend
+  if (!isAuth || loading) {
+    return (
+      <div className="flex justify-center items-center h-screen bg-gray-50">
         <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600"></div>
       </div>
     );
+  }
 
+  // UI 3: Giao diện Admin xịn xò
   return (
     <div className="p-4 md:p-8 bg-gray-50 min-h-screen">
       <div className="mb-8">
