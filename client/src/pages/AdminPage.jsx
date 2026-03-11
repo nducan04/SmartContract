@@ -144,7 +144,6 @@ const AdminPage = () => {
   const ADMIN_WALLETS = [
     "0xC64803Cad03E12c34EF3C822cCB4Cb78E9298091",
     "0xd526cD242d52EFb14686c95248453Afc656c6994",
-    "0xDB45eB9DB7205eAd8003f3C4D578cd2078Ac4782",
   ].map((addr) => addr.toLowerCase());
 
   useEffect(() => {
