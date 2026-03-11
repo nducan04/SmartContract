@@ -85,14 +85,14 @@ const AdminContractRow = ({ c }) => {
         <AddressDisplay address={c.contractAddress} />
       </td>
       <td className="p-4 align-top">
-        <p className="text-sm font-semibold text-gray-800 whitespace-normal break-words leading-relaxed">
+        <p className="text-sm font-semibold text-gray-800 whitespace-normal wrap-break-word leading-relaxed">
           {displayTitle}
         </p>
       </td>
       <td className="p-4 align-top">
         {clientName ? (
           <div>
-            <p className="text-sm font-bold text-gray-800 whitespace-normal break-words leading-relaxed">
+            <p className="text-sm font-bold text-gray-800 whitespace-normal wrap-break-word leading-relaxed">
               {clientName}
             </p>
             <div className="text-xs text-gray-400 mt-1">
@@ -106,7 +106,7 @@ const AdminContractRow = ({ c }) => {
       <td className="p-4 align-top">
         {receiverName ? (
           <div>
-            <p className="text-sm font-bold text-gray-800 whitespace-normal break-words leading-relaxed">
+            <p className="text-sm font-bold text-gray-800 whitespace-normal wrap-break-word leading-relaxed">
               {receiverName}
             </p>
             <div className="text-xs text-gray-400 mt-1">
@@ -150,6 +150,7 @@ const AdminPage = () => {
   ].map((addr) => addr.toLowerCase());
 
   useEffect(() => {
+    window.scrollTo(0, 0);
     // LUỒNG XÁC THỰC MỚI: Kiên nhẫn chờ MetaMask load xong
     if (!walletAddress) {
       return; // Dừng lại, không đá văng user ra ngoài ngay lập tức

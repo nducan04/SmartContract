@@ -89,7 +89,7 @@ export const getAvailableContracts = async (req, res) => {
 // 1. CHUẨN BỊ MẢNG VÍ ADMIN TRÊN SERVER
 const ADMIN_WALLETS_SERVER = [
   "0xC64803Cad03E12c34EF3C822cCB4Cb78E9298091",
-  "0xFd8fe5838dC6934a400b2663C2FD348E16D1f4EC",
+  "0xd526cd242d52efb14686c95248453afc656c6994",
   "0xDB45eB9DB7205eAd8003f3C4D578cd2078Ac4782",
 ].map((addr) => addr.toLowerCase());
 
@@ -100,11 +100,9 @@ export const getAllContractsForAdmin = async (req, res) => {
 
     // 3. KIỂM TRA QUYỀN (Nếu không có ví gửi lên hoặc ví không nằm trong danh sách -> CẤM)
     if (!requester || !ADMIN_WALLETS_SERVER.includes(requester.toLowerCase())) {
-      return res
-        .status(403)
-        .json({
-          message: "⛔ Quyền truy cập bị từ chối: Bạn không phải Admin!",
-        });
+      return res.status(403).json({
+        message: "⛔ Quyền truy cập bị từ chối: Bạn không phải Admin!",
+      });
     }
 
     // 4. SỬA LỖI: Đổi ContractModel thành Contract (Vì bạn import ở trên là Contract)
