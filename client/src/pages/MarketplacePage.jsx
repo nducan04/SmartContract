@@ -83,7 +83,10 @@ const ContractRow = ({ contract, walletAddress, navigate }) => {
       <td className="px-4 py-5 align-top">
         {clientName ? (
           <div>
-            <p className="text-sm font-bold text-gray-800 whitespace-normal break-words leading-relaxed">
+            <p
+              className="text-sm font-bold text-gray-800 whitespace-normal 
+            wrap-break-word leading-relaxed"
+            >
               {clientName}
             </p>
             <div className="text-xs text-gray-400 mt-2">
@@ -98,7 +101,10 @@ const ContractRow = ({ contract, walletAddress, navigate }) => {
       <td className="px-4 py-5 align-top">
         {receiverName ? (
           <div>
-            <p className="text-sm font-bold text-gray-800 whitespace-normal break-words leading-relaxed">
+            <p
+              className="text-sm font-bold text-gray-800 whitespace-normal 
+            wrap-break-word leading-relaxed"
+            >
               {receiverName}
             </p>
             <div className="text-xs text-gray-400 mt-2">

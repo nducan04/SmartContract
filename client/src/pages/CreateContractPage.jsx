@@ -235,7 +235,7 @@ const CreateContractPage = () => {
           {/* BÊN A */}
           <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
             <h2 className="text-lg font-bold text-gray-800 mb-4 border-b pb-2">
-              Thông tin Bên Bán / Bên Gửi (Bên A)
+              2. Thông tin Bên Bán / Bên Gửi (Bên A)
             </h2>
             <div className="space-y-3">
               <input
@@ -278,7 +278,7 @@ const CreateContractPage = () => {
           {/* BÊN B */}
           <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
             <h2 className="text-lg font-bold text-gray-800 mb-4 border-b pb-2">
-              Thông tin Bên Mua / Bên Nhận (Bên B)
+              3. Thông tin Bên Mua / Bên Nhận (Bên B)
             </h2>
             <div className="space-y-3">
               <input
@@ -322,7 +322,7 @@ const CreateContractPage = () => {
         {/* CÁC ĐIỀU KHOẢN */}
         <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
           <h2 className="text-lg font-bold text-gray-800 mb-4 border-b pb-2">
-            Các điều khoản thỏa thuận
+            4. Các điều khoản thỏa thuận
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
