@@ -7,29 +7,48 @@ const factoryABI = [
   "event NewAgreementCreated(address indexed contractAddress, address indexed client, address indexed receiver, uint256 paymentAmount, string termsHash_IPFS, uint256 deliveryDeadline, uint256 penaltyAmount)",
 ];
 
+let provider = null;
+let factoryContract = null;
+let keepAliveInterval = null;
+
 const startListener = async () => {
   try {
     const rpcUrl =
       process.env.SEPOLIA_RPC_URL ||
       "https://ethereum-sepolia-rpc.publicnode.com";
 
-    // Cấu hình Provider
-    const provider = new ethers.JsonRpcProvider(rpcUrl, undefined, {
+    // Khởi tạo RPC Provider mới
+    provider = new ethers.JsonRpcProvider(rpcUrl, undefined, {
       staticNetwork: true,
     });
 
-    // Tạo đối tượng hợp đồng để nghe
-    const factoryContract = new ethers.Contract(
+    factoryContract = new ethers.Contract(
       factoryAddress,
       factoryABI,
       provider
     );
 
-    console.log(
-      "🎧 Server đang lắng nghe sự kiện (V2) trên Blockchain Sepolia..."
-    );
+    console.log("🎧 Server đang lắng nghe sự kiện (V2) trên Blockchain Sepolia...");
 
-    // 3. CẬP NHẬT HÀM CALLBACK (Nhận đủ 7 tham số + event)
+    // CƠ CHẾ AUTO-RECONNECT VÀ GIỮ KẾT NỐI
+    if (keepAliveInterval) clearInterval(keepAliveInterval);
+    
+    // Ping mỗi 30s để giữ kết nối RPC không bị ngủ (timeout)
+    keepAliveInterval = setInterval(async () => {
+      try {
+        await provider.getBlockNumber();
+      } catch (error) {
+        console.warn("⚠️ RPC Provider mất kết nối. Đang thử kết nối lại...");
+        clearInterval(keepAliveInterval);
+        if (factoryContract) {
+          factoryContract.removeAllListeners();
+        }
+        // Gọi lại hàm để tạo kết nối mới
+        setTimeout(startListener, 5000);
+      }
+    }, 30000);
+
+    // LẮNG NGHE SỰ KIỆN TỪ BLOCKCHAIN
     factoryContract.on(
       "NewAgreementCreated",
       async (
@@ -38,8 +57,8 @@ const startListener = async () => {
         receiver,
         paymentAmount,
         termsHash_IPFS,
-        deliveryDeadline, // Mới
-        penaltyAmount, // Mới
+        deliveryDeadline,
+        penaltyAmount,
         event
       ) => {
         console.log(`🔔 PHÁT HIỆN HỢP ĐỒNG MỚI (V2)!`);
@@ -49,12 +68,11 @@ const startListener = async () => {
           // Chuyển đổi số tiền từ Wei sang ETH
           const amountInEth = ethers.formatEther(paymentAmount);
 
-          // 4. LƯU VÀO MONGODB
-          // (Hiện tại chúng ta lưu các trường cơ bản, nếu Model chưa update deadline/penalty thì nó sẽ tự bỏ qua 2 trường mới, không sao cả)
+          // LƯU VÀO MONGODB
           const newContract = new Contract({
             contractAddress: contractAddress,
-            client: client.toLowerCase(), // Quan trọng: lowercase
-            receiver: receiver.toLowerCase(), // Quan trọng: lowercase
+            client: client.toLowerCase(),
+            receiver: receiver.toLowerCase(),
             amount: amountInEth,
             termsHash: termsHash_IPFS,
             status: 0, // 0 = Created
@@ -73,6 +91,8 @@ const startListener = async () => {
     );
   } catch (error) {
     console.error("❌ Lỗi khởi động Listener:", error.message);
+    console.log("🔄 Thử khởi động lại Listener sau 5 giây...");
+    setTimeout(startListener, 5000);
   }
 };
 

@@ -118,7 +118,7 @@ const CreateContractPage = () => {
     }
 
     try {
-      setStatus("✍ Đang ký xác nhận trên ví...");
+      setStatus("✍ Đang tính toán phí Gas...");
       const amountInWei = ethers.parseEther(amount);
       const penaltyInWei = ethers.parseEther(penalty || "0");
       const deadlineTimestamp = Math.floor(new Date(deadline).getTime() / 1000);
@@ -126,13 +126,38 @@ const CreateContractPage = () => {
       // GOM TOÀN BỘ THÔNG TIN THÀNH 1 CHUỖI JSON ĐỂ LƯU VÀO BIẾN TERMS
       const packedTerms = JSON.stringify(contractDetails);
 
+      // 1. ESTIMATE GAS TRƯỚC: Nếu không đủ tiền gas, nó sẽ văng lỗi ở đây chứ không mở MetaMask
+      let gasEstimate;
+      try {
+        gasEstimate = await factoryContract.createAgreement.estimateGas(
+          receiver,
+          packedTerms,
+          termsHash,
+          deadlineTimestamp,
+          penaltyInWei,
+          { value: amountInWei }
+        );
+      } catch (gasError) {
+        console.error("Lỗi estimate gas:", gasError);
+        // Bắt lỗi Insufficient funds thường gặp
+        if (gasError.message && gasError.message.includes("insufficient funds")) {
+          throw new Error("Số dư của bạn không đủ để trả phí mạng lưới (Gas fee). Vui lòng nạp thêm Sepolia ETH!");
+        }
+        throw new Error("Không thể dự tính phí màng lưới. Giao dịch có thể sẽ thất bại.");
+      }
+
+      // 2. KHI GAS OK, YÊU CẦU METAMASK KÝ
+      setStatus("✍ Đang chờ MetaMask xác nhận...");
       const tx = await factoryContract.createAgreement(
         receiver,
-        packedTerms, // Truyền chuỗi đã gom vào đây
+        packedTerms, 
         termsHash,
         deadlineTimestamp,
         penaltyInWei,
-        { value: amountInWei },
+        { 
+          value: amountInWei,
+          gasLimit: (gasEstimate * 12n) / 10n // Cộng thêm 20% gas limit margin cho an toàn
+        },
       );
 
       setStatus("🚀 Đang chờ Blockchain xác nhận...");

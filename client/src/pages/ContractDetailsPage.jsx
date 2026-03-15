@@ -96,13 +96,30 @@ const ContractDetailsPage = () => {
     try {
       setActionLoading(true);
       const contract = getAgreementContract(id);
-      const tx = await contract.acceptAgreement();
+      
+      // 1. ESTIMATE GAS TRƯỚC
+      let gasEstimate;
+      try {
+        gasEstimate = await contract.acceptAgreement.estimateGas();
+      } catch (gasError) {
+        console.error("Lỗi estimate gas:", gasError);
+        if (gasError.message && gasError.message.includes("insufficient funds")) {
+          throw new Error("Số dư của bạn không đủ để trả phí mạng lưới (Gas fee). Vui lòng nạp thêm Sepolia ETH!");
+        }
+        throw new Error("Không thể dự tính phí màng lưới. Giao dịch có thể sẽ thất bại.");
+      }
+
+      // 2. THỰC HIỆN GIAO DỊCH
+      const tx = await contract.acceptAgreement({
+        gasLimit: (gasEstimate * 12n) / 10n // Cộng 20% margin
+      });
       await tx.wait();
+      
       await syncToBackend(1, walletAddress);
       alert("Đã chấp nhận hợp đồng thành công!");
       fetchDetails();
     } catch (error) {
-      alert("Lỗi: " + (error.reason || "Giao dịch thất bại"));
+      alert("Lỗi: " + (error.reason || error.message || "Giao dịch thất bại"));
     } finally {
       setActionLoading(false);
     }
@@ -114,12 +131,32 @@ const ContractDetailsPage = () => {
       const contract = getAgreementContract(id);
       let tx;
       let statusNumber;
+      
+      // 1. ESTIMATE GAS TRƯỚC
+      let gasEstimate;
+      try {
+        if (newStatusText === "InProgress") {
+          gasEstimate = await contract.updateStatusInProgress.estimateGas();
+        } else if (newStatusText === "Completed") {
+          gasEstimate = await contract.updateStatusCompleted.estimateGas();
+        }
+      } catch (gasError) {
+        console.error("Lỗi estimate gas:", gasError);
+        if (gasError.message && gasError.message.includes("insufficient funds")) {
+          throw new Error("Số dư của bạn không đủ để trả phí mạng lưới (Gas fee). Vui lòng nạp thêm Sepolia ETH!");
+        }
+        throw new Error("Không thể dự tính phí màng lưới. Giao dịch có thể sẽ thất bại.");
+      }
+
+      // 2. THỰC HIỆN GIAO DỊCH
+      const gasLimit = (gasEstimate * 12n) / 10n;
+      
       if (newStatusText === "InProgress") {
-        tx = await contract.updateStatusInProgress();
+        tx = await contract.updateStatusInProgress({ gasLimit });
         statusNumber = 2;
       }
       if (newStatusText === "Completed") {
-        tx = await contract.updateStatusCompleted();
+        tx = await contract.updateStatusCompleted({ gasLimit });
         statusNumber = 3;
       }
       await tx.wait();
@@ -127,7 +164,7 @@ const ContractDetailsPage = () => {
       alert("Đã cập nhật trạng thái!");
       fetchDetails();
     } catch (error) {
-      alert("Lỗi: " + error.reason);
+      alert("Lỗi: " + (error.reason || error.message || "Giao dịch thất bại"));
     } finally {
       setActionLoading(false);
     }
@@ -137,13 +174,29 @@ const ContractDetailsPage = () => {
     try {
       setActionLoading(true);
       const contract = getAgreementContract(id);
-      const tx = await contract.confirmAndPay();
+      
+      // 1. ESTIMATE GAS TRƯỚC
+      let gasEstimate;
+      try {
+        gasEstimate = await contract.confirmAndPay.estimateGas();
+      } catch (gasError) {
+        console.error("Lỗi estimate gas:", gasError);
+        if (gasError.message && gasError.message.includes("insufficient funds")) {
+          throw new Error("Số dư của bạn không đủ để trả phí mạng lưới (Gas fee). Vui lòng nạp thêm Sepolia ETH!");
+        }
+        throw new Error("Không thể dự tính phí màng lưới. Giao dịch có thể sẽ thất bại.");
+      }
+
+      // 2. THỰC HIỆN GIAO DỊCH
+      const tx = await contract.confirmAndPay({
+        gasLimit: (gasEstimate * 12n) / 10n
+      });
       await tx.wait();
       await syncToBackend(4);
       alert("Đã xác nhận và thanh toán!");
       fetchDetails();
     } catch (error) {
-      alert("Lỗi: " + error.reason);
+      alert("Lỗi: " + (error.reason || error.message || "Giao dịch thất bại"));
     } finally {
       setActionLoading(false);
     }
