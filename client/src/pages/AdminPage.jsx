@@ -142,12 +142,14 @@ const AdminPage = () => {
   const [loading, setLoading] = useState(true);
   const [isAuth, setIsAuth] = useState(false); // Cờ xác thực an toàn
 
-  // KHAI BÁO CÁC VÍ ADMIN Ở ĐÂY
-  const ADMIN_WALLETS = [
-    "0xC64803Cad03E12c34EF3C822cCB4Cb78E9298091", // Admin 1
-    "0xd526cD242d52EFb14686c95248453Afc656c6994", // Admin 2 của bạn
-    "0xDB45eB9DB7205eAd8003f3C4D578cd2078Ac4782", // Admin dự phòng
-  ].map((addr) => addr.toLowerCase());
+  const [pagination, setPagination] = useState({ page: 1, totalPages: 1, total: 0 });
+
+  // KHAI BÁO CÁC VÍ ADMIN Ở ĐÂY TỪ BIẾN MÔI TRƯỜNG
+  const ADMIN_WALLETS = import.meta.env.VITE_ADMIN_WALLETS
+    ? import.meta.env.VITE_ADMIN_WALLETS.split(",").map((addr) =>
+        addr.trim().toLowerCase(),
+      )
+    : [];
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -167,15 +169,24 @@ const AdminPage = () => {
 
     const fetchAllData = async () => {
       try {
+        setLoading(true);
         const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
         const response = await axios.get(
-          `${API_URL}/api/contracts/all-admin?requester=${walletAddress}`,
+          `${API_URL}/api/contracts/all-admin?requester=${walletAddress}&page=${pagination.page}&limit=10`,
         );
-        // Sắp xếp mới nhất lên đầu
-        const sortedData = response.data.sort(
-          (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
-        );
-        setAllContracts(sortedData);
+        
+        // Mới: API trả về { data, pagination }
+        if (response.data && response.data.data) {
+          setAllContracts(response.data.data);
+          setPagination(response.data.pagination);
+        } else {
+          // Fallback nếu api cũ
+          const sortedData = response.data.sort(
+            (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
+          );
+          setAllContracts(sortedData);
+        }
+
       } catch (error) {
         console.error("Lỗi Admin:", error);
       } finally {
@@ -184,7 +195,7 @@ const AdminPage = () => {
     };
 
     fetchAllData();
-  }, [walletAddress, navigate]);
+  }, [walletAddress, navigate, pagination.page]);
 
   // UI 1: Khi mới vào trang, ví chưa kịp load
   if (!walletAddress) {
@@ -288,6 +299,30 @@ const AdminPage = () => {
             </tbody>
           </table>
         </div>
+        {/* Điều khiển Phân trang */}
+        {pagination.totalPages > 1 && (
+          <div className="p-4 border-t border-gray-100 flex items-center justify-between bg-gray-50/50">
+            <span className="text-sm text-gray-500 font-medium">
+              Trang {pagination.page} / {pagination.totalPages}
+            </span>
+            <div className="flex gap-2">
+              <button
+                disabled={pagination.page <= 1}
+                onClick={() => setPagination((p) => ({ ...p, page: p.page - 1 }))}
+                className="px-4 py-2 text-sm font-medium border border-gray-200 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                Trước
+              </button>
+              <button
+                disabled={pagination.page >= pagination.totalPages}
+                onClick={() => setPagination((p) => ({ ...p, page: p.page + 1 }))}
+                className="px-4 py-2 text-sm font-medium border border-gray-200 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                Tiếp
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

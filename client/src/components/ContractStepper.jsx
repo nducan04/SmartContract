@@ -36,13 +36,13 @@ const ContractStepper = ({ currentStatus }) => {
               {/* 1. NODE TRÒN */}
               <div className="relative flex flex-col items-center group">
                 <div
-                  className={`w-8 h-8 rounded-full flex items-center justify-center border-2 transition-all duration-300 z-10
+                  className={`w-8 h-8 rounded-full flex items-center justify-center border-2 transition-all duration-500 z-10
                     ${
                       isCompleted
-                        ? "bg-blue-400 border-blue-400 text-white"
-                        : "bg-white border-gray-300 text-gray-300"
+                        ? "bg-blue-500 border-blue-500 text-white shadow-md shadow-blue-200"
+                        : "bg-white border-gray-200 text-gray-400"
                     }
-                    ${isCurrent ? "ring-4 ring-blue-100 scale-110" : ""}
+                    ${isCurrent ? "ring-4 ring-blue-100 scale-125 shadow-lg animate-pulse" : ""}
                   `}
                 >
                   {isCompleted ? (

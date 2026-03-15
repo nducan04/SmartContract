@@ -16,12 +16,12 @@ const Navbar = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
 
-  // 1. DANH SÁCH VÍ ADMIN
-  const ADMIN_WALLETS = [
-    "0xC64803Cad03E12c34EF3C822cCB4Cb78E9298091",
-    "0xd526cD242d52EFb14686c95248453Afc656c6994",
-    "0xDB45eB9DB7205eAd8003f3C4D578cd2078Ac4782",
-  ].map((addr) => addr.toLowerCase());
+  // 1. DANH SÁCH VÍ ADMIN TỪ BIẾN MÔI TRƯỜNG
+  const ADMIN_WALLETS = import.meta.env.VITE_ADMIN_WALLETS
+    ? import.meta.env.VITE_ADMIN_WALLETS.split(",").map((addr) =>
+        addr.trim().toLowerCase(),
+      )
+    : [];
 
   // 2. BIẾN KIỂM TRA QUYỀN ADMIN
   const isAdmin =
@@ -54,8 +54,8 @@ const Navbar = () => {
 
   const isHome = location.pathname === "/";
   const navBgClass = isHome
-    ? "bg-white/80 backdrop-blur-md"
-    : "bg-white shadow-sm";
+    ? "glass border-b-0"
+    : "glass border-b border-gray-100/50";
 
   return (
     <div

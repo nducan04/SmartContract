@@ -27,6 +27,8 @@ const ContractListPage = () => {
   const [endDate, setEndDate] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
 
+  const [pagination, setPagination] = useState({ page: 1, totalPages: 1, total: 0 });
+
   useEffect(() => {
     const fetchContracts = async () => {
       if (!walletAddress) {
@@ -40,13 +42,19 @@ const ContractListPage = () => {
         setLoading(true);
         const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
         const response = await axios.get(
-          `${API_URL}/api/contracts?wallet=${walletAddress}`,
+          `${API_URL}/api/contracts?wallet=${walletAddress}&page=${pagination.page}&limit=10`,
         );
 
-        const sortedData = response.data.sort(
-          (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
-        );
-        setContracts(sortedData);
+        if (response.data && response.data.data) {
+          setContracts(response.data.data);
+          setPagination(response.data.pagination);
+        } else {
+          // Fallback api cũ
+          const sortedData = response.data.sort(
+            (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
+          );
+          setContracts(sortedData);
+        }
       } catch (error) {
         console.error("Lỗi:", error);
       } finally {
@@ -54,7 +62,7 @@ const ContractListPage = () => {
       }
     };
     fetchContracts();
-  }, [walletAddress]);
+  }, [walletAddress, pagination.page]);
 
   // --- LOGIC LỌC ĐA ĐIỀU KIỆN ---
   useEffect(() => {
@@ -212,9 +220,34 @@ const ContractListPage = () => {
       {!loading && walletAddress && (
         <p className="text-xs text-gray-400 mt-4 ml-2 font-medium">
           <i className="uil uil-info-circle"></i> Đang hiển thị{" "}
-          {filteredContracts.length} / {contracts.length} hợp đồng theo tiêu
+          {filteredContracts.length} / {pagination.total || contracts.length} hợp đồng theo tiêu
           chí.
         </p>
+      )}
+
+      {/* Điều khiển Phân trang */}
+      {pagination.totalPages > 1 && (
+        <div className="mt-6 flex items-center justify-between">
+          <span className="text-sm text-gray-500 font-medium">
+            Trang {pagination.page} / {pagination.totalPages}
+          </span>
+          <div className="flex gap-2">
+            <button
+              disabled={pagination.page <= 1}
+              onClick={() => setPagination((p) => ({ ...p, page: p.page - 1 }))}
+              className="px-4 py-2 text-sm font-medium border border-gray-200 bg-white rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
+            >
+              Trước
+            </button>
+            <button
+              disabled={pagination.page >= pagination.totalPages}
+              onClick={() => setPagination((p) => ({ ...p, page: p.page + 1 }))}
+              className="px-4 py-2 text-sm font-medium border border-gray-200 bg-white rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
+            >
+              Tiếp
+            </button>
+          </div>
+        </div>
       )}
 
       <QRModal

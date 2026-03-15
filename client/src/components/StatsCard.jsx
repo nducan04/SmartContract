@@ -9,7 +9,7 @@ const StatsCard = ({ title, value, icon, color }) => {
   };
 
   return (
-    <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between hover:shadow-md transition-shadow h-full">
+    <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between hover:shadow-lg transition-all duration-300 hover:-translate-y-1 h-full">
       <div className="flex flex-col justify-between h-full">
         {/* min-h để giữ chỗ cho title 2 dòng nếu cần */}
         <p className="text-sm text-gray-500 font-medium uppercase tracking-wider leading-relaxed">

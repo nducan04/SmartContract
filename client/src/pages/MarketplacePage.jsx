@@ -153,13 +153,25 @@ const MarketplacePage = () => {
   const [filter, setFilter] = useState("newest");
   const navigate = useNavigate();
 
+  const [pagination, setPagination] = useState({ page: 1, totalPages: 1, total: 0 });
+
   useEffect(() => {
     const fetchAvailableContracts = async () => {
       try {
         setLoading(true);
         const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
-        const response = await axios.get(`${API_URL}/api/contracts/available`);
-        let data = response.data;
+        const response = await axios.get(`${API_URL}/api/contracts/available?page=${pagination.page}&limit=10`);
+        
+        let data = [];
+        // Mới: API trả về { data, pagination }
+        if (response.data && response.data.data) {
+          data = response.data.data;
+          setPagination(response.data.pagination);
+        } else {
+          // Fallback nếu api cũ
+          data = response.data;
+        }
+
         if (filter === "newest") {
           data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
         } else if (filter === "high-price") {
@@ -173,7 +185,7 @@ const MarketplacePage = () => {
       }
     };
     fetchAvailableContracts();
-  }, [filter]);
+  }, [filter, pagination.page]);
 
   return (
     <div className="p-2 md:p-6">
@@ -236,6 +248,31 @@ const MarketplacePage = () => {
                 ))}
               </tbody>
             </table>
+          </div>
+        )}
+        
+        {/* Điều khiển Phân trang */}
+        {pagination.totalPages > 1 && (
+          <div className="p-4 border-t border-gray-100 flex items-center justify-between bg-gray-50/50">
+            <span className="text-sm text-gray-500 font-medium">
+              Trang {pagination.page} / {pagination.totalPages}
+            </span>
+            <div className="flex gap-2">
+              <button
+                disabled={pagination.page <= 1}
+                onClick={() => setPagination((p) => ({ ...p, page: p.page - 1 }))}
+                className="px-4 py-2 text-sm font-medium border border-gray-200 bg-white rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                Trước
+              </button>
+              <button
+                disabled={pagination.page >= pagination.totalPages}
+                onClick={() => setPagination((p) => ({ ...p, page: p.page + 1 }))}
+                className="px-4 py-2 text-sm font-medium border border-gray-200 bg-white rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                Tiếp
+              </button>
+            </div>
           </div>
         )}
       </div>
