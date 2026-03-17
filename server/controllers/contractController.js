@@ -225,7 +225,11 @@ export const uploadProofHash = async (req, res) => {
 export const getContractByAddress = async (req, res) => {
   try {
     const { address } = req.params;
-    const contract = await Contract.findOne({ contractAddress: address.toLowerCase() });
+
+    // Dùng $regex để tìm kiếm KHÔNG PHÂN BIỆT chữ hoa chữ thường (Case-insensitive)
+    const contract = await Contract.findOne({
+      contractAddress: { $regex: new RegExp("^" + address + "$", "i") }
+    });
 
     if (!contract) {
       return res.status(404).json({ message: "Không tìm thấy hợp đồng" });
