@@ -286,7 +286,6 @@ const ContractDetailsPage = () => {
           <div className="flex flex-col gap-2">
             <input
               type="file"
-              accept="image/*,.pdf"
               onChange={(e) => setProofFiles({ ...proofFiles, [stepKey]: e.target.files[0] })}
               className="block w-full text-xs text-gray-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer"
             />
