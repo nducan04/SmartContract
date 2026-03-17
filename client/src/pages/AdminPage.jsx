@@ -119,7 +119,7 @@ const AdminContractRow = ({ c }) => {
       </td>
       <td className="p-4 align-top">
         {c.provider &&
-        c.provider !== "0x0000000000000000000000000000000000000000" ? (
+          c.provider !== "0x0000000000000000000000000000000000000000" ? (
           <AddressDisplay address={c.provider} />
         ) : (
           <span className="text-xs font-medium text-gray-400 bg-gray-100 px-2 py-1 rounded">
@@ -147,8 +147,8 @@ const AdminPage = () => {
   // KHAI BÁO CÁC VÍ ADMIN Ở ĐÂY TỪ BIẾN MÔI TRƯỜNG
   const ADMIN_WALLETS = import.meta.env.VITE_ADMIN_WALLETS
     ? import.meta.env.VITE_ADMIN_WALLETS.split(",").map((addr) =>
-        addr.trim().toLowerCase(),
-      )
+      addr.trim().toLowerCase(),
+    )
     : [];
 
   useEffect(() => {
@@ -174,7 +174,7 @@ const AdminPage = () => {
         const response = await axios.get(
           `${API_URL}/api/contracts/all-admin?requester=${walletAddress}&page=${pagination.page}&limit=10`,
         );
-        
+
         // Mới: API trả về { data, pagination }
         if (response.data && response.data.data) {
           setAllContracts(response.data.data);
