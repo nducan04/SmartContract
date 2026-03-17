@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ethers } from "ethers";
-import { useWeb3 } from "../context/Web3Context";
+import axios from "axios";
 import AddressDisplay from "../components/AddressDisplay";
 
-// --- COMPONENT MODAL CHI TIẾT BƯỚC (Giữ nguyên của bạn) ---
+// --- COMPONENT MODAL CHI TIẾT BƯỚC ---
 const StepDetailModal = ({ step, contractData, onClose }) => {
   if (!step) return null;
 
@@ -67,7 +67,7 @@ const StepDetailModal = ({ step, contractData, onClose }) => {
           </div>
           <button
             onClick={onClose}
-            className="hover:bg-blue-700 p-1 rounded-full transition-colors"
+            className="hover:bg-blue-700 p-1 rounded-full transition-colors cursor-pointer"
           >
             <i className="uil uil-multiply text-xl"></i>
           </button>
@@ -110,11 +110,11 @@ const StepDetailModal = ({ step, contractData, onClose }) => {
 // --- TRANG CHÍNH ---
 const TrackingPage = () => {
   const { id } = useParams();
-  const navigate = useNavigate(); // Thêm hook điều hướng
+  const navigate = useNavigate();
   const [contractData, setContractData] = useState(null);
-  const [loading, setLoading] = useState(false); // SỬA: Mặc định là false
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [searchInput, setSearchInput] = useState(""); // State cho ô tìm kiếm
+  const [searchInput, setSearchInput] = useState("");
   const [selectedStep, setSelectedStep] = useState(null);
 
   const steps = [
@@ -126,7 +126,6 @@ const TrackingPage = () => {
   ];
 
   useEffect(() => {
-    // SỬA LỖI: Nếu không có ID thì không làm gì cả, cũng không bật loading
     if (!id) {
       setLoading(false);
       setContractData(null);
@@ -138,6 +137,7 @@ const TrackingPage = () => {
         setLoading(true);
         setError("");
 
+        // 1. Kéo dữ liệu từ Blockchain
         const provider = new ethers.JsonRpcProvider(
           "https://ethereum-sepolia-rpc.publicnode.com",
         );
@@ -148,6 +148,21 @@ const TrackingPage = () => {
         const contract = new ethers.Contract(id, abi, provider);
         const data = await contract.getAgreementDetails();
 
+        // 2. Kéo dữ liệu Bằng chứng (Proofs) từ Backend MongoDB
+        let dbProofs = {};
+        try {
+          const API_URL =
+            import.meta.env.VITE_API_URL || "http://localhost:5000";
+          const dbRes = await axios.get(`${API_URL}/api/contracts/track/${id}`);
+          if (dbRes.data && dbRes.data.proofs) {
+            dbProofs = dbRes.data.proofs;
+          }
+        } catch (dbErr) {
+          console.warn(
+            "Không tải được hình ảnh minh chứng từ DB (Có thể hợp đồng chưa được đồng bộ).",
+          );
+        }
+
         setContractData({
           contractAddress: id,
           state: Number(data.state),
@@ -156,6 +171,7 @@ const TrackingPage = () => {
           receiver: data.receiver,
           amount: ethers.formatEther(data.amount),
           terms: data.terms,
+          proofs: dbProofs, // Gắn mảng hình ảnh vào đây
         });
       } catch (err) {
         console.error(err);
@@ -170,7 +186,6 @@ const TrackingPage = () => {
     fetchContractData();
   }, [id]);
 
-  // Xử lý khi người dùng nhập ID và bấm nút Tìm kiếm
   const handleSearch = (e) => {
     e.preventDefault();
     if (searchInput.trim()) {
@@ -178,17 +193,47 @@ const TrackingPage = () => {
     }
   };
 
-  // 1. NẾU ĐANG TẢI DỮ LIỆU
-  if (loading) {
+  // HÀM HIỂN THỊ THẺ MINH CHỨNG Ở CỘT PHẢI
+  const renderProofCard = (stepKey, title, desc, stepIndex) => {
+    const isCompleted = contractData.state >= stepIndex;
+    const currentProof = contractData.proofs && contractData.proofs[stepKey];
+
+    return (
+      <div
+        key={stepKey}
+        className={`p-4 rounded-xl border transition-all ${isCompleted ? "bg-white border-gray-200 shadow-sm" : "bg-gray-50 border-gray-100 opacity-60"}`}
+      >
+        <h4 className="font-bold text-sm text-gray-800 mb-1">{title}</h4>
+        <p className="text-xs text-gray-500 mb-3">{desc}</p>
+
+        {currentProof ? (
+          <a
+            href={`https://gateway.pinata.cloud/ipfs/${currentProof}`}
+            target="_blank"
+            rel="noreferrer"
+            className="block w-full py-2 bg-blue-50 text-blue-600 font-bold text-xs rounded-lg text-center border border-blue-100 hover:bg-blue-100 hover:shadow-sm transition-all"
+          >
+            <i className="uil uil-external-link-alt"></i> Xem chứng từ
+          </a>
+        ) : (
+          <div className="w-full py-2 bg-gray-50 text-gray-400 font-bold text-xs rounded-lg text-center border border-gray-200">
+            Chưa có chứng từ
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  // 1. GIAO DIỆN KHI ĐANG LOADING
+  if (loading)
     return (
       <div className="h-screen flex items-center justify-center bg-gray-50">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
       </div>
     );
-  }
 
-  // 2. NẾU CÓ LỖI (Nhập sai ID)
-  if (error) {
+  // 2. GIAO DIỆN LỖI
+  if (error)
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
         <div className="bg-white p-8 rounded-3xl shadow-sm border border-red-100 max-w-md w-full text-center">
@@ -201,17 +246,16 @@ const TrackingPage = () => {
           <p className="text-red-500 mb-6 text-sm">{error}</p>
           <button
             onClick={() => navigate("/tracking")}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl transition-colors"
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl transition-colors cursor-pointer"
           >
             Thử lại
           </button>
         </div>
       </div>
     );
-  }
 
-  // 3. NẾU CHƯA CÓ ID HOẶC CHƯA CÓ DỮ LIỆU -> HIỆN Ô TÌM KIẾM
-  if (!id || !contractData) {
+  // 3. GIAO DIỆN TÌM KIẾM
+  if (!id || !contractData)
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
         <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 max-w-md w-full text-center">
@@ -222,8 +266,7 @@ const TrackingPage = () => {
             Tra cứu Hợp đồng
           </h2>
           <p className="text-gray-500 mb-6 text-sm">
-            Vui lòng nhập mã hợp đồng (ID) để theo dõi tiến trình vận chuyển
-            theo thời gian thực.
+            Vui lòng nhập mã hợp đồng (ID) để theo dõi tiến trình vận chuyển.
           </p>
           <form onSubmit={handleSearch} className="flex flex-col gap-3">
             <input
@@ -231,7 +274,7 @@ const TrackingPage = () => {
               placeholder="Nhập mã hợp đồng (0x...)"
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
-              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all text-sm"
+              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-blue-500 text-sm"
               required
             />
             <button
@@ -244,13 +287,12 @@ const TrackingPage = () => {
         </div>
       </div>
     );
-  }
 
-  // 4. NẾU CÓ DỮ LIỆU -> HIỆN TIMELINE
+  // 4. GIAO DIỆN CHI TIẾT (CHIA 2 CỘT)
   return (
     <div className="min-h-screen bg-gray-50 p-4 md:p-8">
-      {/* Header */}
-      <div className="max-w-3xl mx-auto bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden mb-6">
+      {/* Header Info */}
+      <div className="max-w-6xl mx-auto bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden mb-8">
         <div className="bg-blue-600 p-6 text-white flex justify-between items-center">
           <div>
             <h1 className="text-2xl font-bold flex items-center gap-2">
@@ -268,7 +310,6 @@ const TrackingPage = () => {
             <i className="uil uil-search text-xl"></i>
           </button>
         </div>
-
         <div className="p-6 grid gap-4 md:grid-cols-2">
           <div>
             <p className="text-xs font-bold text-gray-400 uppercase">
@@ -285,72 +326,113 @@ const TrackingPage = () => {
         </div>
       </div>
 
-      {/* TIẾN ĐỘ THỰC HIỆN */}
-      <div className="max-w-3xl mx-auto">
-        <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
-          <i className="uil uil-history"></i> Tiến độ thực hiện
-          <span className="text-xs font-normal text-blue-500 bg-blue-50 px-2 py-1 rounded-full">
-            (Bấm vào từng bước để xem chi tiết)
-          </span>
-        </h3>
+      {/* BỐ CỤC 2 CỘT CHÍNH */}
+      <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* CỘT TRÁI: TIẾN ĐỘ THỰC HIỆN */}
+        <div>
+          <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+            <i className="uil uil-history"></i> Tiến độ thực hiện
+            <span className="text-xs font-normal text-blue-500 bg-blue-50 px-2 py-1 rounded-full">
+              (Bấm vào từng bước để xem chi tiết)
+            </span>
+          </h3>
 
-        <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 sm:p-10 relative">
-          <div className="absolute left-8 sm:left-12 top-10 bottom-10 w-0.5 bg-gray-100"></div>
+          <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 sm:p-10 relative">
+            <div className="absolute left-8 sm:left-12 top-10 bottom-10 w-0.5 bg-gray-100"></div>
 
-          <div className="space-y-8 relative">
-            {steps.map((step) => {
-              const isCompleted = contractData.state >= step.id;
-              const isCurrent = contractData.state === step.id;
+            <div className="space-y-8 relative">
+              {steps.map((step) => {
+                const isCompleted = contractData.state >= step.id;
+                const isCurrent = contractData.state === step.id;
 
-              return (
-                <div
-                  key={step.id}
-                  onClick={() => (isCompleted ? setSelectedStep(step) : null)}
-                  className={`relative flex items-center gap-4 sm:gap-6 group 
-                    ${isCompleted ? "cursor-pointer" : "opacity-50 cursor-not-allowed"}
-                  `}
-                >
+                return (
                   <div
-                    className={`relative z-10 w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-lg shadow-sm transition-all duration-300
-                    ${isCompleted ? "bg-blue-600 text-white scale-110 group-hover:ring-4 ring-blue-100" : "bg-white border-2 border-gray-200 text-gray-300"}
-                  `}
+                    key={step.id}
+                    onClick={() => (isCompleted ? setSelectedStep(step) : null)}
+                    className={`relative flex items-center gap-4 sm:gap-6 group ${isCompleted ? "cursor-pointer" : "opacity-50 cursor-not-allowed"}`}
                   >
-                    {isCompleted ? (
-                      <i className="uil uil-check"></i>
-                    ) : (
-                      <span className="text-xs">{step.id + 1}</span>
-                    )}
-                    {isCurrent && (
-                      <span className="absolute -inset-1 rounded-full bg-blue-500 opacity-20 animate-ping"></span>
-                    )}
-                  </div>
-
-                  <div className="flex-1 bg-white p-3 sm:p-4 rounded-xl border border-transparent transition-all duration-200 group-hover:border-blue-100 group-hover:bg-blue-50/30">
-                    <h4
-                      className={`font-bold text-sm sm:text-base ${isCompleted ? "text-gray-800 group-hover:text-blue-700" : "text-gray-400"}`}
+                    <div
+                      className={`relative z-10 w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-lg shadow-sm transition-all duration-300 ${isCompleted ? "bg-blue-600 text-white scale-110 group-hover:ring-4 ring-blue-100" : "bg-white border-2 border-gray-200 text-gray-300"}`}
                     >
-                      {step.label}
-                    </h4>
-                    {isCurrent && (
-                      <p className="text-xs text-blue-600 font-medium mt-1">
-                        • Đang xử lý ở bước này
-                      </p>
-                    )}
-                    {isCompleted && !isCurrent && (
-                      <p className="text-xs text-green-600 mt-1 flex items-center gap-1">
-                        <i className="uil uil-check-circle"></i> Đã hoàn thành
-                      </p>
+                      {isCompleted ? (
+                        <i className="uil uil-check"></i>
+                      ) : (
+                        <span className="text-xs">{step.id + 1}</span>
+                      )}
+                      {isCurrent && (
+                        <span className="absolute -inset-1 rounded-full bg-blue-500 opacity-20 animate-ping"></span>
+                      )}
+                    </div>
+
+                    <div className="flex-1 bg-white p-3 sm:p-4 rounded-xl border border-transparent transition-all duration-200 group-hover:border-blue-100 group-hover:bg-blue-50/30">
+                      <h4
+                        className={`font-bold text-sm sm:text-base ${isCompleted ? "text-gray-800 group-hover:text-blue-700" : "text-gray-400"}`}
+                      >
+                        {step.label}
+                      </h4>
+                      {isCurrent && (
+                        <p className="text-xs text-blue-600 font-medium mt-1">
+                          • Đang xử lý ở bước này
+                        </p>
+                      )}
+                      {isCompleted && !isCurrent && (
+                        <p className="text-xs text-green-600 mt-1 flex items-center gap-1">
+                          <i className="uil uil-check-circle"></i> Đã hoàn thành
+                        </p>
+                      )}
+                    </div>
+
+                    {isCompleted && (
+                      <div className="text-gray-300 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <i className="uil uil-angle-right text-2xl"></i>
+                      </div>
                     )}
                   </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
 
-                  {isCompleted && (
-                    <div className="text-gray-300 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <i className="uil uil-angle-right text-2xl"></i>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
+        {/* CỘT PHẢI: HỒ SƠ MINH CHỨNG PHÁP LÝ */}
+        <div>
+          <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+            <i className="uil uil-file-shield-alt text-blue-600"></i> Hồ sơ &
+            Minh chứng Pháp lý
+          </h3>
+          <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 sm:p-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {renderProofCard(
+                "step0",
+                "1. Khởi tạo hợp đồng",
+                "Bản gốc có chữ ký/giáp lai",
+                0,
+              )}
+              {renderProofCard(
+                "step1",
+                "2. Xác nhận nhận việc",
+                "Lệnh điều động xe / xuất kho",
+                1,
+              )}
+              {renderProofCard(
+                "step2",
+                "3. Đang vận chuyển",
+                "Vận đơn / Hình ảnh bốc xếp",
+                2,
+              )}
+              {renderProofCard(
+                "step3",
+                "4. Bàn giao hoàn thành",
+                "Biên bản bàn giao kho đích",
+                3,
+              )}
+              {renderProofCard(
+                "step4",
+                "5. Thanh toán",
+                "Hóa đơn VAT / Ủy nhiệm chi",
+                4,
+              )}
+            </div>
           </div>
         </div>
       </div>

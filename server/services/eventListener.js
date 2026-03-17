@@ -28,11 +28,11 @@ const startListener = async () => {
       provider
     );
 
-    console.log("🎧 Server đang lắng nghe sự kiện (V2) trên Blockchain Sepolia...");
+    console.log("Server đang lắng nghe sự kiện (V2) trên Blockchain Sepolia...");
 
     // CƠ CHẾ AUTO-RECONNECT VÀ GIỮ KẾT NỐI
     if (keepAliveInterval) clearInterval(keepAliveInterval);
-    
+
     // Ping mỗi 30s để giữ kết nối RPC không bị ngủ (timeout)
     keepAliveInterval = setInterval(async () => {
       try {

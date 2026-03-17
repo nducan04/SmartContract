@@ -74,8 +74,7 @@ export const updateStatus = async (req, res) => {
     }
 
     console.log(
-      `🔄 Đã cập nhật: ${contractAddress} -> Status: ${status}, Provider: ${
-        provider || "Giữ nguyên"
+      `🔄 Đã cập nhật: ${contractAddress} -> Status: ${status}, Provider: ${provider || "Giữ nguyên"
       }`,
     );
 
@@ -191,6 +190,50 @@ export const getStats = async (req, res) => {
     });
   } catch (error) {
     console.error("Lỗi thống kê:", error);
+    res.status(500).json({ message: "Lỗi Server" });
+  }
+};
+
+export const uploadProofHash = async (req, res) => {
+  try {
+    const { contractAddress, step, ipfsHash } = req.body;
+
+    if (!contractAddress || !step || !ipfsHash) {
+      return res.status(400).json({ message: "Thiếu dữ liệu (contractAddress, step, ipfsHash)" });
+    }
+
+    // Tìm hợp đồng và cập nhật đúng cái trường proofs.stepX
+    const updateKey = `proofs.${step}`;
+    const updatedContract = await Contract.findOneAndUpdate(
+      { contractAddress: contractAddress },
+      { $set: { [updateKey]: ipfsHash } },
+      { new: true }
+    );
+
+    if (!updatedContract) {
+      return res.status(404).json({ message: "Không tìm thấy hợp đồng" });
+    }
+
+    res.status(200).json({ message: "Cập nhật minh chứng thành công", contract: updatedContract });
+  } catch (error) {
+    console.error("Lỗi cập nhật minh chứng:", error);
+    res.status(500).json({ message: "Lỗi Server" });
+  }
+};
+
+// API Lấy dữ liệu 1 hợp đồng công khai (Dành cho trang Tracking quét QR)
+export const getContractByAddress = async (req, res) => {
+  try {
+    const { address } = req.params;
+    const contract = await Contract.findOne({ contractAddress: address.toLowerCase() });
+
+    if (!contract) {
+      return res.status(404).json({ message: "Không tìm thấy hợp đồng" });
+    }
+
+    res.status(200).json(contract);
+  } catch (error) {
+    console.error("Lỗi tra cứu Tracking:", error);
     res.status(500).json({ message: "Lỗi Server" });
   }
 };

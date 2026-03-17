@@ -5,6 +5,8 @@ import {
   updateStatus,
   getAllContractsForAdmin,
   getStats,
+  uploadProofHash,
+  getContractByAddress,
 } from "../controllers/contractController.js";
 
 const router = express.Router();
@@ -16,5 +18,8 @@ router.get("/stats", getStats);
 router.put("/update-status", updateStatus);
 router.get("/available", getAvailableContracts);
 router.get("/all-admin", getAllContractsForAdmin);
+
+router.put("/upload-proof", uploadProofHash);
+router.get("/track/:address", getContractByAddress);
 
 export default router;

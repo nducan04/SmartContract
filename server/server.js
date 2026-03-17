@@ -20,6 +20,6 @@ app.get("/", (req, res) =>
 app.use("/api/contracts", contractRoutes);
 
 app.listen(PORT, () => {
-  console.log(`🚀 Server đang chạy tại port ${PORT}`);
+  console.log(`Server đang chạy tại port ${PORT}`);
   startListener();
 });

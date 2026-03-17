@@ -22,6 +22,14 @@ const contractSchema = new mongoose.Schema(
     // 4. Trạng thái (Mapping với Enum trong Solidity)
     // 0: Created, 1: Accepted, 2: InProgress, 3: Completed, 4: Paid, 5: Cancelled
     status: { type: Number, default: 0 },
+
+    proofs: {
+      step0: { type: String, default: "" }, // Khởi tạo
+      step1: { type: String, default: "" }, // Chấp nhận
+      step2: { type: String, default: "" }, // Đang giao
+      step3: { type: String, default: "" }, // Hoàn thành
+      step4: { type: String, default: "" }, // Thanh toán
+    }
   },
   { timestamps: true }
 );
