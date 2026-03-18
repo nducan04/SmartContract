@@ -326,7 +326,7 @@ const ContractDetailsPage = () => {
             <button
               onClick={() => handleUploadProof(stepKey)}
               disabled={actionLoading || !proofFiles[stepKey]}
-              className="w-full bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-blue-700 disabled:opacity-50 transition-colors"
+              className="w-full bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-blue-700 disabled:opacity-50 transition-colors cursor-pointer"
             >
               Tải minh chứng lên IPFS
             </button>

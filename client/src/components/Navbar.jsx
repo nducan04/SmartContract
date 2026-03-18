@@ -19,8 +19,8 @@ const Navbar = () => {
   // 1. DANH SÁCH VÍ ADMIN TỪ BIẾN MÔI TRƯỜNG
   const ADMIN_WALLETS = import.meta.env.VITE_ADMIN_WALLETS
     ? import.meta.env.VITE_ADMIN_WALLETS.split(",").map((addr) =>
-        addr.trim().toLowerCase(),
-      )
+      addr.trim().toLowerCase(),
+    )
     : [];
 
   // 2. BIẾN KIỂM TRA QUYỀN ADMIN
@@ -136,7 +136,7 @@ const Navbar = () => {
             onClick={() => handleNavigate("/dashboard")}
             className="text-gray-600 font-medium hover:text-blue-600 transition-colors cursor-pointer text-left text-lg md:text-base"
           >
-            Bảng Điều Khiển
+            Dashboard
           </button>
         </div>
 

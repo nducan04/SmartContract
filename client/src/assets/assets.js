@@ -77,25 +77,25 @@ export const menuLinks = [
 
 export const ownerMenuLinks = [
   {
-    name: "Bảng Điều Khiển",
+    name: "Tổng quan",
     path: "/dashboard",
     icon: dashboardIcon,
     coloredIcon: dashboardIconColored,
   },
   {
-    name: "Quản lý Hợp đồng",
+    name: "Quản lý hợp đồng",
     path: "/dashboard/contracts",
     icon: statusUpdate,
     coloredIcon: statusUpdate,
   },
   {
-    name: "Sàn Hợp Đồng",
+    name: "Sàn hợp đồng",
     path: "/dashboard/marketplace",
     icon: search_icon, // Hoặc icon nào bạn thích
     coloredIcon: search_icon,
   },
   {
-    name: "Tạo Hợp đồng mới",
+    name: "Tạo hợp đồng mới",
     path: "/dashboard/create",
     icon: contractSetup,
     coloredIcon: contractSetup,

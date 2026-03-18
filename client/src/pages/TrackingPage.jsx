@@ -12,7 +12,7 @@ const StepDetailModal = ({ step, contractData, onClose }) => {
     switch (step.id) {
       case 0:
         return {
-          title: "Khởi tạo Hợp đồng",
+          title: "Khởi tạo hợp đồng",
           actor: "Người gửi (Client)",
           address: contractData.client,
           desc: "Hợp đồng được triển khai lên mạng Sepolia. Các điều khoản và tiền ký quỹ đã được khóa.",
@@ -20,7 +20,7 @@ const StepDetailModal = ({ step, contractData, onClose }) => {
         };
       case 1:
         return {
-          title: "Đơn vị Vận chuyển xác nhận",
+          title: "Đơn vị vận chuyển xác nhận",
           actor: "Vận chuyển (Provider)",
           address: contractData.provider,
           desc: "Đơn vị vận chuyển đã đồng ý các điều khoản và cam kết thực hiện đơn hàng.",

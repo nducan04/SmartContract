@@ -29,7 +29,7 @@ const CreateContractPage = () => {
     art6_respA: "", // Trách nhiệm bên A
     art6_respB: "", // Trách nhiệm bên B
     art7_general:
-      "Hai bên cam kết thực hiện đúng các điều khoản đã nêu. Mọi tranh chấp sẽ được giải quyết qua đàm phán.",
+      "Hai bên cam kết thực hiện nghiêm túc các điều khoản ghi trong hợp đồng này. Đối với những nội dung không quy định trong hợp đồng sẽ được thực hiện theo quy định hiện hành của pháp luật. Trong quá trình thực hiện hợp đồng nếu có phát sinh thì hai bên phải chủ động thông báo cho nhau bằng văn bản để bàn bạc giải quyết, trường hợp nếu không giải quyết được thì một trong hai bên có quyền đưa vụ việc ra toà án có thẩm quyền để giải quyết. Quyết định của toà buộc hai bên phải thực hiện mọi chi phí do bên có lỗi chịu",
   });
 
   // Hàm xử lý khi nhập liệu vào các ô mới
@@ -150,11 +150,11 @@ const CreateContractPage = () => {
       setStatus("✍ Đang chờ MetaMask xác nhận...");
       const tx = await factoryContract.createAgreement(
         receiver,
-        packedTerms, 
+        packedTerms,
         termsHash,
         deadlineTimestamp,
         penaltyInWei,
-        { 
+        {
           value: amountInWei,
           gasLimit: (gasEstimate * 12n) / 10n // Cộng thêm 20% gas limit margin cho an toàn
         },
@@ -176,7 +176,7 @@ const CreateContractPage = () => {
   return (
     <div className="p-4 max-w-7xl mx-auto">
       <h1 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2">
-        <i className="uil uil-file-contract text-blue-600"></i> Khởi tạo Hợp
+        <i className="uil uil-file-contract text-blue-600"></i> Khởi tạo hợp
         đồng Kỹ thuật số
       </h1>
 
@@ -378,7 +378,7 @@ const CreateContractPage = () => {
             </div>
             <div>
               <label className="block text-xs font-bold text-gray-600 mb-1">
-                Điều 3 & 5: Giá cả & Thanh toán
+                Điều 3: Giá cả hàng hóa
               </label>
               <textarea
                 name="art3_price"
@@ -386,7 +386,7 @@ const CreateContractPage = () => {
                 value={contractDetails.art3_price}
                 onChange={handleDetailChange}
                 className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:border-blue-500"
-                placeholder="Tổng giá trị, phương thức thanh toán..."
+                placeholder="VD: 50.000.000 VND / tấn..."
               />
             </div>
             <div>
@@ -400,6 +400,19 @@ const CreateContractPage = () => {
                 onChange={handleDetailChange}
                 className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:border-blue-500"
                 placeholder="Giao tại kho B, thời gian hoàn thành..."
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-gray-600 mb-1">
+                Điều 5: Phương thức thanh toán
+              </label>
+              <textarea
+                name="art5_payment"
+                rows="2"
+                value={contractDetails.art5_payment}
+                onChange={handleDetailChange}
+                className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:border-blue-500"
+                placeholder="VD: Chuyển khoản, thanh toán thành 2 đợt..."
               />
             </div>
             <div>
@@ -428,16 +441,17 @@ const CreateContractPage = () => {
                 placeholder="Thanh toán đúng cam kết..."
               />
             </div>
-            <div className="md:col-span-2">
-              <label className="block text-xs font-bold text-gray-600 mb-1">
-                Điều 7: Điều khoản chung
+            <div className="md:col-span-2 bg-blue-50/30 p-4 rounded-xl border border-blue-100">
+              <label className="block text-xs font-bold text-blue-700 uppercase mb-2 flex items-center gap-1">
+                <i className="uil uil-info-circle"></i> Điều 7: Điều khoản chung
               </label>
               <textarea
                 name="art7_general"
-                rows="2"
+                rows="6"
                 value={contractDetails.art7_general}
                 onChange={handleDetailChange}
-                className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:border-blue-500"
+                className="w-full px-4 py-3 bg-white border border-blue-100 rounded-xl outline-none focus:border-blue-500 shadow-sm text-gray-700 leading-relaxed"
+                placeholder="Các cam kết chung giữa hai bên..."
               />
             </div>
           </div>
@@ -462,7 +476,7 @@ const CreateContractPage = () => {
             disabled={loading}
             className={`w-full py-4 rounded-xl text-white font-bold text-lg shadow-lg transition-all ${loading ? "bg-gray-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700 hover:shadow-blue-200"}`}
           >
-            {loading ? "Đang xử lý giao dịch..." : "Ký & Khởi tạo Hợp đồng"}
+            {loading ? "Đang xử lý giao dịch..." : "Ký & Khởi tạo hợp đồng"}
           </button>
         </div>
       </form>

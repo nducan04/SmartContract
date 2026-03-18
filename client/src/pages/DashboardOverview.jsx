@@ -84,7 +84,7 @@ const DashboardOverview = () => {
       <div className="flex flex-col md:flex-row justify-between items-end md:items-center gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-800">
-            Tổng quan Hệ thống
+            Tổng quan hệ thống
           </h1>
           <p className="text-gray-500 text-sm mt-1">
             Theo dõi hiệu suất chuỗi cung ứng của bạn
@@ -94,7 +94,7 @@ const DashboardOverview = () => {
           to="/dashboard/create"
           className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-semibold shadow-lg shadow-blue-200 transition-all flex items-center gap-2 transform hover:-translate-y-1"
         >
-          <i className="uil uil-plus"></i> Tạo Hợp đồng
+          <i className="uil uil-plus"></i> Tạo hợp đồng
         </Link>
       </div>
 
