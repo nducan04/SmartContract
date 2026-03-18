@@ -208,7 +208,7 @@ const TrackingPage = () => {
 
         {currentProof ? (
           <a
-            href={`https://gateway.pinata.cloud/ipfs/${currentProof}`}
+            href={`https://dweb.link/ipfs/${currentProof}`}
             target="_blank"
             rel="noreferrer"
             className="block w-full py-2 bg-blue-50 text-blue-600 font-bold text-xs rounded-lg text-center border border-blue-100 hover:bg-blue-100 hover:shadow-sm transition-all"
