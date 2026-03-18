@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { ethers } from "ethers";
 import AddressDisplay from "../components/AddressDisplay";
+import QRModal from "../components/QRModal"; // Bổ sung import QRModal
 
 // HÀM GIẢI MÃ JSON
 const parseTerms = (termsString) => {
@@ -41,8 +42,8 @@ const getStatusBadge = (status) => {
   );
 };
 
-// COMPONENT DÒNG THÔNG MINH CHO ADMIN
-const AdminContractRow = ({ c }) => {
+// COMPONENT DÒNG THÔNG MINH CHO ADMIN (Đã thêm prop onShowQR và onViewDetails)
+const AdminContractRow = ({ c, onShowQR, onViewDetails }) => {
   const [terms, setTerms] = useState(c.terms || "");
   const [isSyncing, setIsSyncing] = useState(false);
 
@@ -85,14 +86,14 @@ const AdminContractRow = ({ c }) => {
         <AddressDisplay address={c.contractAddress} />
       </td>
       <td className="p-4 align-top">
-        <p className="text-sm font-semibold text-gray-800 whitespace-normal wrap-break-word leading-relaxed">
+        <p className="text-sm font-semibold text-gray-800 whitespace-normal break-words leading-relaxed line-clamp-2">
           {displayTitle}
         </p>
       </td>
       <td className="p-4 align-top">
         {clientName ? (
           <div>
-            <p className="text-sm font-bold text-gray-800 whitespace-normal wrap-break-word leading-relaxed">
+            <p className="text-sm font-bold text-gray-800 whitespace-normal break-words leading-relaxed line-clamp-2">
               {clientName}
             </p>
             <div className="text-xs text-gray-400 mt-1">
@@ -106,7 +107,7 @@ const AdminContractRow = ({ c }) => {
       <td className="p-4 align-top">
         {receiverName ? (
           <div>
-            <p className="text-sm font-bold text-gray-800 whitespace-normal wrap-break-word leading-relaxed">
+            <p className="text-sm font-bold text-gray-800 whitespace-normal break-words leading-relaxed line-clamp-2">
               {receiverName}
             </p>
             <div className="text-xs text-gray-400 mt-1">
@@ -131,6 +132,25 @@ const AdminContractRow = ({ c }) => {
       <td className="p-4 align-top text-sm text-gray-500 font-medium">
         {new Date(c.createdAt).toLocaleDateString("vi-VN")}
       </td>
+
+      {/* CỘT HÀNH ĐỘNG MỚI */}
+      <td className="p-4 align-top text-center">
+        <div className="flex items-center justify-center gap-2">
+          <button
+            onClick={() => onShowQR(c.contractAddress)}
+            className="p-2 text-gray-400 hover:text-blue-600 bg-gray-100 hover:bg-blue-100 rounded-lg transition-colors cursor-pointer"
+            title="Hiện mã QR"
+          >
+            <i className="uil uil-qrcode-scan text-lg"></i>
+          </button>
+          <button
+            onClick={() => onViewDetails(c.contractAddress)}
+            className="px-3 py-1.5 bg-blue-50 text-blue-600 font-bold text-xs hover:bg-blue-600 hover:text-white rounded-lg transition-colors cursor-pointer whitespace-nowrap"
+          >
+            Chi tiết
+          </button>
+        </div>
+      </td>
     </tr>
   );
 };
@@ -140,11 +160,14 @@ const AdminPage = () => {
   const navigate = useNavigate();
   const [allContracts, setAllContracts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [isAuth, setIsAuth] = useState(false); // Cờ xác thực an toàn
+  const [isAuth, setIsAuth] = useState(false);
 
   const [pagination, setPagination] = useState({ page: 1, totalPages: 1, total: 0 });
 
-  // KHAI BÁO CÁC VÍ ADMIN Ở ĐÂY TỪ BIẾN MÔI TRƯỜNG
+  // STATE CHO QR MODAL
+  const [showQRModal, setShowQRModal] = useState(false);
+  const [selectedContractAddress, setSelectedContractAddress] = useState(null);
+
   const ADMIN_WALLETS = import.meta.env.VITE_ADMIN_WALLETS
     ? import.meta.env.VITE_ADMIN_WALLETS.split(",").map((addr) =>
       addr.trim().toLowerCase(),
@@ -153,9 +176,8 @@ const AdminPage = () => {
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    // LUỒNG XÁC THỰC MỚI: Kiên nhẫn chờ MetaMask load xong
     if (!walletAddress) {
-      return; // Dừng lại, không đá văng user ra ngoài ngay lập tức
+      return;
     }
 
     if (!ADMIN_WALLETS.includes(walletAddress.toLowerCase())) {
@@ -164,7 +186,6 @@ const AdminPage = () => {
       return;
     }
 
-    // Vượt qua vòng kiểm duyệt -> Cho phép render dữ liệu
     setIsAuth(true);
 
     const fetchAllData = async () => {
@@ -175,12 +196,10 @@ const AdminPage = () => {
           `${API_URL}/api/contracts/all-admin?requester=${walletAddress}&page=${pagination.page}&limit=10`,
         );
 
-        // Mới: API trả về { data, pagination }
         if (response.data && response.data.data) {
           setAllContracts(response.data.data);
           setPagination(response.data.pagination);
         } else {
-          // Fallback nếu api cũ
           const sortedData = response.data.sort(
             (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
           );
@@ -197,7 +216,17 @@ const AdminPage = () => {
     fetchAllData();
   }, [walletAddress, navigate, pagination.page]);
 
-  // UI 1: Khi mới vào trang, ví chưa kịp load
+  // HÀM MỞ / ĐÓNG QR
+  const handleShowQR = (address) => {
+    setSelectedContractAddress(address);
+    setShowQRModal(true);
+  };
+
+  const handleCloseQR = () => {
+    setShowQRModal(false);
+    setSelectedContractAddress(null);
+  };
+
   if (!walletAddress) {
     return (
       <div className="flex flex-col justify-center items-center h-screen bg-gray-50">
@@ -212,7 +241,6 @@ const AdminPage = () => {
     );
   }
 
-  // UI 2: Khi đang tải dữ liệu từ Backend
   if (!isAuth || loading) {
     return (
       <div className="flex justify-center items-center h-screen bg-gray-50">
@@ -221,9 +249,8 @@ const AdminPage = () => {
     );
   }
 
-  // UI 3: Giao diện Admin xịn xò
   return (
-    <div className="p-4 md:p-8 bg-gray-50 min-h-screen">
+    <div className="p-4 md:p-8 bg-gray-50 min-h-screen w-full overflow-hidden">
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
           <i className="uil uil-shield-check text-blue-600 text-3xl"></i> Quản
@@ -234,7 +261,6 @@ const AdminPage = () => {
         </p>
       </div>
 
-      {/* THỐNG KÊ NHANH */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <div className="bg-white p-6 rounded-2xl shadow-sm border-l-4 border-blue-500 relative overflow-hidden">
           <i className="uil uil-file-contract absolute -right-4 -bottom-4 text-8xl text-blue-50 opacity-50"></i>
@@ -242,7 +268,7 @@ const AdminPage = () => {
             Tổng số Hợp đồng
           </p>
           <p className="text-4xl font-bold text-gray-800 mt-2 relative z-10">
-            {allContracts.length}
+            {pagination.total || allContracts.length}
           </p>
         </div>
         <div className="bg-white p-6 rounded-2xl shadow-sm border-l-4 border-green-500 relative overflow-hidden">
@@ -269,29 +295,40 @@ const AdminPage = () => {
       </div>
 
       {/* BẢNG DỮ LIỆU TOÀN CỤC */}
-      <div className="bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-200">
-        <div className="p-5 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-200 max-w-full">
+        <div className="p-5 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center rounded-t-2xl">
           <h2 className="font-bold text-gray-700">Tất cả giao dịch</h2>
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse table-fixed min-w-[1200px]">
+
+        {/* Đảm bảo w-full và overflow-x-auto để cuộn ngang trên mobile */}
+        <div className="overflow-x-auto w-full">
+          <table className="w-full text-left border-collapse table-fixed min-w-[1300px]">
             <thead className="bg-gray-800 text-white text-xs uppercase tracking-wider">
               <tr>
+                {/* Tỉ lệ cột đã được cân chỉnh lại cho 8 cột */}
                 <th className="p-4 w-[12%]">ID Blockchain</th>
-                <th className="p-4 w-[28%]">Nội dung / Tên hàng</th>
-                <th className="p-4 w-[18%]">Người tạo (Bên A)</th>
-                <th className="p-4 w-[18%]">Người nhận (Bên B)</th>
-                <th className="p-4 w-[10%]">Vận chuyển</th>
-                <th className="p-4 w-[14%]">Trạng thái</th>
-                <th className="p-4 w-[10%]">Ngày tạo</th>
+                <th className="p-4 w-[20%]">Nội dung / Tên hàng</th>
+                <th className="p-4 w-[15%]">Người tạo (Bên A)</th>
+                <th className="p-4 w-[15%]">Người nhận (Bên B)</th>
+                <th className="p-4 w-[12%]">Vận chuyển</th>
+                <th className="p-4 w-[10%]">Trạng thái</th>
+                <th className="p-4 w-[8%]">Ngày tạo</th>
+                <th className="p-4 w-[8%] text-center">Hành động</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-gray-100">
               {allContracts.length > 0 ? (
-                allContracts.map((c) => <AdminContractRow key={c._id} c={c} />)
+                allContracts.map((c) => (
+                  <AdminContractRow
+                    key={c._id}
+                    c={c}
+                    onShowQR={handleShowQR}
+                    onViewDetails={(addr) => navigate(`/dashboard/contract/${addr}`)}
+                  />
+                ))
               ) : (
                 <tr>
-                  <td colSpan="7" className="p-10 text-center text-gray-400">
+                  <td colSpan="8" className="p-10 text-center text-gray-400">
                     Chưa có dữ liệu hợp đồng nào.
                   </td>
                 </tr>
@@ -299,9 +336,10 @@ const AdminPage = () => {
             </tbody>
           </table>
         </div>
-        {/* Điều khiển Phân trang */}
+
+        {/* Phân trang */}
         {pagination.totalPages > 1 && (
-          <div className="p-4 border-t border-gray-100 flex items-center justify-between bg-gray-50/50">
+          <div className="p-4 border-t border-gray-100 flex items-center justify-between bg-gray-50/50 rounded-b-2xl">
             <span className="text-sm text-gray-500 font-medium">
               Trang {pagination.page} / {pagination.totalPages}
             </span>
@@ -309,14 +347,14 @@ const AdminPage = () => {
               <button
                 disabled={pagination.page <= 1}
                 onClick={() => setPagination((p) => ({ ...p, page: p.page - 1 }))}
-                className="px-4 py-2 text-sm font-medium border border-gray-200 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="px-4 py-2 text-sm font-medium border border-gray-200 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
               >
                 Trước
               </button>
               <button
                 disabled={pagination.page >= pagination.totalPages}
                 onClick={() => setPagination((p) => ({ ...p, page: p.page + 1 }))}
-                className="px-4 py-2 text-sm font-medium border border-gray-200 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="px-4 py-2 text-sm font-medium border border-gray-200 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
               >
                 Tiếp
               </button>
@@ -324,6 +362,13 @@ const AdminPage = () => {
           </div>
         )}
       </div>
+
+      {/* Tích hợp Popup QR */}
+      <QRModal
+        show={showQRModal}
+        onClose={handleCloseQR}
+        contractId={selectedContractAddress}
+      />
     </div>
   );
 };

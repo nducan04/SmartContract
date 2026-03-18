@@ -50,11 +50,6 @@ const AddressDisplay = ({ address, showLabel = true }) => {
         )}
       </button>
 
-      {copied && (
-        <span className="text-xs text-green-600 font-medium animate-fade-in">
-          Đã chép!
-        </span>
-      )}
     </div>
   );
 };
