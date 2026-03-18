@@ -145,44 +145,94 @@ const DashboardOverview = () => {
             {/* Cột trái: TIẾN ĐỘ GẦN ĐÂY */}
             <div className="lg:col-span-2 space-y-6">
               <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
-                <i className="uil uil-clock-three text-blue-500"></i> Hoạt động gần đây
+                Hoạt động gần đây
               </h3>
 
               {recentList.length > 0 ? (
                 recentList.map((contract) => {
-                  // XỬ LÝ TEXT: Hiển thị an toàn dù là text thường hay JSON
                   const parsedTerms = parseTerms(contract.terms);
-                  const displayTitle = parsedTerms ? parsedTerms.art1_items : (contract.terms || "Không có nội dung");
+                  const displayTitle = parsedTerms ? parsedTerms.art1_items : (contract.terms && contract.terms.length > 20 ? contract.terms : `Hợp đồng #${contract.contractAddress.slice(-4)}`);
+
+                  // Xác định vai trò
+                  const isClient = walletAddress?.toLowerCase() === contract.client?.toLowerCase();
+                  const isReceiver = walletAddress?.toLowerCase() === contract.receiver?.toLowerCase();
+                  const isProvider = walletAddress?.toLowerCase() === contract.provider?.toLowerCase();
+
+                  let roleBadge = { text: "Thành viên", color: "bg-gray-100 text-gray-600" };
+                  let partnerLabel = "Đối tác";
+                  let partnerAddr = "";
+
+                  if (isClient) {
+                    roleBadge = { text: "Chủ hợp đồng (Bên A)", color: "bg-blue-100 text-blue-700" };
+                    partnerAddr = contract.receiver;
+                    partnerLabel = "Bên nhận (Bên B)";
+                  } else if (isReceiver) {
+                    roleBadge = { text: "Người nhận (Bên B)", color: "bg-purple-100 text-purple-700" };
+                    partnerAddr = contract.client;
+                    partnerLabel = "Bên giao (Bên A)";
+                  } else if (isProvider) {
+                    roleBadge = { text: "Vận chuyển", color: "bg-green-100 text-green-700" };
+                    partnerAddr = contract.client;
+                    partnerLabel = "Chủ hàng (Bên A)";
+                  }
 
                   return (
                     <div
                       key={contract._id}
-                      className="bg-white/80 backdrop-blur-sm p-6 rounded-2xl shadow-sm border border-gray-100 hover:border-blue-200 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
+                      className="bg-white/90 backdrop-blur-sm p-6 rounded-2xl shadow-sm border border-gray-100 hover:border-blue-200 transition-all duration-300 hover:shadow-lg group"
                     >
-                      <div className="flex justify-between items-start mb-4">
-                        <div>
-                          {/* Đã thêm line-clamp-1 để chữ dài không làm vỡ giao diện */}
-                          <h4 className="font-bold text-gray-800 text-lg line-clamp-1" title={displayTitle}>
+                      <div className="flex flex-col md:flex-row justify-between items-start gap-4 mb-5">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-2">
+                             <span className={`text-[10px] uppercase font-black px-2 py-0.5 rounded-md ${roleBadge.color}`}>
+                              {roleBadge.text}
+                            </span>
+                            {contract.createdAt && (
+                              <span className="text-[10px] text-gray-400 font-medium">
+                                • {new Date(contract.createdAt).toLocaleDateString('vi-VN')}
+                              </span>
+                            )}
+                          </div>
+                          <h4 className="font-bold text-gray-800 text-xl line-clamp-1 group-hover:text-blue-600 transition-colors" title={displayTitle}>
                             {displayTitle}
                           </h4>
-                          <div className="flex items-center gap-2 mt-1">
-                            <span className="text-xs text-gray-400">ID:</span>
-                            <AddressDisplay address={contract.contractAddress} />
+                          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2">
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-xs font-bold text-gray-400">Hợp đồng:</span>
+                              <AddressDisplay address={contract.contractAddress} />
+                            </div>
+                            {partnerAddr && (
+                              <div className="flex items-center gap-1.5">
+                                <span className="text-xs font-bold text-gray-400">{partnerLabel}:</span>
+                                <AddressDisplay address={partnerAddr} />
+                              </div>
+                            )}
                           </div>
                         </div>
-                        <span className="bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap">
-                          {contract.amount} ETH
-                        </span>
+                        <div className="bg-blue-50 px-4 py-2 rounded-xl border border-blue-100 text-center min-w-[100px]">
+                          <span className="block text-[10px] font-bold text-blue-400 uppercase tracking-wider">Giá trị</span>
+                          <span className="text-blue-700 font-black text-lg">
+                            {contract.amount} ETH
+                          </span>
+                        </div>
                       </div>
 
-                      <ContractStepper currentStatus={contract.status} />
+                      <div className="bg-gray-50/50 p-4 rounded-xl border border-gray-100 mb-4">
+                        <ContractStepper currentStatus={contract.status} />
+                      </div>
 
-                      <div className="mt-4 text-right">
+                      <div className="flex justify-between items-center">
+                        <div className="flex items-center gap-2">
+                           <span className={`w-2 h-2 rounded-full ${contract.status >= 4 ? 'bg-green-500' : 'bg-blue-500 animate-pulse'}`}></span>
+                           <span className="text-xs font-bold text-gray-500 uppercase tracking-tighter">
+                             Trạng thái: {["Mới tạo", "Đã chấp nhận", "Đang vận chuyển", "Đã hoàn thành", "Đã thanh toán", "Đã hủy"][contract.status] || "N/A"}
+                           </span>
+                        </div>
                         <button
                           onClick={() => navigate(`/dashboard/contract/${contract.contractAddress}`)}
-                          className="text-sm text-blue-600 font-semibold hover:text-blue-800 hover:underline cursor-pointer"
+                          className="flex items-center gap-1 text-sm text-blue-600 font-bold hover:text-blue-800 transition-colors cursor-pointer"
                         >
-                          Xem chi tiết &rarr;
+                          Chi tiết <i className="uil uil-arrow-right"></i>
                         </button>
                       </div>
                     </div>

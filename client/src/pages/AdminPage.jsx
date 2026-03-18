@@ -73,7 +73,7 @@ const AdminContractRow = ({ c, onShowQR, onViewDetails }) => {
 
   const parsedTerms = parseTerms(terms);
   const displayTitle = isSyncing
-    ? "⏳ Đang tải dữ liệu..."
+    ? "Đang tải dữ liệu..."
     : parsedTerms
       ? parsedTerms.art1_items
       : terms || "Không có nội dung";
@@ -120,7 +120,7 @@ const AdminContractRow = ({ c, onShowQR, onViewDetails }) => {
       </td>
       <td className="p-4 align-top">
         {c.provider &&
-        c.provider !== "0x0000000000000000000000000000000000000000" ? (
+          c.provider !== "0x0000000000000000000000000000000000000000" ? (
           <AddressDisplay address={c.provider} />
         ) : (
           <span className="text-xs font-medium text-gray-400 bg-gray-100 px-2 py-1 rounded">
@@ -174,8 +174,8 @@ const AdminPage = () => {
 
   const ADMIN_WALLETS = import.meta.env.VITE_ADMIN_WALLETS
     ? import.meta.env.VITE_ADMIN_WALLETS.split(",").map((addr) =>
-        addr.trim().toLowerCase(),
-      )
+      addr.trim().toLowerCase(),
+    )
     : [];
 
   useEffect(() => {

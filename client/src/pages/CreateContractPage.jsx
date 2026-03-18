@@ -443,7 +443,7 @@ const CreateContractPage = () => {
             </div>
             <div className="md:col-span-2 bg-blue-50/30 p-4 rounded-xl border border-blue-100">
               <label className="block text-xs font-bold text-blue-700 uppercase mb-2 flex items-center gap-1">
-                <i className="uil uil-info-circle"></i> Điều 7: Điều khoản chung
+                Điều 7: Điều khoản chung
               </label>
               <textarea
                 name="art7_general"

@@ -682,8 +682,7 @@ const ContractDetailsPage = () => {
       {/* --- KHU VỰC UPLOAD MINH CHỨNG PHÁP LÝ CHỈ HIỆN TRÊN MÀN HÌNH WEB --- */}
       <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 mt-6 print:hidden">
         <h3 className="text-lg font-bold text-gray-800 mb-4 border-b pb-2 flex items-center gap-2">
-          <i className="uil uil-file-shield-alt text-blue-600 text-xl"></i> Hồ
-          sơ & Minh chứng Pháp lý từng giai đoạn
+          Hồ sơ & Minh chứng pháp lý từng giai đoạn
         </h3>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
