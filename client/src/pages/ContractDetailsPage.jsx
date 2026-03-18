@@ -306,7 +306,7 @@ const ContractDetailsPage = () => {
 
         {currentProof ? (
           <a
-            href={`https://dweb.link/ipfs/${currentProof}`}
+            href={`https://ipfs.io/ipfs/${currentProof}`}
             target="_blank"
             rel="noreferrer"
             className="flex items-center justify-center gap-2 w-full py-2 bg-green-50 text-green-700 font-bold text-xs rounded-lg border border-green-200 hover:bg-green-100 transition-colors"
@@ -574,12 +574,12 @@ const ContractDetailsPage = () => {
                   Hồ sơ gốc đính kèm (Bản scan có chữ ký & dấu đỏ)
                 </h4>
                 <a
-                  href={`https://dweb.link/ipfs/${details.termsHash}`}
+                  href={`https://ipfs.io/ipfs/${details.termsHash}`}
                   target="_blank"
                   rel="noreferrer"
                   className="break-all text-blue-600 hover:underline"
                 >
-                  https://gateway.pinata.cloud/ipfs/{details.termsHash}
+                  https://ipfs.io/ipfs/{details.termsHash}
                 </a>
               </div>
             </div>
@@ -648,7 +648,7 @@ const ContractDetailsPage = () => {
                 Tài liệu đính kèm (Bản gốc)
               </h3>
               <p className="text-xs text-blue-600 font-mono break-all mt-1">
-                https://gateway.pinata.cloud/ipfs/{details.termsHash}
+                https://ipfs.io/ipfs/{details.termsHash}
               </p>
             </div>
             <div className="md:col-span-2 space-y-4 mt-4">
