@@ -120,7 +120,7 @@ const AdminContractRow = ({ c, onShowQR, onViewDetails }) => {
       </td>
       <td className="p-4 align-top">
         {c.provider &&
-          c.provider !== "0x0000000000000000000000000000000000000000" ? (
+        c.provider !== "0x0000000000000000000000000000000000000000" ? (
           <AddressDisplay address={c.provider} />
         ) : (
           <span className="text-xs font-medium text-gray-400 bg-gray-100 px-2 py-1 rounded">
@@ -162,7 +162,11 @@ const AdminPage = () => {
   const [loading, setLoading] = useState(true);
   const [isAuth, setIsAuth] = useState(false);
 
-  const [pagination, setPagination] = useState({ page: 1, totalPages: 1, total: 0 });
+  const [pagination, setPagination] = useState({
+    page: 1,
+    totalPages: 1,
+    total: 0,
+  });
 
   // STATE CHO QR MODAL
   const [showQRModal, setShowQRModal] = useState(false);
@@ -170,8 +174,8 @@ const AdminPage = () => {
 
   const ADMIN_WALLETS = import.meta.env.VITE_ADMIN_WALLETS
     ? import.meta.env.VITE_ADMIN_WALLETS.split(",").map((addr) =>
-      addr.trim().toLowerCase(),
-    )
+        addr.trim().toLowerCase(),
+      )
     : [];
 
   useEffect(() => {
@@ -205,7 +209,6 @@ const AdminPage = () => {
           );
           setAllContracts(sortedData);
         }
-
       } catch (error) {
         console.error("Lỗi Admin:", error);
       } finally {
@@ -302,18 +305,17 @@ const AdminPage = () => {
 
         {/* Đảm bảo w-full và overflow-x-auto để cuộn ngang trên mobile */}
         <div className="overflow-x-auto w-full">
-          <table className="w-full text-left border-collapse table-fixed min-w-[1300px]">
+          <table className="w-full text-left border-collapse table-fixed min-w-[1050px]">
             <thead className="bg-gray-800 text-white text-xs uppercase tracking-wider">
               <tr>
-                {/* Tỉ lệ cột đã được cân chỉnh lại cho 8 cột */}
-                <th className="p-4 w-[12%]">ID Blockchain</th>
-                <th className="p-4 w-[20%]">Nội dung / Tên hàng</th>
-                <th className="p-4 w-[15%]">Người tạo (Bên A)</th>
-                <th className="p-4 w-[15%]">Người nhận (Bên B)</th>
-                <th className="p-4 w-[12%]">Vận chuyển</th>
-                <th className="p-4 w-[10%]">Trạng thái</th>
-                <th className="p-4 w-[8%]">Ngày tạo</th>
-                <th className="p-4 w-[8%] text-center">Hành động</th>
+                <th className="p-4 w-[10%]">ID Blockchain</th>
+                <th className="p-4 w-[22%]">Nội dung / Tên hàng</th>
+                <th className="p-4 w-[17%]">Người tạo (Bên A)</th>
+                <th className="p-4 w-[17%]">Người nhận (Bên B)</th>
+                <th className="p-4 w-[10%]">Vận chuyển</th>
+                <th className="p-4 w-[9%]">Trạng thái</th>
+                <th className="p-4 w-[6%]">Ngày tạo</th>
+                <th className="p-4 w-[9%] text-center">Hành động</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
@@ -323,7 +325,9 @@ const AdminPage = () => {
                     key={c._id}
                     c={c}
                     onShowQR={handleShowQR}
-                    onViewDetails={(addr) => navigate(`/dashboard/contract/${addr}`)}
+                    onViewDetails={(addr) =>
+                      navigate(`/dashboard/contract/${addr}`)
+                    }
                   />
                 ))
               ) : (
@@ -346,14 +350,18 @@ const AdminPage = () => {
             <div className="flex gap-2">
               <button
                 disabled={pagination.page <= 1}
-                onClick={() => setPagination((p) => ({ ...p, page: p.page - 1 }))}
+                onClick={() =>
+                  setPagination((p) => ({ ...p, page: p.page - 1 }))
+                }
                 className="px-4 py-2 text-sm font-medium border border-gray-200 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
               >
                 Trước
               </button>
               <button
                 disabled={pagination.page >= pagination.totalPages}
-                onClick={() => setPagination((p) => ({ ...p, page: p.page + 1 }))}
+                onClick={() =>
+                  setPagination((p) => ({ ...p, page: p.page + 1 }))
+                }
                 className="px-4 py-2 text-sm font-medium border border-gray-200 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
               >
                 Tiếp
