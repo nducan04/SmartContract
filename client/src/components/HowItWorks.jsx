@@ -3,7 +3,7 @@ import React from "react";
 const steps = [
   {
     step: "01",
-    title: "Tạo hợp đồng",
+    title: "Tạo Hợp Đồng",
     desc: "Client nhập thông tin, tải điều khoản lên IPFS và ký quỹ tiền ETH.",
     icon: "uil-file-plus-alt",
   },

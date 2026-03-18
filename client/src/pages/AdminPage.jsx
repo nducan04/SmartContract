@@ -256,8 +256,7 @@ const AdminPage = () => {
     <div className="p-4 md:p-8 bg-gray-50 min-h-screen w-full overflow-hidden">
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
-          <i className="uil uil-shield-check text-blue-600 text-3xl"></i> Quản
-          trị Hệ thống
+          Quản trị hệ thống
         </h1>
         <p className="text-gray-500 mt-1">
           Trung tâm giám sát toàn bộ hoạt động giao dịch trên Blockchain.
@@ -268,7 +267,7 @@ const AdminPage = () => {
         <div className="bg-white p-6 rounded-2xl shadow-sm border-l-4 border-blue-500 relative overflow-hidden">
           <i className="uil uil-file-contract absolute -right-4 -bottom-4 text-8xl text-blue-50 opacity-50"></i>
           <p className="text-gray-500 text-xs font-bold uppercase relative z-10">
-            Tổng số Hợp đồng
+            Tổng số hợp đồng
           </p>
           <p className="text-4xl font-bold text-gray-800 mt-2 relative z-10">
             {pagination.total || allContracts.length}

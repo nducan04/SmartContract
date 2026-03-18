@@ -130,7 +130,6 @@ const ContractListPage = () => {
       {/* --- KHU VỰC BỘ LỌC NÂNG CAO --- */}
       <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 mb-6">
         <div className="flex items-center gap-2 mb-4">
-          <i className="uil uil-filter text-blue-600 text-lg"></i>
           <h3 className="font-bold text-gray-800">
             Bộ lọc & Trích xuất dữ liệu
           </h3>

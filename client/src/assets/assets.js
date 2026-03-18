@@ -70,9 +70,9 @@ export const assets = {
 };
 
 export const menuLinks = [
-  { name: "Trang Chủ", path: "/" },
+  { name: "Trang chủ", path: "/" },
   // { name: "Quản Lý Hợp Đồng", path: "/contract-management" },
-  { name: "Theo Dõi Hàng Hóa", path: "/tracking" },
+  { name: "Theo dõi hàng hóa", path: "/tracking" },
 ];
 
 export const ownerMenuLinks = [

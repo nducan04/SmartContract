@@ -161,7 +161,7 @@ const MarketplacePage = () => {
         setLoading(true);
         const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
         const response = await axios.get(`${API_URL}/api/contracts/available?page=${pagination.page}&limit=10`);
-        
+
         let data = [];
         // Mới: API trả về { data, pagination }
         if (response.data && response.data.data) {
@@ -190,14 +190,6 @@ const MarketplacePage = () => {
   return (
     <div className="p-2 md:p-6">
       <div className="flex flex-col md:flex-row justify-between items-end md:items-center mb-6 gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
-            <i className="uil uil-briefcase-alt text-blue-600"></i> Sàn Hợp Đồng
-          </h1>
-          <p className="text-gray-500 text-sm mt-1">
-            Danh sách các đơn hàng đang chờ Nhà vận chuyển.
-          </p>
-        </div>
         <div className="flex bg-gray-100 p-1 rounded-xl">
           <button
             onClick={() => setFilter("newest")}
@@ -250,7 +242,7 @@ const MarketplacePage = () => {
             </table>
           </div>
         )}
-        
+
         {/* Điều khiển Phân trang */}
         {pagination.totalPages > 1 && (
           <div className="p-4 border-t border-gray-100 flex items-center justify-between bg-gray-50/50">
