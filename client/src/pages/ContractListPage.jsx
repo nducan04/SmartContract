@@ -25,7 +25,7 @@ const ContractListPage = () => {
   // --- STATE CHO BỘ LỌC NÂNG CAO ---
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState(searchParams.get("status") || "all");
 
   const [pagination, setPagination] = useState({ page: 1, totalPages: 1, total: 0 });
 

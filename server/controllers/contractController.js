@@ -157,10 +157,19 @@ export const getStats = async (req, res) => {
     const lowerWallet = wallet.toLowerCase();
 
     // Thực hiện đếm song song để tối ưu tốc độ
-    const [clientCount, providerCount, receiverCount, totalContracts] = await Promise.all([
+    const [clientCount, providerCount, receiverCount, waitingConfirmCount, completedCount, totalContracts] = await Promise.all([
       Contract.countDocuments({ client: lowerWallet }),
-      Contract.countDocuments({ provider: lowerWallet, status: { $gte: 1 } }),
+      Contract.countDocuments({ provider: lowerWallet }),
+      Contract.countDocuments({ receiver: lowerWallet }),
       Contract.countDocuments({ receiver: lowerWallet, status: 3 }),
+      Contract.countDocuments({
+        $or: [
+          { client: lowerWallet },
+          { provider: lowerWallet },
+          { receiver: lowerWallet },
+        ],
+        status: 4
+      }),
       Contract.countDocuments({
         $or: [
           { client: lowerWallet },
@@ -185,6 +194,8 @@ export const getStats = async (req, res) => {
       client: clientCount,
       provider: providerCount,
       receiver: receiverCount,
+      waitingConfirm: waitingConfirmCount,
+      completed: completedCount,
       totalContracts: totalContracts,
       recentList: recentContracts,
     });

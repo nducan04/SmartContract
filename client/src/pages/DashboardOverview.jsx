@@ -28,6 +28,8 @@ const DashboardOverview = () => {
     client: 0,
     provider: 0,
     receiver: 0,
+    waitingConfirm: 0,
+    completed: 0,
     totalContracts: 0,
   });
   const [recentList, setRecentList] = useState([]);
@@ -40,7 +42,7 @@ const DashboardOverview = () => {
       if (!walletAddress) {
         setLoading(false);
         setRecentList([]);
-        setStats({ client: 0, provider: 0, receiver: 0, totalContracts: 0 });
+        setStats({ client: 0, provider: 0, receiver: 0, waitingConfirm: 0, completed: 0, totalContracts: 0 });
         return;
       }
 
@@ -59,6 +61,8 @@ const DashboardOverview = () => {
           client: data.client,
           provider: data.provider,
           receiver: data.receiver,
+          waitingConfirm: data.waitingConfirm,
+          completed: data.completed,
           totalContracts: data.totalContracts,
         });
 
@@ -116,7 +120,7 @@ const DashboardOverview = () => {
       ) : (
         <>
           {/* PHẦN 1: THẺ THỐNG KÊ (Có hiệu ứng hover) */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 auto-rows-fr">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-fr">
             <div
               onClick={() => navigate("/dashboard/contracts?role=client")}
               className="cursor-pointer h-full animate-slide-up" style={{ animationDelay: "0.1s" }}
@@ -124,19 +128,34 @@ const DashboardOverview = () => {
               <StatsCard title="Đơn hàng đã tạo" value={stats.client} icon="uil-file-plus-alt" color="blue" />
             </div>
             <div
-              onClick={() => navigate("/dashboard/contracts?role=provider")}
+              onClick={() => navigate("/dashboard/contracts?role=receiver")}
               className="cursor-pointer h-full animate-slide-up" style={{ animationDelay: "0.2s" }}
             >
-              <StatsCard title="Đơn hàng nhận vận chuyển" value={stats.provider} icon="uil-truck" color="green" />
+              <StatsCard title="Đơn hàng đã nhận" value={stats.receiver} icon="uil-package" color="purple" />
             </div>
             <div
-              onClick={() => navigate("/dashboard/contracts?role=receiver")}
+              onClick={() => navigate("/dashboard/contracts?role=provider")}
               className="cursor-pointer h-full animate-slide-up" style={{ animationDelay: "0.3s" }}
             >
-              <StatsCard title="Chờ xác nhận" value={stats.receiver} icon="uil-bell" color="orange" />
+              <StatsCard title="Đơn hàng vận chuyển" value={stats.provider} icon="uil-truck" color="green" />
             </div>
-            <div className="cursor-default h-full animate-slide-up" style={{ animationDelay: "0.4s" }}>
-              <StatsCard title="Tổng hoạt động" value={stats.totalContracts} icon="uil-analytics" color="purple" />
+            <div
+              onClick={() => navigate("/dashboard/contracts?role=receiver&status=3")}
+              className="cursor-pointer h-full animate-slide-up" style={{ animationDelay: "0.4s" }}
+            >
+              <StatsCard title="Chờ xác nhận" value={stats.waitingConfirm} icon="uil-bell" color="orange" />
+            </div>
+            <div
+              onClick={() => navigate("/dashboard/contracts?status=4")}
+              className="cursor-pointer h-full animate-slide-up" style={{ animationDelay: "0.5s" }}
+            >
+              <StatsCard title="Đã hoàn thành" value={stats.completed} icon="uil-check-circle" color="indigo" />
+            </div>
+            <div
+              onClick={() => navigate("/dashboard/contracts")}
+              className="cursor-pointer h-full animate-slide-up" style={{ animationDelay: "0.6s" }}
+            >
+              <StatsCard title="Tổng hoạt động" value={stats.totalContracts} icon="uil-analytics" color="slate" />
             </div>
           </div>
 

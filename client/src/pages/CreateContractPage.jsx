@@ -176,7 +176,7 @@ const CreateContractPage = () => {
   return (
     <div className="p-4 max-w-7xl mx-auto">
       <h1 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2">
-        Khởi tạo hợp đồng Kỹ thuật số
+        Khởi tạo hợp đồng kỹ thuật số
       </h1>
 
       <form onSubmit={handleSubmit} className="space-y-6">

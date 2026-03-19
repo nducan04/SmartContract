@@ -6,6 +6,8 @@ const StatsCard = ({ title, value, icon, color }) => {
     green: "bg-green-50 text-green-600",
     purple: "bg-purple-50 text-purple-600",
     orange: "bg-orange-50 text-orange-600",
+    indigo: "bg-indigo-50 text-indigo-600",
+    slate: "bg-slate-50 text-slate-600",
   };
 
   return (
