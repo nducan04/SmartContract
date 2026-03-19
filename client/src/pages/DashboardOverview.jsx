@@ -96,7 +96,8 @@ const DashboardOverview = () => {
         </div>
         <Link
           to="/dashboard/create"
-          className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-semibold shadow-lg shadow-blue-200 transition-all flex items-center gap-2 transform hover:-translate-y-1"
+          className="bg-gradient-to-r from-cyan-500 to-blue-500 text-white px-5 py-2.5 rounded-xl font-semibold 
+          shadow-lg shadow-blue-200 transition-all flex items-center gap-2 transform hover:-translate-y-1"
         >
           <i className="uil uil-plus"></i> Tạo hợp đồng
         </Link>
@@ -203,7 +204,7 @@ const DashboardOverview = () => {
                       <div className="flex flex-col md:flex-row justify-between items-start gap-4 mb-5">
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-2">
-                             <span className={`text-[10px] uppercase font-black px-2 py-0.5 rounded-md ${roleBadge.color}`}>
+                            <span className={`text-[10px] uppercase font-black px-2 py-0.5 rounded-md ${roleBadge.color}`}>
                               {roleBadge.text}
                             </span>
                             {contract.createdAt && (
@@ -242,10 +243,10 @@ const DashboardOverview = () => {
 
                       <div className="flex justify-between items-center">
                         <div className="flex items-center gap-2">
-                           <span className={`w-2 h-2 rounded-full ${contract.status >= 4 ? 'bg-green-500' : 'bg-blue-500 animate-pulse'}`}></span>
-                           <span className="text-xs font-bold text-gray-500 uppercase tracking-tighter">
-                             Trạng thái: {["Mới tạo", "Đã chấp nhận", "Đang vận chuyển", "Đã hoàn thành", "Đã thanh toán", "Đã hủy"][contract.status] || "N/A"}
-                           </span>
+                          <span className={`w-2 h-2 rounded-full ${contract.status >= 4 ? 'bg-green-500' : 'bg-blue-500 animate-pulse'}`}></span>
+                          <span className="text-xs font-bold text-gray-500 uppercase tracking-tighter">
+                            Trạng thái: {["Mới tạo", "Đã chấp nhận", "Đang vận chuyển", "Đã hoàn thành", "Đã thanh toán", "Đã hủy"][contract.status] || "N/A"}
+                          </span>
                         </div>
                         <button
                           onClick={() => navigate(`/dashboard/contract/${contract.contractAddress}`)}

@@ -377,7 +377,8 @@ const ContractDetailsPage = () => {
         </div>
         <button
           onClick={handleDownloadPDF}
-          className="bg-gray-800 text-white px-5 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2 hover:bg-gray-900 transition-all shadow-lg transform active:scale-95 cursor-pointer"
+          className="bg-blue-500 text-white px-5 py-2.5 rounded-xl text-sm font-bold flex 
+          items-center gap-2 hover:bg-gray-600 transition-all shadow-lg transform active:scale-95 cursor-pointer"
         >
           <i className="uil uil-print text-lg"></i> In Báo Cáo / Lưu PDF
         </button>
