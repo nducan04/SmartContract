@@ -25,7 +25,7 @@ const CallToAction = () => {
 
           <button
             onClick={handleStart}
-            className="px-10 py-4 bg-white text-blue-700 font-semibold rounded-full shadow-lg 
+            className="px-10 py-4 bg-white font-semibold rounded-full shadow-lg 
                 hover:bg-gray-100 transition-all transform hover:scale-105 text-lg cursor-pointer"
           >
             Bắt đầu ngay
