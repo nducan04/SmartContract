@@ -331,7 +331,7 @@ const TrackingPage = () => {
         {/* CỘT TRÁI: TIẾN ĐỘ THỰC HIỆN */}
         <div>
           <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
-            <i className="uil uil-history"></i> Tiến độ thực hiện
+            Tiến độ thực hiện
             <span className="text-xs font-normal text-blue-500 bg-blue-50 px-2 py-1 rounded-full">
               (Bấm vào từng bước để xem chi tiết)
             </span>
@@ -397,8 +397,7 @@ const TrackingPage = () => {
         {/* CỘT PHẢI: HỒ SƠ MINH CHỨNG PHÁP LÝ */}
         <div>
           <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
-            <i className="uil uil-file-shield-alt text-blue-600"></i> Hồ sơ &
-            Minh chứng Pháp lý
+            Hồ sơ & Minh chứng Pháp lý
           </h3>
           <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 sm:p-8">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
