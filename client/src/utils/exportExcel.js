@@ -1,4 +1,4 @@
-import * as XLSX from "xlsx";
+import * as XLSX from "xlsx-js-style";
 import { ethers } from "ethers";
 
 const formatDate = (timestamp) => {
@@ -38,7 +38,7 @@ export const exportContractToExcel = async (
   fileName = "BaoCao_HopDong",
 ) => {
   alert(
-    "⏳ Hệ thống đang trích xuất dữ liệu chi tiết từ Blockchain. Vui lòng đợi trong giây lát...",
+    "Hệ thống đang trích xuất dữ liệu chi tiết từ Blockchain. Vui lòng đợi trong giây lát...",
   );
 
   // 1. KÉO DỮ LIỆU TỪ BLOCKCHAIN CHO CÁC HỢP ĐỒNG BỊ THIẾU JSON
@@ -94,12 +94,15 @@ export const exportContractToExcel = async (
   const criteriaRows = [
     ["BÁO CÁO TỔNG HỢP GIAO DỊCH LOGISTICS BLOCKCHAIN"],
     [],
+    ["--- THÔNG TIN CHI TIẾT ---"],
+    ["Người xuất:", "Hệ thống VTSC"],
+    ["Ngày xuất:", new Date().toLocaleString("vi-VN")],
+    ["Tổng số lượng HĐ:", hydratedContracts.length],
+    [],
     ["--- TIÊU CHÍ LỌC DỮ LIỆU ---"],
     ["Vai trò tham gia:", roleText],
     ["Trạng thái hợp đồng:", statusText],
-    ["Khoảng thời gian tạo:", timeText],
-    ["Tổng số lượng HĐ:", hydratedContracts.length],
-    ["Ngày xuất báo cáo:", new Date().toLocaleString("vi-VN")],
+    ["Khoảng thời gian:", timeText],
     [],
   ];
 
@@ -134,7 +137,7 @@ export const exportContractToExcel = async (
       "Bên Giao (Bên A)": clientDisplay,
       "Bên Vận Chuyển":
         c.provider &&
-        c.provider !== "0x0000000000000000000000000000000000000000"
+          c.provider !== "0x0000000000000000000000000000000000000000"
           ? c.provider
           : "Chưa nhận việc",
       "Bên Nhận (Bên B)": receiverDisplay,
@@ -144,7 +147,6 @@ export const exportContractToExcel = async (
       "Tiến độ": isLateText,
       "Ngày khởi tạo": formatDate(c.createdAt),
       "Hạn chót cam kết": formatDate(c.deadline) || "Chưa đồng bộ",
-      "Link File Gốc (IPFS)": `https://gateway.pinata.cloud/ipfs/${c.termsHash}`,
     };
   });
 
@@ -166,9 +168,24 @@ export const exportContractToExcel = async (
     { wch: 18 }, // Tiến độ
     { wch: 15 }, // Ngày tạo
     { wch: 18 }, // Hạn chót
-    { wch: 60 }, // IPFS
   ];
   worksheet["!cols"] = wscols;
+
+  for (const cellAddress in worksheet) {
+    if (cellAddress[0] === "!") continue; // Bỏ qua các config nội bộ của thư viện
+
+    // Nếu ô đó chưa có thuộc tính style (s), tạo mới
+    if (!worksheet[cellAddress].s) worksheet[cellAddress].s = {};
+
+    // Bật Wrap Text (xuống dòng) và Vertical Top (Căn sát mép trên)
+    worksheet[cellAddress].s = {
+      alignment: {
+        wrapText: true,
+        vertical: "top"
+      },
+      font: { name: "Arial", sz: 11 }
+    };
+  }
 
   const workbook = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(workbook, worksheet, "DS Hop Dong");

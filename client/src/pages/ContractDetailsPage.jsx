@@ -283,6 +283,44 @@ const ContractDetailsPage = () => {
     }
   };
 
+  const handleCancel = async () => {
+    // 1. Xác nhận trước khi hủy
+    if (!window.confirm("Bạn có chắc chắn muốn hủy hợp đồng này? Toàn bộ tiền ký quỹ sẽ được hoàn lại về ví của bạn.")) {
+      return;
+    }
+
+    try {
+      setActionLoading(true);
+      const contract = getAgreementContract(id);
+
+      // 2. Estimate Gas để chặn lỗi nếu không đủ điều kiện hủy
+      let gasEstimate;
+      try {
+        gasEstimate = await contract.cancelAgreement.estimateGas();
+      } catch (gasError) {
+        console.error("Lỗi estimate gas hủy:", gasError);
+        throw new Error("Không thể hủy hợp đồng lúc này. Hãy đảm bảo bạn là người tạo và hợp đồng chưa có người nhận việc.");
+      }
+
+      // 3. Gọi hàm Hủy trên Blockchain
+      const tx = await contract.cancelAgreement({
+        gasLimit: (gasEstimate * 12n) / 10n
+      });
+
+      alert("⏳ Đang xử lý hoàn tiền trên Blockchain...");
+      await tx.wait();
+
+      // 4. Đồng bộ Trạng thái 5 (Đã hủy) về Database
+      await syncToBackend(5);
+      alert("✅ Đã hủy hợp đồng thành công và hoàn tiền về ví!");
+      fetchDetails(); // Tải lại giao diện
+    } catch (error) {
+      alert("❌ Lỗi: " + (error.reason || error.message || "Giao dịch hủy thất bại"));
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   const handleDownloadPDF = () => {
     window.print();
   };
@@ -770,6 +808,17 @@ const ContractDetailsPage = () => {
                   : "Xác nhận & Thanh toán cho Vận chuyển"}
             </button>
           </div>
+        )}
+
+        {/* NÚT HỦY HỢP ĐỒNG */}
+        {details.state === 0 && currentWallet === details.client?.toLowerCase() && (
+          <button
+            onClick={handleCancel}
+            disabled={actionLoading}
+            className="px-6 py-3 bg-red-50 text-red-600 border border-red-200 rounded-xl font-bold hover:bg-red-100 transition-colors cursor-pointer"
+          >
+            {actionLoading ? "Đang xử lý..." : "Hủy hợp đồng"}
+          </button>
         )}
       </div>
     </div>
