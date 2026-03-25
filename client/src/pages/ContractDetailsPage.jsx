@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { useWeb3 } from "../context/Web3Context";
 import { ethers } from "ethers";
+import { toast } from "react-hot-toast";
 import axios from "axios";
 
 const ContractDetailsPage = () => {
@@ -119,7 +120,7 @@ const ContractDetailsPage = () => {
   const handleUploadProof = async (stepKey) => {
     const file = proofFiles[stepKey];
     if (!file) {
-      alert("Vui lòng chọn file minh chứng!");
+      toast.error("Vui lòng chọn file minh chứng!");
       return;
     }
     setActionLoading(true);
@@ -145,13 +146,13 @@ const ContractDetailsPage = () => {
         ipfsHash: ipfsHash,
       });
 
-      alert("Tải minh chứng thành công!");
+      toast.success("Tải minh chứng thành công!");
       // Xóa file đã chọn trong state và load lại data
       setProofFiles((prev) => ({ ...prev, [stepKey]: null }));
       fetchDetails();
     } catch (err) {
       console.error(err);
-      alert("Lỗi tải minh chứng lên hệ thống!");
+      toast.error("Lỗi tải minh chứng lên hệ thống!");
     } finally {
       setActionLoading(false);
     }
@@ -172,10 +173,16 @@ const ContractDetailsPage = () => {
           gasError.message &&
           gasError.message.includes("insufficient funds")
         ) {
+          toast.error(
+            "Số dư của bạn không đủ để trả phí mạng lưới (Gas fee). Vui lòng nạp thêm Sepolia ETH!",
+          );
           throw new Error(
             "Số dư của bạn không đủ để trả phí mạng lưới (Gas fee). Vui lòng nạp thêm Sepolia ETH!",
           );
         }
+        toast.error(
+          "Không thể dự tính phí màng lưới. Giao dịch có thể sẽ thất bại.",
+        );
         throw new Error(
           "Không thể dự tính phí màng lưới. Giao dịch có thể sẽ thất bại.",
         );
@@ -187,10 +194,10 @@ const ContractDetailsPage = () => {
       await tx.wait();
 
       await syncToBackend(1, walletAddress);
-      alert("Đã chấp nhận hợp đồng thành công!");
+      toast.success("Đã chấp nhận hợp đồng thành công!");
       fetchDetails();
     } catch (error) {
-      alert("Lỗi: " + (error.reason || error.message || "Giao dịch thất bại"));
+      toast.error("Lỗi: " + (error.reason || error.message || "Giao dịch thất bại"));
     } finally {
       setActionLoading(false);
     }

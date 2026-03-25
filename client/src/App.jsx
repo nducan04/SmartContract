@@ -1,6 +1,7 @@
 import React from "react";
 import { Route, Routes, useLocation } from "react-router-dom";
 import Navbar from "./components/Navbar";
+import { Toaster } from "react-hot-toast";
 import Home from "./pages/Home";
 import Footer from "./components/Footer";
 import DashboardLayout from "./pages/DashboardLayout";
@@ -21,6 +22,7 @@ const App = () => {
 
   return (
     <div className="flex flex-col min-h-screen bg-white text-gray-800">
+      <Toaster position="top-center" reverseOrder={false} />
       {/* Ẩn Navbar ở Dashboard và Trang chi tiết Tracking (để tập trung vào timeline) */}
       {!isDashboard && !isTrackingDetail && <Navbar />}
 

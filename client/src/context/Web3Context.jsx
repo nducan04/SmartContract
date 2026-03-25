@@ -1,5 +1,6 @@
 import React, { createContext, useState, useContext, useEffect } from "react";
 import { ethers } from "ethers";
+import { toast } from "react-hot-toast";
 import { factoryABI, factoryAddress, agreementABI } from "../constants";
 
 const Web3Context = createContext();
@@ -65,8 +66,9 @@ export const Web3Provider = ({ children }) => {
       // Ép kiểm tra mạng trước khi lấy bất kỳ dữ liệu gì
       const isSepolia = await switchToSepolia();
       if (!isSepolia) {
-        alert(
+        toast.error(
           "⛔ Ứng dụng chỉ hoạt động trên mạng Sepolia. Vui lòng chuyển mạng trong MetaMask!",
+          { duration: 5000 }
         );
         return;
       }

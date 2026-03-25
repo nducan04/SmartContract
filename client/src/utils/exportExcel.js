@@ -1,5 +1,6 @@
 import * as XLSX from "xlsx-js-style";
 import { ethers } from "ethers";
+import { toast } from "react-hot-toast";
 
 const formatDate = (timestamp) => {
   if (!timestamp) return "";
@@ -37,8 +38,9 @@ export const exportContractToExcel = async (
   filters,
   fileName = "BaoCao_HopDong",
 ) => {
-  alert(
+  toast.loading(
     "Hệ thống đang trích xuất dữ liệu chi tiết từ Blockchain. Vui lòng đợi trong giây lát...",
+    { duration: 4000 }
   );
 
   // 1. KÉO DỮ LIỆU TỪ BLOCKCHAIN CHO CÁC HỢP ĐỒNG BỊ THIẾU JSON
@@ -46,17 +48,27 @@ export const exportContractToExcel = async (
     "https://ethereum-sepolia-rpc.publicnode.com",
   );
   const abi = [
-    "function getAgreementDetails() view returns (uint8, address, address, address, uint256, string terms)",
+    "function getAgreementDetails() view returns (uint8, address, address, address, uint256, string, string, uint256, uint256, bool)",
   ];
 
   const hydratedContracts = await Promise.all(
     contracts.map(async (c) => {
-      if (!c.terms || !c.terms.includes("partyA_name")) {
+      // Nếu thiếu terms hoặc deadline thì kéo lại từ Blockchain cho chắc chắn
+      if (!c.terms || !c.deadline) {
         try {
           const sc = new ethers.Contract(c.contractAddress, abi, rpcProvider);
           const data = await sc.getAgreementDetails();
-          return { ...c, terms: data[5] };
+          // Map đúng index từ Smart Contract: 5 là terms, 7 là deadline, 8 là penalty, 9 là isLate
+          return {
+            ...c,
+            terms: data[5],
+            deadline: Number(data[7]),
+            penalty: ethers.formatEther(data[8]),
+            isLate: data[9],
+            amount: ethers.formatEther(data[4])
+          };
         } catch (e) {
+          console.error("Lỗi đồng bộ HĐ:", c.contractAddress, e);
           return c;
         }
       }
@@ -141,7 +153,6 @@ export const exportContractToExcel = async (
           ? c.provider
           : "Chưa nhận việc",
       "Bên Nhận (Bên B)": receiverDisplay,
-      "Giá trị (ETH)": c.amount,
       "Phạt vi phạm (ETH)": c.penalty || 0,
       "Trạng thái": getStatusText(c.status),
       "Tiến độ": isLateText,
@@ -151,40 +162,99 @@ export const exportContractToExcel = async (
   });
 
   const worksheet = XLSX.utils.aoa_to_sheet(criteriaRows);
-  XLSX.utils.sheet_add_json(worksheet, dataToExport, { origin: "A10" });
+  XLSX.utils.sheet_add_json(worksheet, dataToExport, { origin: "A14" });
 
   // 5. CHỈNH ĐỘ RỘNG CỘT (Cho nội dung hiển thị thoải mái)
   const wscols = [
-    { wch: 5 }, // STT
+    { wch: 8 },  // STT
     { wch: 45 }, // ID
     { wch: 40 }, // Hàng hóa
-    { wch: 30 }, // Đóng gói
-    { wch: 45 }, // Bên A
+    { wch: 30 }, // Quy cách
+    { wch: 50 }, // Bên A
     { wch: 45 }, // Vận chuyển
-    { wch: 45 }, // Bên B
-    { wch: 15 }, // Giá trị
+    { wch: 50 }, // Bên B
     { wch: 18 }, // Phạt
     { wch: 20 }, // Trạng thái
     { wch: 18 }, // Tiến độ
     { wch: 15 }, // Ngày tạo
-    { wch: 18 }, // Hạn chót
+    { wch: 20 }, // Hạn chót
   ];
   worksheet["!cols"] = wscols;
 
-  for (const cellAddress in worksheet) {
-    if (cellAddress[0] === "!") continue; // Bỏ qua các config nội bộ của thư viện
+  // 6. GỘP Ô TIÊU ĐỀ
+  worksheet["!merges"] = [
+    { s: { r: 0, c: 0 }, e: { r: 0, c: 11 } }, // Tiêu đề chính (A1:L1) updated to 12 columns
+    { s: { r: 2, c: 0 }, e: { r: 2, c: 1 } },  // Thông tin chi tiết (A3:B3)
+    { s: { r: 7, c: 0 }, e: { r: 7, c: 1 } },  // Tiêu chí lọc (A8:B8)
+  ];
 
-    // Nếu ô đó chưa có thuộc tính style (s), tạo mới
-    if (!worksheet[cellAddress].s) worksheet[cellAddress].s = {};
+  // 7. THIẾT LẬP STYLE CHI TIẾT
+  const range = XLSX.utils.decode_range(worksheet["!ref"]);
 
-    // Bật Wrap Text (xuống dòng) và Vertical Top (Căn sát mép trên)
-    worksheet[cellAddress].s = {
-      alignment: {
-        wrapText: true,
-        vertical: "top"
-      },
-      font: { name: "Arial", sz: 11 }
-    };
+  for (let R = range.s.r; R <= range.e.r; ++R) {
+    for (let C = range.s.c; C <= range.e.c; ++C) {
+      const cellAddress = XLSX.utils.encode_cell({ r: R, c: C });
+      if (!worksheet[cellAddress]) continue;
+
+      // Default style
+      worksheet[cellAddress].s = {
+        font: { name: "Arial", sz: 11 },
+        alignment: { vertical: "top", wrapText: true },
+      };
+
+      // Header Table (Row 14 - index 13)
+      if (R === 13) {
+        worksheet[cellAddress].s = {
+          fill: { fgColor: { rgb: "1F4E78" } }, // Dark Blue
+          font: { color: { rgb: "FFFFFF" }, bold: true, name: "Arial", sz: 12 },
+          alignment: { horizontal: "center", vertical: "center", wrapText: true },
+          border: {
+            top: { style: "thin", color: { rgb: "000000" } },
+            bottom: { style: "thin", color: { rgb: "000000" } },
+            left: { style: "thin", color: { rgb: "000000" } },
+            right: { style: "thin", color: { rgb: "000000" } },
+          },
+        };
+      }
+      // Main Title (Row 1 - index 0)
+      else if (R === 0) {
+        worksheet[cellAddress].s = {
+          font: { bold: true, sz: 16, color: { rgb: "1F4E78" }, name: "Arial" },
+          alignment: { horizontal: "center", vertical: "center" },
+        };
+      }
+      // Sub Headers (Rows 3, 8 - index 2, 7)
+      else if (R === 2 || R === 7) {
+        worksheet[cellAddress].s = {
+          font: { bold: true, italic: true, sz: 12, color: { rgb: "2E75B6" }, name: "Arial" },
+        };
+      }
+      // Data area (From Row 15 onwards)
+      else if (R > 13) {
+        const cell = worksheet[cellAddress];
+        const isLate = cell.v === "⚠ ĐÃ TRỄ HẠN";
+
+        worksheet[cellAddress].s = {
+          ...worksheet[cellAddress].s,
+          border: {
+            top: { style: "thin", color: { rgb: "E1E1E1" } },
+            bottom: { style: "thin", color: { rgb: "E1E1E1" } },
+            left: { style: "thin", color: { rgb: "E1E1E1" } },
+            right: { style: "thin", color: { rgb: "E1E1E1" } },
+          },
+          font: {
+            ...worksheet[cellAddress].s.font,
+            color: isLate ? { rgb: "FF0000" } : { rgb: "333333" },
+            bold: isLate
+          }
+        };
+
+        // Align specific columns
+        if (C === 0 || C >= 8) { // STT, Status, Progress, Dates (Adjusted for removed ETH column)
+          worksheet[cellAddress].s.alignment.horizontal = "center";
+        }
+      }
+    }
   }
 
   const workbook = XLSX.utils.book_new();
