@@ -263,10 +263,10 @@ const TrackingPage = () => {
             <i className="uil uil-search-alt"></i>
           </div>
           <h2 className="text-2xl font-bold text-gray-800 mb-2">
-            Tra cứu Hợp đồng
+            Tra cứu hợp đồng
           </h2>
           <p className="text-gray-500 mb-6 text-sm">
-            Vui lòng nhập mã hợp đồng (ID) để theo dõi tiến trình vận chuyển.
+            Nhập mã hợp đồng để theo dõi tiến trình vận chuyển.
           </p>
           <form onSubmit={handleSearch} className="flex flex-col gap-3">
             <input
