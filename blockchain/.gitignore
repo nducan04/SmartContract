@@ -1,0 +1,17 @@
+node_modules/
+artifacts/
+cache/
+coverage/
+typechain-types/
+*.log
+.env
+coverage.json
+coverage_output.txt
+hardhat_error.txt
+output.txt
+test-results/
+p-report*.json
+log.txt
+test-log.txt
+test-output.txt
+test-doc.txt
