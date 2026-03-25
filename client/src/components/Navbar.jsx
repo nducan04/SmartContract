@@ -4,12 +4,14 @@ import { assets, menuLinks } from "../assets/assets";
 import { useWeb3 } from "../context/Web3Context";
 import Blockies from "react-blockies";
 import AddressDisplay from "./AddressDisplay";
+import ConnectWalletModal from "./ConnectWalletModal";
 
 const Navbar = () => {
   const { walletAddress, walletBalance, connectWallet, disconnectWallet } =
     useWeb3();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
+  const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
 
   const dropdownRef = useRef(null);
   const location = useLocation();
@@ -229,7 +231,7 @@ const Navbar = () => {
           ) : (
             // === CHƯA KẾT NỐI ===
             <button
-              onClick={connectWallet}
+              onClick={() => setIsWalletModalOpen(true)}
               className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-full font-medium shadow-lg shadow-blue-200 transition-all transform hover:-translate-y-0.5"
             >
               <img
@@ -252,6 +254,12 @@ const Navbar = () => {
           </button>
         </div>
       </div>
+
+      {/* WALLET CONNECT MODAL */}
+      <ConnectWalletModal 
+        isOpen={isWalletModalOpen} 
+        onClose={() => setIsWalletModalOpen(false)} 
+      />
     </div>
   );
 };

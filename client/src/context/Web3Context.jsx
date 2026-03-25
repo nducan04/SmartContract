@@ -93,23 +93,79 @@ export const Web3Provider = ({ children }) => {
     }
   };
 
-  // 3. HÀM KẾT NỐI VÍ (BẤM NÚT)
-  const connectWallet = async () => {
-    if (window.ethereum) {
+  // 3. HÀM KẾT NỐI VÍ (BẤM NÚT HOẶC CHỌN TỪ DIALOG)
+  const connectWallet = async (walletType = "metamask") => {
+    let providerToUse = null;
+    let installLink = "";
+
+    if (walletType === "metamask") {
+      if (window.ethereum?.isMetaMask) {
+        providerToUse = window.ethereum;
+      } else {
+        installLink = "https://metamask.io/download/";
+      }
+    } else if (walletType === "trustwallet") {
+      if (window.trustwallet || window.ethereum?.isTrust) {
+        providerToUse = window.trustwallet || window.ethereum;
+      } else {
+        installLink = "https://trustwallet.com/browser-extension";
+      }
+    } else if (walletType === "okx") {
+      if (window.okxwallet) {
+        providerToUse = window.okxwallet;
+      } else {
+        installLink = "https://www.okx.com/web3";
+      }
+    } else if (walletType === "binance") {
+      if (window.BinanceChain) {
+        providerToUse = window.BinanceChain;
+      } else {
+        installLink = "https://chrome.google.com/webstore/detail/binance-wallet/fhbohimaelbohpjbbldcngcnapndodjp";
+      }
+    } else {
+      if (window.ethereum) providerToUse = window.ethereum;
+    }
+
+    // Nếu chưa cài đặt ví, mở tab mới và ném ra lỗi để Modal ngừng hiệu ứng Loading
+    if (installLink && !providerToUse) {
+      window.open(installLink, "_blank", "noopener,noreferrer");
+      throw new Error("NOT_INSTALLED");
+    }
+
+    if (providerToUse) {
       try {
-        const accounts = await window.ethereum.request({
-          method: "eth_requestAccounts",
+        const method =
+          walletType === "binance"
+            ? "eth_requestAccounts"
+            : "eth_requestAccounts";
+
+        const accounts = await providerToUse.request({
+          method: method,
         });
-        if (accounts.length > 0) {
-          // SỬA LỖI: Chuyển hết logic cập nhật vào hàm updateAccount thay vì viết rời rạc
+        if (accounts && accounts.length > 0) {
           await updateAccount(accounts[0]);
+          return true; // Kết nối thành công
         }
       } catch (error) {
         console.error("Lỗi kết nối ví:", error);
+        // Mã lỗi 4001: User Rejected Request (Người dùng bấm từ chối)
+        if (error.code === 4001) {
+          throw new Error("USER_REJECTED");
+        } else {
+          throw new Error("CONNECT_FAILED");
+        }
       }
     } else {
-      alert("Vui lòng cài đặt tiện ích MetaMask!");
+      throw new Error("NOT_INSTALLED");
     }
+  };
+
+  const isWalletInstalled = (walletType) => {
+    if (walletType === "metamask") return !!window.ethereum?.isMetaMask;
+    if (walletType === "trustwallet") return !!(window.trustwallet || window.ethereum?.isTrust);
+    if (walletType === "okx") return !!window.okxwallet;
+    if (walletType === "binance") return !!window.BinanceChain;
+    return false;
   };
 
   const disconnectWallet = () => {
@@ -178,6 +234,7 @@ export const Web3Provider = ({ children }) => {
         provider,
         signer,
         getAgreementContract,
+        isWalletInstalled,
       }}
     >
       {children}
