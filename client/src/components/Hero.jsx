@@ -1,9 +1,11 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { assets } from "../assets/assets";
+import TutorialModal from "./TutorialModal";
 
 const Hero = () => {
   const navigate = useNavigate();
+  const [showTutorial, setShowTutorial] = useState(false);
 
   return (
     <section className="relative bg-white overflow-hidden pt-10 pb-20 lg:pt-20 lg:pb-32">
@@ -41,13 +43,13 @@ const Hero = () => {
               >
                 <i className="uil uil-rocket"></i> Bắt đầu ngay
               </button>
-              <a
-                href="#how-it-works"
-                className="px-8 py-4 bg-white text-gray-700 font-bold rounded-xl border border-gray-200 hover:border-gray-300 hover:bg-gray-50 
-                transition-all flex items-center justify-center gap-2"
+              <button
+                onClick={() => setShowTutorial(true)}
+                className="px-8 py-4 bg-indigo-600 text-white font-bold rounded-xl shadow-lg shadow-indigo-100 hover:bg-indigo-700 hover:scale-105 
+                transition-all flex items-center justify-center gap-2 cursor-pointer"
               >
-                <i className="uil uil-play-circle"></i> Xem quy trình
-              </a>
+                <i className="uil uil-play-circle text-lg"></i> Xem hướng dẫn
+              </button>
             </div>
 
             {/* Stats nhỏ */}
@@ -83,6 +85,11 @@ const Hero = () => {
           </div>
         </div>
       </div>
+
+      <TutorialModal
+        isOpen={showTutorial}
+        onClose={() => setShowTutorial(false)}
+      />
     </section>
   );
 };

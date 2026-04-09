@@ -12,11 +12,11 @@
   "dependencies": {
     "@tailwindcss/vite": "^4.1.17",
     "axios": "^1.13.2",
+    "ethereum-blockies-base64": "^1.0.2",
     "ethers": "^6.15.0",
     "html2pdf.js": "^0.14.0",
     "qrcode.react": "^4.2.0",
     "react": "^19.2.0",
-    "react-blockies": "^1.4.1",
     "react-dom": "^19.2.0",
     "react-hot-toast": "^2.6.0",
     "react-router-dom": "^7.9.5",
@@ -34,6 +34,7 @@
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.24",
     "globals": "^16.5.0",
-    "vite": "^7.2.2"
+    "vite": "^7.2.2",
+    "vite-plugin-node-polyfills": "^0.26.0"
   }
 }

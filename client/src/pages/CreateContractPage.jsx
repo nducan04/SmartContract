@@ -188,7 +188,7 @@ const CreateContractPage = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="lg:col-span-2">
               <label className="block text-xs font-bold text-gray-500 uppercase mb-1">
-                Ví Người nhận (Bên B)
+                Ví Người nhận (Bên B) <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
@@ -201,7 +201,7 @@ const CreateContractPage = () => {
             </div>
             <div>
               <label className="block text-xs font-bold text-gray-500 uppercase mb-1">
-                Ký quỹ (ETH)
+                Ký quỹ (ETH) <span className="text-red-500">*</span>
               </label>
               <input
                 type="number"
@@ -215,7 +215,7 @@ const CreateContractPage = () => {
             </div>
             <div>
               <label className="block text-xs font-bold text-gray-500 uppercase mb-1">
-                Phạt trễ (ETH)
+                Phạt trễ (ETH) <span className="text-red-500">*</span>
               </label>
               <input
                 type="number"
@@ -229,7 +229,7 @@ const CreateContractPage = () => {
             </div>
             <div className="lg:col-span-2">
               <label className="block text-xs font-bold text-gray-500 uppercase mb-1">
-                Hạn chót cam kết
+                Hạn chót cam kết <span className="text-red-500">*</span>
               </label>
               <input
                 type="datetime-local"
@@ -241,7 +241,7 @@ const CreateContractPage = () => {
             </div>
             <div className="lg:col-span-2">
               <label className="block text-xs font-bold text-gray-500 uppercase mb-1">
-                File Hợp đồng gốc (PDF có dấu)
+                File Hợp đồng gốc (PDF có dấu) <span className="text-red-500">*</span>
               </label>
               <input
                 type="file"

@@ -68,6 +68,19 @@ const startListener = async () => {
           // Chuyển đổi số tiền từ Wei sang ETH
           const amountInEth = ethers.formatEther(paymentAmount);
 
+          // FETCH TERMS TỪ SMART CONTRACT
+          let terms = "";
+          try {
+            const escrowABI = [
+              "function getAgreementDetails() view returns (uint8, address, address, address, uint256, string terms)"
+            ];
+            const escrowContract = new ethers.Contract(contractAddress, escrowABI, provider);
+            const data = await escrowContract.getAgreementDetails();
+            terms = data[5];
+          } catch (e) {
+            console.error("Lỗi lấy terms:", e.message);
+          }
+
           // LƯU VÀO MONGODB
           const newContract = new Contract({
             contractAddress: contractAddress,
@@ -75,6 +88,7 @@ const startListener = async () => {
             receiver: receiver.toLowerCase(),
             amount: amountInEth,
             termsHash: termsHash_IPFS,
+            terms: terms,
             status: 0, // 0 = Created
           });
 

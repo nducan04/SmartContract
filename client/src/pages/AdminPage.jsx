@@ -32,7 +32,7 @@ const getStatusBadge = (status) => {
   const s = map[status] || map[0];
   return (
     <span
-      className={`px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5 w-max ${s.color}`}
+      className={`px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5 whitespace-nowrap ${s.color}`}
     >
       <div
         className={`w-1.5 h-1.5 rounded-full ${s.color.split(" ")[1].replace("text", "bg")}`}
@@ -82,10 +82,10 @@ const AdminContractRow = ({ c, onShowQR, onViewDetails }) => {
 
   return (
     <tr className="hover:bg-gray-50/80 transition-colors border-b border-gray-100">
-      <td className="p-4 align-top">
+      <td className="p-4 align-top whitespace-nowrap">
         <AddressDisplay address={c.contractAddress} />
       </td>
-      <td className="p-4 align-top">
+      <td className="p-4 align-top min-w-[300px]">
         <p className="text-sm font-semibold text-gray-800 whitespace-normal break-words leading-relaxed line-clamp-2">
           {displayTitle}
         </p>
@@ -118,7 +118,7 @@ const AdminContractRow = ({ c, onShowQR, onViewDetails }) => {
           <AddressDisplay address={c.receiver} />
         )}
       </td>
-      <td className="p-4 align-top">
+      <td className="p-4 align-top whitespace-nowrap">
         {c.provider &&
           c.provider !== "0x0000000000000000000000000000000000000000" ? (
           <AddressDisplay address={c.provider} />
@@ -186,7 +186,7 @@ const AdminPage = () => {
 
     if (!ADMIN_WALLETS.includes(walletAddress.toLowerCase())) {
       alert("⛔ Bạn không có quyền truy cập trang Quản trị!");
-      navigate("/");
+      navigate("/dashboard");
       return;
     }
 
@@ -253,15 +253,7 @@ const AdminPage = () => {
   }
 
   return (
-    <div className="p-4 md:p-8 bg-gray-50 min-h-screen w-full overflow-hidden">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
-          Quản trị hệ thống
-        </h1>
-        <p className="text-gray-500 mt-1">
-          Trung tâm giám sát toàn bộ hoạt động giao dịch trên Blockchain.
-        </p>
-      </div>
+    <div className="p-4 md:p-8 bg-gray-50 w-full overflow-hidden">
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <div className="bg-white p-6 rounded-2xl shadow-sm border-l-4 border-blue-500 relative overflow-hidden">
@@ -303,18 +295,18 @@ const AdminPage = () => {
         </div>
 
         {/* Đảm bảo w-full và overflow-x-auto để cuộn ngang trên mobile */}
-        <div className="overflow-x-auto w-full">
-          <table className="w-full text-left border-collapse table-fixed min-w-[1050px]">
+        <div className="overflow-x-auto w-full pb-4 scrollbar-thin scrollbar-thumb-gray-300">
+          <table className="w-full text-left border-collapse table-auto min-w-[1750px]">
             <thead className="bg-gray-800 text-white text-xs uppercase tracking-wider">
               <tr>
-                <th className="p-4 w-[10%]">ID Blockchain</th>
-                <th className="p-4 w-[22%]">Nội dung / Tên hàng</th>
-                <th className="p-4 w-[17%]">Người tạo (Bên A)</th>
-                <th className="p-4 w-[17%]">Người nhận (Bên B)</th>
-                <th className="p-4 w-[10%]">Vận chuyển</th>
-                <th className="p-4 w-[9%]">Trạng thái</th>
-                <th className="p-4 w-[6%]">Ngày tạo</th>
-                <th className="p-4 w-[9%] text-center">Hành động</th>
+                <th className="p-4 min-w-[180px] whitespace-nowrap">ID Blockchain</th>
+                <th className="p-4 min-w-[300px] whitespace-nowrap">Nội dung / Tên hàng</th>
+                <th className="p-4 min-w-[250px] whitespace-nowrap">Người tạo (Bên A)</th>
+                <th className="p-4 min-w-[250px] whitespace-nowrap">Người nhận (Bên B)</th>
+                <th className="p-4 min-w-[180px] whitespace-nowrap">Vận chuyển</th>
+                <th className="p-4 min-w-[150px] whitespace-nowrap">Trạng thái</th>
+                <th className="p-4 min-w-[120px] whitespace-nowrap">Ngày tạo</th>
+                <th className="p-4 min-w-[130px] text-center whitespace-nowrap">Hành động</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">

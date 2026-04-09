@@ -70,7 +70,7 @@ const ContractStatusChart = ({ contracts }) => {
   return (
     <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 h-full flex flex-col min-h-[350px]">
       <h3 className="text-lg font-bold text-gray-800 mb-4">
-        Phân bổ Trạng thái
+        Phân bổ trạng thái
       </h3>
 
       <div className="flex-1 w-full relative">

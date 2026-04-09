@@ -33,7 +33,6 @@ const App = () => {
           <Route path="/tracking" element={<TrackingPage />} />
           <Route path="/tracking/:id" element={<TrackingPage />} />
           {/* ------------------------- */}
-          <Route path="/admin" element={<AdminPage />} />
 
           <Route path="/dashboard" element={<DashboardLayout />}>
             <Route index element={<DashboardOverview />} />
@@ -41,6 +40,7 @@ const App = () => {
             <Route path="create" element={<CreateContractPage />} />
             <Route path="contract/:id" element={<ContractDetailsPage />} />
             <Route path="marketplace" element={<MarketplacePage />} />
+            <Route path="admin" element={<AdminPage />} />
           </Route>
 
           <Route path="*" element={<NotFound />} />

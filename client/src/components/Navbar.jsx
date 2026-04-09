@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { assets, menuLinks } from "../assets/assets";
 import { useWeb3 } from "../context/Web3Context";
-import Blockies from "react-blockies";
+import Blockies from "./Blockies";
 import AddressDisplay from "./AddressDisplay";
 import ConnectWalletModal from "./ConnectWalletModal";
 
@@ -17,17 +17,6 @@ const Navbar = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
-
-  // 1. DANH SÁCH VÍ ADMIN TỪ BIẾN MÔI TRƯỜNG
-  const ADMIN_WALLETS = import.meta.env.VITE_ADMIN_WALLETS
-    ? import.meta.env.VITE_ADMIN_WALLETS.split(",").map((addr) =>
-      addr.trim().toLowerCase(),
-    )
-    : [];
-
-  // 2. BIẾN KIỂM TRA QUYỀN ADMIN
-  const isAdmin =
-    walletAddress && ADMIN_WALLETS.includes(walletAddress.toLowerCase());
 
   // Xử lý click ra ngoài để đóng dropdown
   useEffect(() => {
@@ -122,16 +111,6 @@ const Navbar = () => {
               />
             </button>
           </form>
-
-          {/* CHỈ HIỆN ADMIN PANEL NẾU LÀ ADMIN */}
-          {isAdmin && (
-            <button
-              onClick={() => handleNavigate("/admin")}
-              className="text-gray-600 font-medium hover:bg-red-50 px-3 py-2 rounded-lg transition-colors text-left text-lg md:text-base cursor-pointer"
-            >
-              Trang Admin
-            </button>
-          )}
 
           {/* Dashboard Button */}
           <button

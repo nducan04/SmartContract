@@ -1,9 +1,20 @@
 import React from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 import { assets, ownerMenuLinks } from "./../assets/assets";
+import { useWeb3 } from "../context/Web3Context";
 
 const Sidebar = ({ isMobileOpen, closeMobileMenu }) => {
   const location = useLocation();
+  const { walletAddress } = useWeb3();
+
+  // 1. Kiểm tra Admin y hệt Navbar cũ
+  const ADMIN_WALLETS = import.meta.env.VITE_ADMIN_WALLETS
+    ? import.meta.env.VITE_ADMIN_WALLETS.split(",").map((addr) =>
+      addr.trim().toLowerCase(),
+    )
+    : [];
+  const isAdmin =
+    walletAddress && ADMIN_WALLETS.includes(walletAddress.toLowerCase());
 
   return (
     <>
@@ -78,6 +89,39 @@ const Sidebar = ({ isMobileOpen, closeMobileMenu }) => {
               )}
             </NavLink>
           ))}
+
+          {/* CHỈ HIỆN MENU ADMIN NẾU ĐÚNG VÍ */}
+          {isAdmin && (
+            <NavLink
+              to="/dashboard/admin"
+              onClick={closeMobileMenu}
+              className={({ isActive }) =>
+                `group flex items-center gap-4 px-4 py-3.5 rounded-xl transition-all duration-200 mt-4
+                ${
+                  isActive
+                    ? "bg-red-50 text-red-700 font-bold shadow-sm border border-red-100"
+                    : "text-gray-500 hover:bg-red-50 hover:text-red-700 font-medium"
+                }`
+              }
+            >
+              <div
+                className={`w-6 h-6 flex items-center justify-center transition-transform group-hover:scale-110
+                ${
+                  location.pathname === "/dashboard/admin"
+                    ? ""
+                    : "opacity-70 grayscale group-hover:grayscale-0 group-hover:opacity-100 text-red-500"
+                }`}
+              >
+                <i className="uil uil-shield-check text-2xl"></i>
+              </div>
+              <span className="whitespace-nowrap text-sm tracking-wide">
+                Quản trị hệ thống
+              </span>
+              {location.pathname === "/dashboard/admin" && (
+                <div className="ml-auto w-2 h-2 bg-red-600 rounded-full shadow-lg shadow-red-300"></div>
+              )}
+            </NavLink>
+          )}
         </nav>
 
         {/* FOOTER AREA */}
