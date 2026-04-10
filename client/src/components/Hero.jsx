@@ -45,7 +45,7 @@ const Hero = () => {
               </button>
               <button
                 onClick={() => setShowTutorial(true)}
-                className="px-8 py-4 bg-indigo-600 text-white font-bold rounded-xl shadow-lg shadow-indigo-100 hover:bg-indigo-700 hover:scale-105 
+                className="px-8 py-4 bg-blue-600 text-white font-bold rounded-xl shadow-lg shadow-sky-100 hover:bg-sky-600 hover:scale-105 
                 transition-all flex items-center justify-center gap-2 cursor-pointer"
               >
                 <i className="uil uil-play-circle text-lg"></i> Xem hướng dẫn

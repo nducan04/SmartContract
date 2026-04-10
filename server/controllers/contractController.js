@@ -148,6 +148,29 @@ export const getAllContractsForAdmin = async (req, res) => {
   }
 };
 
+export const getAllContracts = async (req, res) => {
+  try {
+    const { page, limit, skip } = getPaginationOptions(req);
+    const total = await Contract.countDocuments();
+    const contracts = await Contract.find()
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
+
+    res.status(200).json({
+      data: contracts,
+      pagination: {
+        total,
+        page,
+        totalPages: Math.ceil(total / limit),
+      },
+    });
+  } catch (error) {
+    console.error("Lỗi lấy tất cả dữ liệu:", error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
 export const getStats = async (req, res) => {
   try {
     const { wallet } = req.query;

@@ -72,7 +72,7 @@ export const assets = {
 export const menuLinks = [
   { name: "Trang chủ", path: "/" },
   // { name: "Quản Lý Hợp Đồng", path: "/contract-management" },
-  { name: "Theo dõi hàng hóa", path: "/tracking" },
+  { name: "Theo dõi hợp đồng", path: "/tracking" },
 ];
 
 export const ownerMenuLinks = [

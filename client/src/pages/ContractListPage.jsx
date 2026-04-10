@@ -31,19 +31,19 @@ const ContractListPage = () => {
 
   useEffect(() => {
     const fetchContracts = async () => {
-      if (!walletAddress) {
-        setLoading(false);
-        setContracts([]);
-        setFilteredContracts([]);
-        return;
-      }
+      // BƯỚC 1: Xóa bỏ rào cản ở trang Danh sách
+      // if (!walletAddress) { ... return; }
 
       try {
         setLoading(true);
         const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
-        const response = await axios.get(
-          `${API_URL}/api/contracts?wallet=${walletAddress}&page=${pagination.page}&limit=10`,
-        );
+        // Nếu không có ví thì lấy tất cả, nếu có ví thì lấy của ví đó 
+        // Hoặc yêu cầu là gọi API lấy toàn bộ danh sách công khai
+        const apiUrl = walletAddress 
+            ? `${API_URL}/api/contracts?wallet=${walletAddress}&page=${pagination.page}&limit=10`
+            : `${API_URL}/api/contracts/all?page=${pagination.page}&limit=10`;
+            
+        const response = await axios.get(apiUrl);
 
         if (response.data && response.data.data) {
           setContracts(response.data.data);
@@ -68,11 +68,11 @@ const ContractListPage = () => {
   useEffect(() => {
     let result = [...contracts];
 
-    if (roleFilter === "client")
+    if (roleFilter === "client" && walletAddress)
       result = result.filter((c) => c.client === walletAddress.toLowerCase());
-    if (roleFilter === "provider")
+    if (roleFilter === "provider" && walletAddress)
       result = result.filter((c) => c.provider === walletAddress.toLowerCase());
-    if (roleFilter === "receiver")
+    if (roleFilter === "receiver" && walletAddress)
       result = result.filter((c) => c.receiver === walletAddress.toLowerCase());
 
     if (statusFilter !== "all") {
@@ -196,27 +196,15 @@ const ContractListPage = () => {
         </div>
       </div>
 
-      {!walletAddress ? (
-        <div className="text-center py-16 bg-white rounded-2xl shadow-sm border border-gray-200">
-          <div className="w-16 h-16 bg-blue-50 text-blue-500 rounded-full flex items-center justify-center mx-auto mb-4">
-            <i className="uil uil-wallet text-3xl"></i>
-          </div>
-          <h3 className="text-lg font-bold text-gray-700">Chưa kết nối ví</h3>
-          <p className="text-gray-500 mt-2 px-4">
-            Vui lòng kết nối ví MetaMask.
-          </p>
-        </div>
-      ) : (
-        <ContractTable
-          contracts={filteredContracts}
-          loading={loading}
-          walletAddress={walletAddress}
-          onShowQR={handleShowQR}
-          onViewDetails={(addr) => navigate(`/dashboard/contract/${addr}`)}
-        />
-      )}
+      <ContractTable
+        contracts={filteredContracts}
+        loading={loading}
+        walletAddress={walletAddress}
+        onShowQR={handleShowQR}
+        onViewDetails={(addr) => navigate(`/dashboard/contract/${addr}`)}
+      />
 
-      {!loading && walletAddress && (
+      {!loading && (
         <p className="text-xs text-gray-400 mt-4 ml-2 font-medium">
           <i className="uil uil-info-circle"></i> Đang hiển thị{" "}
           {filteredContracts.length} / {pagination.total || contracts.length} hợp đồng theo tiêu

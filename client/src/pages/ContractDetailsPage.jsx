@@ -4,6 +4,7 @@ import { useWeb3 } from "../context/Web3Context";
 import { ethers } from "ethers";
 import { toast } from "react-hot-toast";
 import axios from "axios";
+import { agreementABI } from "../constants";
 
 const ContractDetailsPage = () => {
   const { id } = useParams();
@@ -62,12 +63,18 @@ const ContractDetailsPage = () => {
   };
 
   const fetchDetails = async () => {
-    if (!id || !getAgreementContract) return;
+    if (!id) return;
     try {
       setLoading(true);
-      const contract = getAgreementContract(id);
-      if (!contract) return;
-      const data = await contract.getAgreementDetails();
+      
+      let contractToRead = getAgreementContract ? getAgreementContract(id) : null;
+      if (!contractToRead) {
+        // NGƯỜI DÙNG KHÔNG CÓ VÍ -> DÙNG PUBLIC PROVIDER
+        const publicProvider = new ethers.JsonRpcProvider("https://ethereum-sepolia-rpc.publicnode.com");
+        contractToRead = new ethers.Contract(id, agreementABI, publicProvider);
+      }
+
+      const data = await contractToRead.getAgreementDetails();
       const realState = Number(data[0]);
 
       // --- LOGIC MỚI: Kéo dữ liệu ảnh minh chứng từ MongoDB ---
@@ -76,14 +83,9 @@ const ContractDetailsPage = () => {
       try {
         // Tìm hợp đồng hiện tại trong DB để lấy object proofs
         const response = await axios.get(
-          `${API_URL}/api/contracts?wallet=${walletAddress}`,
+          `${API_URL}/api/contracts/track/${id}`,
         );
-        const contractsList = response.data.data
-          ? response.data.data
-          : response.data;
-        const dbContract = contractsList.find(
-          (c) => c.contractAddress.toLowerCase() === id.toLowerCase(),
-        );
+        const dbContract = response.data;
         if (dbContract && dbContract.proofs) {
           dbProofs = dbContract.proofs;
         }
@@ -113,7 +115,7 @@ const ContractDetailsPage = () => {
   };
 
   useEffect(() => {
-    if (walletAddress) fetchDetails();
+    fetchDetails();
   }, [id, walletAddress, getAgreementContract]);
 
   // --- HÀM MỚI: Xử lý Upload Ảnh Minh Chứng lên IPFS & Lưu vào DB ---
@@ -767,65 +769,74 @@ const ContractDetailsPage = () => {
 
       {/* KHU VỰC NÚT HÀNH ĐỘNG GIAO DỊCH BLOCKCHAIN */}
       <div className="flex flex-wrap justify-end gap-4 mt-6 print:hidden">
-        {details.state === 0 &&
-          currentWallet !== details.client?.toLowerCase() &&
-          currentWallet !== details.receiver?.toLowerCase() && (
-            <button
-              onClick={handleAccept}
-              disabled={actionLoading}
-              className="px-6 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 shadow-lg cursor-pointer"
-            >
-              {actionLoading ? "Đang xử lý..." : "Nhận vận chuyển đơn hàng này"}
-            </button>
-          )}
-        {details.state === 1 && isProvider && (
-          <button
-            onClick={() => handleUpdateStatus("InProgress")}
-            disabled={actionLoading}
-            className="px-6 py-3 bg-yellow-500 text-white rounded-xl font-bold hover:bg-yellow-600 shadow-lg cursor-pointer"
-          >
-            {actionLoading ? "Đang xử lý..." : "Cập nhật: Bắt đầu giao hàng"}
-          </button>
-        )}
-        {details.state === 2 && isProvider && (
-          <button
-            onClick={() => handleUpdateStatus("Completed")}
-            disabled={actionLoading}
-            className="px-6 py-3 bg-green-500 text-white rounded-xl font-bold hover:bg-green-600 shadow-lg cursor-pointer"
-          >
-            {actionLoading ? "Đang xử lý..." : "Cập nhật: Đã giao thành công"}
-          </button>
-        )}
-        {details.state === 3 && isReceiver && (
-          <div className="flex flex-col items-end gap-2 w-full md:w-auto">
-            {isOverdue && (
-              <span className="text-red-600 font-bold text-sm bg-red-50 px-3 py-1 rounded-lg border border-red-100">
-                ⚠ Đơn hàng quá hạn. Hệ thống sẽ tự động trừ tiền phạt.
-              </span>
-            )}
-            <button
-              onClick={handleConfirm}
-              disabled={actionLoading}
-              className="px-6 py-3 bg-purple-600 text-white rounded-xl font-bold hover:bg-purple-700 shadow-lg w-full md:w-auto cursor-pointer"
-            >
-              {actionLoading
-                ? "Đang xử lý..."
-                : isOverdue
-                  ? `Xác nhận & Phạt (${details.penalty} ETH)`
-                  : "Xác nhận & Thanh toán cho Vận chuyển"}
-            </button>
+        {!walletAddress ? (
+          <div className="w-full mt-2 p-4 bg-yellow-50 text-yellow-700 text-center rounded-xl border border-yellow-200 font-medium">
+            <i className="uil uil-wallet text-xl mr-2 align-middle"></i> 
+            Bạn đang ở chế độ Khách (Chỉ xem). Vui lòng kết nối ví Web3 để tương tác.
           </div>
-        )}
+        ) : (
+          <>
+            {details.state === 0 &&
+              currentWallet !== details.client?.toLowerCase() &&
+              currentWallet !== details.receiver?.toLowerCase() && (
+                <button
+                  onClick={handleAccept}
+                  disabled={actionLoading}
+                  className="px-6 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 shadow-lg cursor-pointer"
+                >
+                  {actionLoading ? "Đang xử lý..." : "Nhận vận chuyển đơn hàng này"}
+                </button>
+              )}
+            {details.state === 1 && isProvider && (
+              <button
+                onClick={() => handleUpdateStatus("InProgress")}
+                disabled={actionLoading}
+                className="px-6 py-3 bg-yellow-500 text-white rounded-xl font-bold hover:bg-yellow-600 shadow-lg cursor-pointer"
+              >
+                {actionLoading ? "Đang xử lý..." : "Cập nhật: Bắt đầu giao hàng"}
+              </button>
+            )}
+            {details.state === 2 && isProvider && (
+              <button
+                onClick={() => handleUpdateStatus("Completed")}
+                disabled={actionLoading}
+                className="px-6 py-3 bg-green-500 text-white rounded-xl font-bold hover:bg-green-600 shadow-lg cursor-pointer"
+              >
+                {actionLoading ? "Đang xử lý..." : "Cập nhật: Đã giao thành công"}
+              </button>
+            )}
+            {details.state === 3 && isReceiver && (
+              <div className="flex flex-col items-end gap-2 w-full md:w-auto">
+                {isOverdue && (
+                  <span className="text-red-600 font-bold text-sm bg-red-50 px-3 py-1 rounded-lg border border-red-100">
+                    ⚠ Đơn hàng quá hạn. Hệ thống sẽ tự động trừ tiền phạt.
+                  </span>
+                )}
+                <button
+                  onClick={handleConfirm}
+                  disabled={actionLoading}
+                  className="px-6 py-3 bg-purple-600 text-white rounded-xl font-bold hover:bg-purple-700 shadow-lg w-full md:w-auto cursor-pointer"
+                >
+                  {actionLoading
+                    ? "Đang xử lý..."
+                    : isOverdue
+                      ? `Xác nhận & Phạt (${details.penalty} ETH)`
+                      : "Xác nhận & Thanh toán cho Vận chuyển"}
+                </button>
+              </div>
+            )}
 
-        {/* NÚT HỦY HỢP ĐỒNG */}
-        {details.state === 0 && currentWallet === details.client?.toLowerCase() && (
-          <button
-            onClick={handleCancel}
-            disabled={actionLoading}
-            className="px-6 py-3 bg-red-50 text-red-600 border border-red-200 rounded-xl font-bold hover:bg-red-100 transition-colors cursor-pointer"
-          >
-            {actionLoading ? "Đang xử lý..." : "Hủy hợp đồng"}
-          </button>
+            {/* NÚT HỦY HỢP ĐỒNG */}
+            {details.state === 0 && currentWallet === details.client?.toLowerCase() && (
+              <button
+                onClick={handleCancel}
+                disabled={actionLoading}
+                className="px-6 py-3 bg-red-50 text-red-600 border border-red-200 rounded-xl font-bold hover:bg-red-100 transition-colors cursor-pointer"
+              >
+                {actionLoading ? "Đang xử lý..." : "Hủy hợp đồng"}
+              </button>
+            )}
+          </>
         )}
       </div>
     </div>
