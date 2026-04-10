@@ -3,6 +3,8 @@ import { useParams, useNavigate } from "react-router-dom";
 import { ethers } from "ethers";
 import axios from "axios";
 import AddressDisplay from "../components/AddressDisplay";
+import ContractTable from "../components/contractList/ContractTable";
+import QRModal from "../components/QRModal";
 
 // --- COMPONENT MODAL CHI TIẾT BƯỚC ---
 const StepDetailModal = ({ step, contractData, onClose }) => {
@@ -117,6 +119,12 @@ const TrackingPage = () => {
   const [searchInput, setSearchInput] = useState("");
   const [selectedStep, setSelectedStep] = useState(null);
 
+  // Mới: State hiển thị danh sách khi chưa nhập mã
+  const [allContracts, setAllContracts] = useState([]);
+  const [loadingAll, setLoadingAll] = useState(false);
+  const [showQRModal, setShowQRModal] = useState(false);
+  const [selectedContractAddress, setSelectedContractAddress] = useState(null);
+
   const steps = [
     { id: 0, label: "Khởi tạo hợp đồng" },
     { id: 1, label: "Đã chấp nhận" },
@@ -129,6 +137,25 @@ const TrackingPage = () => {
     if (!id) {
       setLoading(false);
       setContractData(null);
+      
+      const fetchAll = async () => {
+        setLoadingAll(true);
+        try {
+          const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+          const response = await axios.get(`${API_URL}/api/contracts/all?page=1&limit=20`);
+          if (response.data && response.data.data) {
+            setAllContracts(response.data.data);
+          } else {
+            setAllContracts(response.data);
+          }
+        } catch (error) {
+          console.error("Lỗi lấy danh sách:", error);
+        } finally {
+          setLoadingAll(false);
+        }
+      };
+      fetchAll();
+
       return;
     }
 
@@ -191,6 +218,16 @@ const TrackingPage = () => {
     if (searchInput.trim()) {
       navigate(`/tracking/${searchInput.trim()}`);
     }
+  };
+
+  const handleShowQR = (address) => {
+    setSelectedContractAddress(address);
+    setShowQRModal(true);
+  };
+
+  const handleCloseQR = () => {
+    setShowQRModal(false);
+    setSelectedContractAddress(null);
   };
 
   // HÀM HIỂN THỊ THẺ MINH CHỨNG Ở CỘT PHẢI
@@ -257,8 +294,8 @@ const TrackingPage = () => {
   // 3. GIAO DIỆN TÌM KIẾM
   if (!id || !contractData)
     return (
-      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
-        <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 max-w-md w-full text-center">
+      <div className="min-h-screen bg-gray-50 flex flex-col items-center py-10 px-4 md:px-8">
+        <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 max-w-xl w-full text-center mb-10">
           <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl">
             <i className="uil uil-search-alt"></i>
           </div>
@@ -268,23 +305,49 @@ const TrackingPage = () => {
           <p className="text-gray-500 mb-6 text-sm">
             Nhập mã hợp đồng để theo dõi tiến trình vận chuyển.
           </p>
-          <form onSubmit={handleSearch} className="flex flex-col gap-3">
+          <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-3">
             <input
               type="text"
               placeholder="Nhập mã hợp đồng (0x...)"
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
-              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-blue-500 text-sm"
+              className="flex-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-blue-500 text-sm"
               required
             />
             <button
               type="submit"
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl transition-colors flex items-center justify-center gap-2 cursor-pointer"
+              className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-3 rounded-xl transition-colors flex items-center justify-center gap-2 cursor-pointer w-full sm:w-auto"
             >
               <i className="uil uil-search"></i> Tra cứu ngay
             </button>
           </form>
         </div>
+
+        <div className="max-w-6xl w-full mx-auto">
+          <div className="flex items-center gap-2 mb-4">
+            <h2 className="text-xl font-bold text-gray-800">Danh sách Hợp đồng Công khai</h2>
+            <span className="bg-blue-100 text-blue-700 text-xs font-bold px-2 py-0.5 rounded-full">
+              {allContracts.length || 0}
+            </span>
+          </div>
+          <p className="text-sm text-gray-500 mb-6">
+            Dưới đây là các đơn hàng đang vận chuyển trên hệ thống. 
+            Bấm "Chi tiết" để xem trạng thái trên Blockchain.
+          </p>
+          <ContractTable
+            contracts={allContracts}
+            loading={loadingAll}
+            walletAddress={null}
+            onShowQR={handleShowQR}
+            onViewDetails={(addr) => navigate(`/tracking/${addr}`)}
+          />
+        </div>
+
+        <QRModal
+          show={showQRModal}
+          onClose={handleCloseQR}
+          contractId={selectedContractAddress}
+        />
       </div>
     );
 
