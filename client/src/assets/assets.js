@@ -30,12 +30,10 @@ import gmail_logo from "./gmail_logo.svg";
 import facebook_logo from "./facebook_logo.svg";
 import instagram_logo from "./instagram_logo.svg";
 import twitter_logo from "./twitter_logo.svg";
-import anh_pmt from "./anh_pmt.png";
 
 export const assets = {
   twitter_logo,
   instagram_logo,
-  anh_pmt,
   facebook_logo,
   gmail_logo,
   logoDark,

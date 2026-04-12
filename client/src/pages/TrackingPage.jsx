@@ -462,10 +462,10 @@ const TrackingPage = () => {
           <div className="max-w-2xl w-full mx-auto mt-4">
             <div className="flex flex-col items-center">
               <h3 className="text-sm font-bold text-gray-500 mb-4 uppercase tracking-wider">
-                💡 Chưa có mã? Thử trải nghiệm các dữ liệu mẫu sau:
+                Chưa có mã? Thử trải nghiệm các dữ liệu mẫu sau:
               </h3>
               <div className="flex flex-wrap justify-center gap-3">
-                {allContracts.slice(0, 5).map((contract, index) => (
+                {allContracts.slice(0, 3).map((contract, index) => (
                   <button
                     key={contract.contractAddress}
                     onClick={() =>
