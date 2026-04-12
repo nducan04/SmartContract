@@ -91,23 +91,23 @@ const Navbar = () => {
             </Link>
           ))}
 
-          {/* Search Bar (Chỉ hiện trên Desktop LG) */}
+          {/* Search Bar */}
           <form
             onSubmit={handleSearch}
-            className="hidden lg:flex items-center text-sm gap-2 border border-borderColor px-3 rounded-full max-w-56"
+            className="flex w-full lg:w-auto items-center text-sm gap-2 border border-gray-300 px-4 py-2 lg:py-1 lg:px-3 rounded-xl lg:rounded-full max-w-full lg:max-w-56"
           >
             <input
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="py-1.5 w-full bg-transparent outline-none placeholder-gray-500"
+              className="py-1.5 w-full bg-transparent outline-none placeholder-gray-500 text-base lg:text-sm"
               placeholder="Tìm kiếm theo ID..."
             />
-            <button type="submit">
+            <button type="submit" className="shrink-0 p-1">
               <img
                 src={assets.search_icon}
                 alt="search"
-                className="cursor-pointer hover:opacity-70"
+                className="cursor-pointer hover:opacity-70 w-5 h-5 lg:w-4 lg:h-4"
               />
             </button>
           </form>

@@ -38,13 +38,13 @@ const Sidebar = ({ isMobileOpen, closeMobileMenu }) => {
         `}
       >
         {/* LOGO AREA */}
-        <div className="h-20 flex items-center justify-between px-8 border-b border-gray-50 shrink-0">
+        <div className="h-20 flex items-center justify-between px-6 md:px-8 border-b border-gray-50 shrink-0">
           <Link to="/" className="flex items-center gap-2">
-            <img src={assets.blockchainLogo} alt="Logo" className="h-8" />
+            <img src={assets.blockchainLogo} alt="Logo" className="h-8 md:h-10 shrink-0" />
           </Link>
           <button
             onClick={closeMobileMenu}
-            className="md:hidden p-2 text-gray-400 hover:text-red-500"
+            className="md:hidden p-2 text-gray-400 hover:text-red-500 rounded-full hover:bg-red-50 transition-colors shrink-0"
           >
             <i className="uil uil-multiply text-2xl"></i>
           </button>

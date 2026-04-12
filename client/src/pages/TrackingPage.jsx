@@ -446,7 +446,7 @@ const TrackingPage = () => {
               placeholder="Nhập mã hợp đồng (0x...)"
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
-              className="flex-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-blue-500 text-sm"
+              className="flex-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-blue-500 text-sm min-w-0"
               required
             />
             <button
@@ -503,21 +503,22 @@ const TrackingPage = () => {
     <div className="min-h-screen bg-gray-50 p-4 md:p-8">
       {/* Header Info */}
       <div className="max-w-6xl mx-auto bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden mb-8">
-        <div className="bg-blue-600 p-6 text-white flex justify-between items-center">
+        <div className="bg-blue-600 p-4 sm:p-6 text-white flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0">
           <div>
-            <h1 className="text-2xl font-bold flex items-center gap-2">
+            <h1 className="text-xl sm:text-2xl font-bold flex items-center gap-2">
               <i className="uil uil-cube"></i> SupplyChain Track
             </h1>
-            <p className="opacity-80 text-sm mt-1">
+            <p className="opacity-80 text-xs sm:text-sm mt-1">
               Theo dõi minh bạch trên Blockchain
             </p>
           </div>
           <button
             onClick={() => navigate("/tracking")}
-            className="bg-blue-700 hover:bg-blue-800 p-2 rounded-lg transition-colors cursor-pointer"
+            className="bg-blue-700 hover:bg-blue-800 p-2 sm:px-4 sm:py-2 rounded-lg transition-colors cursor-pointer w-full sm:w-auto flex justify-center items-center gap-2 text-sm font-bold"
             title="Tra cứu mã khác"
           >
-            <i className="uil uil-search text-xl"></i>
+            <i className="uil uil-search text-xl sm:text-lg"></i>
+            <span className="sm:hidden">Tra cứu mã khác</span>
           </button>
         </div>
         <div className="p-6">
@@ -549,11 +550,11 @@ const TrackingPage = () => {
 
           {/* Row 2: Info & Details */}
           <div className="grid gap-6 md:grid-cols-2 mb-6 pb-6 border-b border-gray-100">
-            <div className="flex flex-col">
+            <div className="flex flex-col min-w-0">
               <p className="text-xs font-bold text-gray-400 uppercase mb-2">
                 Mã hợp đồng (Smart Contract)
               </p>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 min-w-0">
                 <div className="font-mono text-sm font-bold text-gray-700 bg-gray-100 px-3 py-2 rounded-xl truncate w-full border border-gray-200">
                   {contractData.contractAddress}
                 </div>
@@ -561,7 +562,7 @@ const TrackingPage = () => {
                   onClick={() =>
                     navigator.clipboard.writeText(contractData.contractAddress)
                   }
-                  className="bg-gray-100 hover:bg-blue-100 text-gray-500 hover:text-blue-600 p-2 rounded-xl border border-gray-200 transition-colors cursor-pointer"
+                  className="bg-gray-100 hover:bg-blue-100 text-gray-500 hover:text-blue-600 p-2 rounded-xl border border-gray-200 transition-colors cursor-pointer shrink-0"
                   title="Copy mã hợp đồng"
                 >
                   <i className="uil uil-copy text-lg"></i>
@@ -569,8 +570,8 @@ const TrackingPage = () => {
               </div>
             </div>
 
-            <div className="flex flex-col ml-20">
-              <p className="text-xs font-bold text-gray-400 uppercase mb-2">
+            <div className="flex flex-col md:items-end mt-4 md:mt-0">
+              <p className="text-xs font-bold text-gray-400 uppercase mb-2 w-full md:text-right">
                 Phí dịch vụ
               </p>
               <div className="flex items-end gap-1.5 bg-blue-50/50 w-fit px-4 py-1.5 rounded-xl border border-blue-100">
@@ -606,7 +607,7 @@ const TrackingPage = () => {
           </h3>
 
           <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 sm:p-10 relative">
-            <div className="absolute left-8 sm:left-12 top-10 bottom-10 w-0.5 bg-gray-100"></div>
+            <div className="absolute left-10 sm:left-[60px] top-10 bottom-10 w-0.5 bg-gray-100"></div>
 
             <div className="space-y-8 relative">
               {steps.map((step) => {

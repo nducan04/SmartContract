@@ -85,7 +85,7 @@ const DashboardOverview = () => {
   return (
     <div className="p-2 space-y-8 animate-fade-in">
       {/* HEADER */}
-      <div className="flex flex-col md:flex-row justify-between items-end md:items-center gap-4">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-800">
             Tổng quan hệ thống
@@ -97,7 +97,7 @@ const DashboardOverview = () => {
         <Link
           to="/dashboard/create"
           className="bg-gradient-to-r from-cyan-500 to-blue-500 text-white px-5 py-2.5 rounded-xl font-semibold 
-          shadow-lg shadow-blue-200 transition-all flex items-center gap-2 transform hover:-translate-y-1"
+          shadow-lg shadow-blue-200 transition-all flex items-center justify-center gap-2 transform hover:-translate-y-1 w-full md:w-auto"
         >
           <i className="uil uil-plus"></i> Tạo hợp đồng
         </Link>
@@ -202,37 +202,37 @@ const DashboardOverview = () => {
                       className="bg-white/90 backdrop-blur-sm p-6 rounded-2xl shadow-sm border border-gray-100 hover:border-blue-200 transition-all duration-300 hover:shadow-lg group"
                     >
                       <div className="flex flex-col md:flex-row justify-between items-start gap-4 mb-5">
-                        <div className="flex-1">
+                        <div className="flex-1 min-w-0 w-full">
                           <div className="flex items-center gap-2 mb-2">
                             <span className={`text-[10px] uppercase font-black px-2 py-0.5 rounded-md ${roleBadge.color}`}>
                               {roleBadge.text}
                             </span>
                             {contract.createdAt && (
-                              <span className="text-[10px] text-gray-400 font-medium">
+                              <span className="text-[10px] text-gray-400 font-medium whitespace-nowrap">
                                 • {new Date(contract.createdAt).toLocaleDateString('vi-VN')}
                               </span>
                             )}
                           </div>
-                          <h4 className="font-bold text-gray-800 text-xl line-clamp-1 group-hover:text-blue-600 transition-colors" title={displayTitle}>
+                          <h4 className="font-bold text-gray-800 text-lg md:text-xl line-clamp-2 md:line-clamp-1 group-hover:text-blue-600 transition-colors" title={displayTitle}>
                             {displayTitle}
                           </h4>
-                          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2">
-                            <div className="flex items-center gap-1.5">
-                              <span className="text-xs font-bold text-gray-400">Hợp đồng:</span>
-                              <AddressDisplay address={contract.contractAddress} />
+                          <div className="flex flex-col sm:flex-row flex-wrap items-start sm:items-center gap-x-4 gap-y-2 mt-2">
+                            <div className="flex items-center gap-1.5 w-full sm:w-auto">
+                              <span className="text-xs font-bold text-gray-400 shrink-0">Hợp đồng:</span>
+                              <div className="truncate"><AddressDisplay address={contract.contractAddress} /></div>
                             </div>
                             {partnerAddr && (
-                              <div className="flex items-center gap-1.5">
-                                <span className="text-xs font-bold text-gray-400">{partnerLabel}:</span>
-                                <AddressDisplay address={partnerAddr} />
+                              <div className="flex items-center gap-1.5 w-full sm:w-auto">
+                                <span className="text-xs font-bold text-gray-400 shrink-0">{partnerLabel}:</span>
+                                <div className="truncate"><AddressDisplay address={partnerAddr} /></div>
                               </div>
                             )}
                           </div>
                         </div>
-                        <div className="bg-blue-50 px-4 py-2 rounded-xl border border-blue-100 text-center min-w-[100px]">
+                        <div className="bg-blue-50 px-4 py-2 mt-2 md:mt-0 rounded-xl border border-blue-100 text-center md:min-w-[100px] shrink-0 w-full md:w-auto flex flex-row md:flex-col items-center md:items-stretch justify-between md:justify-start">
                           <span className="block text-[10px] font-bold text-blue-400 uppercase tracking-wider">Giá trị</span>
-                          <span className="text-blue-700 font-black text-lg">
-                            {contract.amount} ETH
+                          <span className="text-blue-700 font-black text-lg md:text-lg">
+                            {contract.amount} <span className="text-sm">ETH</span>
                           </span>
                         </div>
                       </div>
@@ -241,16 +241,16 @@ const DashboardOverview = () => {
                         <ContractStepper currentStatus={contract.status} />
                       </div>
 
-                      <div className="flex justify-between items-center">
-                        <div className="flex items-center gap-2">
-                          <span className={`w-2 h-2 rounded-full ${contract.status >= 4 ? 'bg-green-500' : 'bg-blue-500 animate-pulse'}`}></span>
-                          <span className="text-xs font-bold text-gray-500 uppercase tracking-tighter">
+                      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 w-full">
+                        <div className="flex items-center gap-2 w-full sm:w-auto">
+                          <span className={`w-2 h-2 shrink-0 rounded-full ${contract.status >= 4 ? 'bg-green-500' : 'bg-blue-500 animate-pulse'}`}></span>
+                          <span className="text-xs font-bold text-gray-500 uppercase tracking-tighter truncate">
                             Trạng thái: {["Mới tạo", "Đã chấp nhận", "Đang vận chuyển", "Đã hoàn thành", "Đã thanh toán", "Đã hủy"][contract.status] || "N/A"}
                           </span>
                         </div>
                         <button
                           onClick={() => navigate(`/dashboard/contract/${contract.contractAddress}`)}
-                          className="flex items-center gap-1 text-sm text-blue-600 font-bold hover:text-blue-800 transition-colors cursor-pointer"
+                          className="flex items-center justify-center w-full sm:w-auto gap-1 text-sm text-blue-600 font-bold bg-blue-50 sm:bg-transparent px-4 py-2 sm:p-0 rounded-lg sm:rounded-none hover:text-blue-800 transition-colors cursor-pointer shrink-0"
                         >
                           Chi tiết <i className="uil uil-arrow-right"></i>
                         </button>

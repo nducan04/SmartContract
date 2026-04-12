@@ -189,17 +189,17 @@ const MarketplacePage = () => {
 
   return (
     <div className="p-2 md:p-6">
-      <div className="flex flex-col md:flex-row justify-between items-end md:items-center mb-6 gap-4">
-        <div className="flex bg-gray-100 p-1 rounded-xl">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4 w-full">
+        <div className="flex bg-gray-100 p-1 rounded-xl w-full md:w-auto">
           <button
             onClick={() => setFilter("newest")}
-            className={`px-4 py-2 text-sm font-medium rounded-lg transition-all cursor-pointer ${filter === "newest" ? "bg-white text-blue-600 shadow-sm" : "text-gray-500 hover:text-gray-800"}`}
+            className={`flex-1 md:flex-none px-4 py-2 text-sm font-medium rounded-lg transition-all cursor-pointer ${filter === "newest" ? "bg-white text-blue-600 shadow-sm" : "text-gray-500 hover:text-gray-800"}`}
           >
             Mới nhất
           </button>
           <button
             onClick={() => setFilter("high-price")}
-            className={`px-4 py-2 text-sm font-medium rounded-lg transition-all cursor-pointer ${filter === "high-price" ? "bg-white text-blue-600 shadow-sm" : "text-gray-500 hover:text-gray-800"}`}
+            className={`flex-1 md:flex-none px-4 py-2 text-sm font-medium rounded-lg transition-all cursor-pointer ${filter === "high-price" ? "bg-white text-blue-600 shadow-sm" : "text-gray-500 hover:text-gray-800"}`}
           >
             Giá cao nhất
           </button>
