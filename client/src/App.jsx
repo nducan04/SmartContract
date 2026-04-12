@@ -19,6 +19,7 @@ const App = () => {
   // Ẩn Navbar/Footer khi ở Dashboard hoặc khi đang xem chi tiết Tracking (để giống app mobile)
   const isDashboard = location.pathname.startsWith("/dashboard");
   const isTrackingDetail = /^\/tracking\/0x/.test(location.pathname);
+  const isHome = location.pathname === "/";
 
   return (
     <div className="flex flex-col min-h-screen bg-white text-gray-800">

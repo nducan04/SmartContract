@@ -50,7 +50,7 @@ const Navbar = () => {
 
   return (
     <div
-      className={`sticky top-0 z-40 w-full border-b border-gray-100 transition-all ${navBgClass}`}
+      className={`relative z-40 w-full border-b border-gray-100 transition-all ${navBgClass}`}
     >
       <div className="flex items-center justify-between px-6 md:px-16 lg:px-24 xl:px-32 py-4">
         {/* 1. LOGO */}

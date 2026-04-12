@@ -77,7 +77,7 @@ const StepDetailModal = ({ step, contractData, onClose }) => {
         <div className="p-6 space-y-4">
           <div className="space-y-1">
             <p className="text-xs font-bold text-gray-400 uppercase">
-              Người thực hiện ({content.actor})
+              {content.actor}
             </p>
             <AddressDisplay address={content.address} />
           </div>
@@ -109,6 +109,135 @@ const StepDetailModal = ({ step, contractData, onClose }) => {
   );
 };
 
+// --- COMPONENT HIỂN THỊ CHI TIẾT HỢP ĐỒNG ---
+const TermsDisplay = ({ terms }) => {
+  if (!terms)
+    return (
+      <span className="text-gray-500 italic">Không có thông tin chi tiết</span>
+    );
+
+  try {
+    const data = JSON.parse(terms);
+    if (typeof data !== "object" || data === null)
+      throw new Error("Not object");
+
+    // Nhóm thông tin Bên A
+    const partyA = {
+      name: data.partyA_name,
+      address: data.partyA_address,
+      rep: data.partyA_rep,
+    };
+
+    // Nhóm thông tin Bên B
+    const partyB = {
+      name: data.partyB_name,
+      address: data.partyB_address,
+      rep: data.partyB_rep,
+    };
+
+    const articles = {
+      art1_items: {
+        label: "Chi tiết Hàng hóa / Dịch vụ",
+        value: data.art1_items,
+      },
+      art3_price: {
+        label: "Giá trị hợp đồng & Thanh toán",
+        value: data.art3_price,
+      },
+      art4_delivery: {
+        label: "Thời gian & Địa điểm giao nhận",
+        value: data.art4_delivery,
+      },
+      art5_payment: {
+        label: "Phương thức thanh toán",
+        value: data.art5_payment,
+      },
+    };
+
+    return (
+      <div className="grid gap-4 grid-cols-1 md:grid-cols-2 bg-orange-50/30 p-4 rounded-xl border border-orange-100 max-h-[32rem] overflow-y-auto custom-scrollbar">
+        {/* Card Bên A */}
+        <div className="bg-white p-4 rounded-xl border border-orange-100 shadow-sm flex flex-col gap-2">
+          <p className="text-xs font-black text-orange-600 uppercase tracking-wider mb-1">
+            THÔNG TIN BÊN A
+          </p>
+          <div>
+            <p className="text-[10px] font-bold text-gray-400 uppercase">
+              Tên đơn vị
+            </p>
+            <p className="text-sm text-gray-800 font-bold">
+              {partyA.name || "---"}
+            </p>
+          </div>
+          <div>
+            <p className="text-[10px] font-bold text-gray-400 uppercase">
+              Địa chỉ
+            </p>
+            <p className="text-sm text-gray-700">{partyA.address || "---"}</p>
+          </div>
+          <div>
+            <p className="text-[10px] font-bold text-gray-400 uppercase">
+              Người đại diện
+            </p>
+            <p className="text-sm text-gray-700">{partyA.rep || "---"}</p>
+          </div>
+        </div>
+
+        {/* Card Bên B */}
+        <div className="bg-white p-4 rounded-xl border border-orange-100 shadow-sm flex flex-col gap-2">
+          <p className="text-xs font-black text-orange-600 uppercase tracking-wider mb-1">
+            THÔNG TIN BÊN B
+          </p>
+          <div>
+            <p className="text-[10px] font-bold text-gray-400 uppercase">
+              Tên đơn vị
+            </p>
+            <p className="text-sm text-gray-800 font-bold">
+              {partyB.name || "---"}
+            </p>
+          </div>
+          <div>
+            <p className="text-[10px] font-bold text-gray-400 uppercase">
+              Địa chỉ
+            </p>
+            <p className="text-sm text-gray-700">{partyB.address || "---"}</p>
+          </div>
+          <div>
+            <p className="text-[10px] font-bold text-gray-400 uppercase">
+              Người đại diện
+            </p>
+            <p className="text-sm text-gray-700">{partyB.rep || "---"}</p>
+          </div>
+        </div>
+
+        {/* Các điều khoản quan trọng */}
+        {Object.entries(articles).map(([key, item]) => {
+          if (!item.value) return null;
+          return (
+            <div
+              key={key}
+              className="bg-white p-4 rounded-xl border border-orange-100 shadow-sm md:col-span-2"
+            >
+              <p className="text-xs font-black text-orange-600 uppercase tracking-wider mb-2">
+                {item.label}
+              </p>
+              <p className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">
+                {item.value}
+              </p>
+            </div>
+          );
+        })}
+      </div>
+    );
+  } catch (e) {
+    return (
+      <div className="text-sm text-gray-800 bg-orange-50 p-4 rounded-xl border border-orange-100 font-medium whitespace-pre-wrap max-h-80 overflow-y-auto custom-scrollbar">
+        {terms}
+      </div>
+    );
+  }
+};
+
 // --- TRANG CHÍNH ---
 const TrackingPage = () => {
   const { id } = useParams();
@@ -137,12 +266,15 @@ const TrackingPage = () => {
     if (!id) {
       setLoading(false);
       setContractData(null);
-      
+
       const fetchAll = async () => {
         setLoadingAll(true);
         try {
-          const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
-          const response = await axios.get(`${API_URL}/api/contracts/all?page=1&limit=20`);
+          const API_URL =
+            import.meta.env.VITE_API_URL || "http://localhost:5000";
+          const response = await axios.get(
+            `${API_URL}/api/contracts/all?page=1&limit=20`,
+          );
           if (response.data && response.data.data) {
             setAllContracts(response.data.data);
           } else {
@@ -305,7 +437,10 @@ const TrackingPage = () => {
           <p className="text-gray-500 mb-6 text-sm">
             Nhập mã hợp đồng để theo dõi tiến trình vận chuyển.
           </p>
-          <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-3">
+          <form
+            onSubmit={handleSearch}
+            className="flex flex-col sm:flex-row gap-3"
+          >
             <input
               type="text"
               placeholder="Nhập mã hợp đồng (0x...)"
@@ -323,25 +458,37 @@ const TrackingPage = () => {
           </form>
         </div>
 
-        <div className="max-w-6xl w-full mx-auto">
-          <div className="flex items-center gap-2 mb-4">
-            <h2 className="text-xl font-bold text-gray-800">Danh sách Hợp đồng Công khai</h2>
-            <span className="bg-blue-100 text-blue-700 text-xs font-bold px-2 py-0.5 rounded-full">
-              {allContracts.length || 0}
-            </span>
+        {allContracts.length > 0 && (
+          <div className="max-w-2xl w-full mx-auto mt-4">
+            <div className="flex flex-col items-center">
+              <h3 className="text-sm font-bold text-gray-500 mb-4 uppercase tracking-wider">
+                💡 Chưa có mã? Thử trải nghiệm các dữ liệu mẫu sau:
+              </h3>
+              <div className="flex flex-wrap justify-center gap-3">
+                {allContracts.slice(0, 5).map((contract, index) => (
+                  <button
+                    key={contract.contractAddress}
+                    onClick={() =>
+                      navigate(`/tracking/${contract.contractAddress}`)
+                    }
+                    className="flex flex-col items-center bg-white border border-gray-200 hover:border-blue-400 hover:shadow-md hover:-translate-y-1 px-4 py-3 rounded-xl transition-all duration-200 text-center cursor-pointer group"
+                    type="button"
+                  >
+                    <span className="text-xs font-bold text-blue-600 mb-1">
+                      Mẫu số {index + 1}
+                    </span>
+                    <span className="text-sm text-gray-700 font-mono group-hover:text-blue-700">
+                      {contract.contractAddress.substring(0, 6)}...
+                      {contract.contractAddress.substring(
+                        contract.contractAddress.length - 4,
+                      )}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
-          <p className="text-sm text-gray-500 mb-6">
-            Dưới đây là các đơn hàng đang vận chuyển trên hệ thống. 
-            Bấm "Chi tiết" để xem trạng thái trên Blockchain.
-          </p>
-          <ContractTable
-            contracts={allContracts}
-            loading={loadingAll}
-            walletAddress={null}
-            onShowQR={handleShowQR}
-            onViewDetails={(addr) => navigate(`/tracking/${addr}`)}
-          />
-        </div>
+        )}
 
         <QRModal
           show={showQRModal}
@@ -373,18 +520,76 @@ const TrackingPage = () => {
             <i className="uil uil-search text-xl"></i>
           </button>
         </div>
-        <div className="p-6 grid gap-4 md:grid-cols-2">
-          <div>
-            <p className="text-xs font-bold text-gray-400 uppercase">
-              Người gửi
-            </p>
-            <AddressDisplay address={contractData.client} />
+        <div className="p-6">
+          {/* Row 1: The 3 Actors */}
+          <div className="grid gap-4 md:grid-cols-3 mb-6 pb-6 border-b border-gray-100">
+            <div className="bg-gray-50 p-4 rounded-2xl border border-gray-100 hover:border-blue-200 transition-colors">
+              <p className="text-xs font-bold text-gray-500 uppercase mb-2 flex items-center gap-1">
+                <i className="uil uil-box text-blue-500 text-lg"></i> Người gửi
+              </p>
+              <AddressDisplay address={contractData.client} />
+            </div>
+
+            <div className="bg-gray-50 p-4 rounded-2xl border border-gray-100 hover:border-orange-200 transition-colors">
+              <p className="text-xs font-bold text-gray-500 uppercase mb-2 flex items-center gap-1">
+                <i className="uil uil-truck border-orange-500 text-orange-500 text-lg"></i>{" "}
+                Đơn vị Vận chuyển
+              </p>
+              <AddressDisplay address={contractData.provider} />
+            </div>
+
+            <div className="bg-gray-50 p-4 rounded-2xl border border-gray-100 hover:border-green-200 transition-colors">
+              <p className="text-xs font-bold text-gray-500 uppercase mb-2 flex items-center gap-1">
+                <i className="uil uil-map-marker text-green-500 text-lg"></i>{" "}
+                Người nhận
+              </p>
+              <AddressDisplay address={contractData.receiver} />
+            </div>
           </div>
-          <div>
-            <p className="text-xs font-bold text-gray-400 uppercase">
-              Người nhận
+
+          {/* Row 2: Info & Details */}
+          <div className="grid gap-6 md:grid-cols-2 mb-6 pb-6 border-b border-gray-100">
+            <div className="flex flex-col">
+              <p className="text-xs font-bold text-gray-400 uppercase mb-2">
+                Mã hợp đồng (Smart Contract)
+              </p>
+              <div className="flex items-center gap-2">
+                <div className="font-mono text-sm font-bold text-gray-700 bg-gray-100 px-3 py-2 rounded-xl truncate w-full border border-gray-200">
+                  {contractData.contractAddress}
+                </div>
+                <button
+                  onClick={() =>
+                    navigator.clipboard.writeText(contractData.contractAddress)
+                  }
+                  className="bg-gray-100 hover:bg-blue-100 text-gray-500 hover:text-blue-600 p-2 rounded-xl border border-gray-200 transition-colors cursor-pointer"
+                  title="Copy mã hợp đồng"
+                >
+                  <i className="uil uil-copy text-lg"></i>
+                </button>
+              </div>
+            </div>
+
+            <div className="flex flex-col ml-20">
+              <p className="text-xs font-bold text-gray-400 uppercase mb-2">
+                Phí dịch vụ
+              </p>
+              <div className="flex items-end gap-1.5 bg-blue-50/50 w-fit px-4 py-1.5 rounded-xl border border-blue-100">
+                <span className="text-2xl font-black text-blue-800 leading-none">
+                  {contractData.amount}
+                </span>
+                <span className="text-sm font-bold text-blue-600 mb-0.5">
+                  ETH
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Row 3: Hàng hoá & Điều khoản */}
+          <div className="flex flex-col">
+            <p className="text-xs font-bold text-gray-400 uppercase mb-2">
+              Thông tin hợp đồng & hàng hóa
             </p>
-            <AddressDisplay address={contractData.receiver} />
+            <TermsDisplay terms={contractData.terms} />
           </div>
         </div>
       </div>
@@ -406,7 +611,9 @@ const TrackingPage = () => {
             <div className="space-y-8 relative">
               {steps.map((step) => {
                 const isCompleted = contractData.state >= step.id;
-                const isCurrent = contractData.state === step.id;
+                const isCurrent =
+                  contractData.state === step.id &&
+                  step.id !== steps.length - 1;
 
                 return (
                   <div
@@ -467,7 +674,7 @@ const TrackingPage = () => {
               {renderProofCard(
                 "step0",
                 "1. Khởi tạo hợp đồng",
-                "Bản gốc có chữ ký/giáp lai",
+                "Bản gốc có chữ ký",
                 0,
               )}
               {renderProofCard(
@@ -488,12 +695,7 @@ const TrackingPage = () => {
                 "Biên bản bàn giao kho đích",
                 3,
               )}
-              {renderProofCard(
-                "step4",
-                "5. Thanh toán",
-                "Hóa đơn VAT / Ủy nhiệm chi",
-                4,
-              )}
+              {renderProofCard("step4", "5. Thanh toán", "Hóa đơn VAT", 4)}
             </div>
           </div>
         </div>
@@ -507,8 +709,8 @@ const TrackingPage = () => {
         />
       )}
 
-      <div className="text-center mt-8 text-xs text-gray-400">
-        <p>🔒 Xác thực bởi Ethereum Sepolia Testnet</p>
+      <div className="text-center mt-8 text-xs text-gray-800 font-bold">
+        <p>XÁC THỰC BỞI ETHEREUM SEPOLIA TESTNET</p>
       </div>
     </div>
   );
