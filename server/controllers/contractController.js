@@ -275,3 +275,35 @@ export const getContractByAddress = async (req, res) => {
     res.status(500).json({ message: "Lỗi Server" });
   }
 };
+
+export const addCheckpoint = async (req, res) => {
+  try {
+    const { contractAddress, lat, lng, locationName } = req.body;
+
+    if (!contractAddress || lat === undefined || lng === undefined || !locationName) {
+      return res.status(400).json({ message: "Thiếu dữ liệu Checkpoint (lat, lng, locationName)" });
+    }
+
+    const checkpoint = {
+      lat: Number(lat),
+      lng: Number(lng),
+      locationName: locationName,
+      timestamp: new Date()
+    };
+
+    const updatedContract = await Contract.findOneAndUpdate(
+      { contractAddress: contractAddress },
+      { $push: { trackingHistory: checkpoint } },
+      { new: true }
+    );
+
+    if (!updatedContract) {
+      return res.status(404).json({ message: "Không tìm thấy hợp đồng" });
+    }
+
+    res.status(200).json({ message: "Cập nhật checkpoint thành công", contract: updatedContract });
+  } catch (error) {
+    console.error("Lỗi cập nhật checkpoint:", error);
+    res.status(500).json({ message: "Lỗi Server" });
+  }
+};

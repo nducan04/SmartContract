@@ -50,7 +50,7 @@ export const exportContractToExcel = (hydratedContracts, filters, fileName) => {
 
   const exportDate = new Date().toLocaleString("vi-VN");
   const criteriaRows = [
-    ["HỆ THỐNG QUẢN LÝ LOGISTICS BLOCKCHAIN (VTSC)"],
+    ["HỆ THỐNG QUẢN LÝ LOGISTICS BLOCKCHAIN"],
     ["BÁO CÁO TỔNG HỢP GIAO DỊCH"],
     [],
     [],

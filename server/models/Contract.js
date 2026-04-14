@@ -23,6 +23,15 @@ const contractSchema = new mongoose.Schema(
     // 0: Created, 1: Accepted, 2: InProgress, 3: Completed, 4: Paid, 5: Cancelled
     status: { type: Number, default: 0 },
 
+    trackingHistory: [
+      {
+        lat: { type: Number },
+        lng: { type: Number },
+        timestamp: { type: Date, default: Date.now },
+        locationName: { type: String }
+      }
+    ],
+
     proofs: {
       step0: { type: String, default: "" }, // Khởi tạo
       step1: { type: String, default: "" }, // Chấp nhận

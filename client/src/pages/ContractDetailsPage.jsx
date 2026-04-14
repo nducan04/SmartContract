@@ -5,6 +5,17 @@ import { ethers } from "ethers";
 import { toast } from "react-hot-toast";
 import axios from "axios";
 import { agreementABI } from "../constants";
+import CheckpointMap from "../components/CheckpointMap";
+
+const CHECKPOINT_PRESETS = [
+  { name: "Cảng Hải Phòng", lat: 20.8651, lng: 106.6838 },
+  { name: "Sân bay Nội Bài, Hà Nội", lat: 21.2187, lng: 105.8042 },
+  { name: "Tạm dừng dọc QL1A, Thanh Hóa", lat: 19.8078, lng: 105.7766 },
+  { name: "Kho trung chuyển Đà Nẵng", lat: 16.0544, lng: 108.2022 },
+  { name: "Trạm thu phí Đèo Cù Mông, Bình Định", lat: 13.6844, lng: 109.1866 },
+  { name: "Kho Cát Lái, TP. HCM", lat: 10.7626, lng: 106.6601 },
+  { name: "Cảng Cần Thơ", lat: 10.0452, lng: 105.7469 },
+];
 
 const ContractDetailsPage = () => {
   const { id } = useParams();
@@ -16,6 +27,7 @@ const ContractDetailsPage = () => {
 
   // STATE MỚI: Quản lý file minh chứng được chọn ở từng bước
   const [proofFiles, setProofFiles] = useState({});
+  const [selectedCheckpoint, setSelectedCheckpoint] = useState("");
 
   const stateLabels = [
     "Mới tạo",
@@ -80,6 +92,7 @@ const ContractDetailsPage = () => {
       // --- LOGIC MỚI: Kéo dữ liệu ảnh minh chứng từ MongoDB ---
       const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
       let dbProofs = {};
+      let dbTracking = [];
       try {
         // Tìm hợp đồng hiện tại trong DB để lấy object proofs
         const response = await axios.get(
@@ -88,6 +101,9 @@ const ContractDetailsPage = () => {
         const dbContract = response.data;
         if (dbContract && dbContract.proofs) {
           dbProofs = dbContract.proofs;
+        }
+        if (dbContract && dbContract.trackingHistory) {
+          dbTracking = dbContract.trackingHistory;
         }
       } catch (dbErr) {
         console.warn("Chưa tải được proofs từ DB");
@@ -105,6 +121,7 @@ const ContractDetailsPage = () => {
         penalty: ethers.formatEther(data[8]),
         isLate: data[9],
         proofs: dbProofs, // Lưu proofs vào state
+        trackingHistory: dbTracking, // Thêm tracking history
       });
       syncToBackend(realState);
     } catch (error) {
@@ -117,6 +134,31 @@ const ContractDetailsPage = () => {
   useEffect(() => {
     fetchDetails();
   }, [id, walletAddress, getAgreementContract]);
+
+  const handleAddCheckpoint = async () => {
+    if (!selectedCheckpoint) {
+      toast.error("Vui lòng chọn trạm dừng chân!");
+      return;
+    }
+    const preset = CHECKPOINT_PRESETS[selectedCheckpoint];
+    setActionLoading(true);
+    try {
+      const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+      await axios.put(`${API_URL}/api/contracts/update-tracking`, {
+        contractAddress: id,
+        lat: preset.lat,
+        lng: preset.lng,
+        locationName: preset.name
+      });
+      toast.success("Cập nhật vị trí thành công!");
+      fetchDetails();
+    } catch (err) {
+      console.error(err);
+      toast.error("Lỗi khi cập nhật vị trí!");
+    } finally {
+      setActionLoading(false);
+    }
+  };
 
   // --- HÀM MỚI: Xử lý Upload Ảnh Minh Chứng lên IPFS & Lưu vào DB ---
   const handleUploadProof = async (stepKey) => {
@@ -725,6 +767,37 @@ const ContractDetailsPage = () => {
             Blockchain.
           </p>
         </div>
+      </div>
+
+      {/* VÙNG THEO DÕI VỊ TRÍ TRÊN BẢN ĐỒ */}
+      <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 mt-6 print:hidden">
+        <div className="flex justify-between items-center mb-4 border-b pb-2">
+          <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+            <i className="uil uil-map-marker-alt text-red-500"></i> Bản đồ Hành trình (Tracking)
+          </h3>
+          {details.state === 2 && isProvider && (
+            <div className="flex gap-2 items-center">
+              <select 
+                value={selectedCheckpoint}
+                onChange={(e) => setSelectedCheckpoint(e.target.value)}
+                className="text-sm border border-gray-300 rounded px-2 py-1.5 outline-none font-medium"
+              >
+                <option value="">-- Chọn điểm Checkpoint --</option>
+                {CHECKPOINT_PRESETS.map((preset, idx) => (
+                  <option key={idx} value={idx}>{preset.name}</option>
+                ))}
+              </select>
+              <button 
+                onClick={handleAddCheckpoint}
+                disabled={actionLoading}
+                className="text-sm bg-blue-600 text-white font-bold px-3 py-1.5 rounded hover:bg-blue-700 disabled:opacity-50 transition-colors"
+              >
+                Cập nhật
+              </button>
+            </div>
+          )}
+        </div>
+        <CheckpointMap trackingHistory={details.trackingHistory} />
       </div>
 
       {/* --- KHU VỰC UPLOAD MINH CHỨNG PHÁP LÝ CHỈ HIỆN TRÊN MÀN HÌNH WEB --- */}

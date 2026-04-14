@@ -8,6 +8,7 @@ import {
   uploadProofHash,
   getContractByAddress,
   getAllContracts,
+  addCheckpoint,
 } from "../controllers/contractController.js";
 
 const router = express.Router();
@@ -22,6 +23,7 @@ router.get("/all", getAllContracts);
 router.get("/all-admin", getAllContractsForAdmin);
 
 router.put("/upload-proof", uploadProofHash);
+router.put("/update-tracking", addCheckpoint);
 router.get("/track/:address", getContractByAddress);
 
 export default router;

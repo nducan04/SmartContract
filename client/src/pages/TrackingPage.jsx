@@ -5,6 +5,7 @@ import axios from "axios";
 import AddressDisplay from "../components/AddressDisplay";
 import ContractTable from "../components/contractList/ContractTable";
 import QRModal from "../components/QRModal";
+import CheckpointMap from "../components/CheckpointMap";
 
 // --- COMPONENT MODAL CHI TIẾT BƯỚC ---
 const StepDetailModal = ({ step, contractData, onClose }) => {
@@ -309,12 +310,16 @@ const TrackingPage = () => {
 
         // 2. Kéo dữ liệu Bằng chứng (Proofs) từ Backend MongoDB
         let dbProofs = {};
+        let dbTracking = [];
         try {
           const API_URL =
             import.meta.env.VITE_API_URL || "http://localhost:5000";
           const dbRes = await axios.get(`${API_URL}/api/contracts/track/${id}`);
           if (dbRes.data && dbRes.data.proofs) {
             dbProofs = dbRes.data.proofs;
+          }
+          if (dbRes.data && dbRes.data.trackingHistory) {
+            dbTracking = dbRes.data.trackingHistory;
           }
         } catch (dbErr) {
           console.warn(
@@ -331,6 +336,7 @@ const TrackingPage = () => {
           amount: ethers.formatEther(data.amount),
           terms: data.terms,
           proofs: dbProofs, // Gắn mảng hình ảnh vào đây
+          trackingHistory: dbTracking,
         });
       } catch (err) {
         console.error(err);
@@ -597,14 +603,24 @@ const TrackingPage = () => {
 
       {/* BỐ CỤC 2 CỘT CHÍNH */}
       <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* CỘT TRÁI: TIẾN ĐỘ THỰC HIỆN */}
-        <div>
-          <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
-            Tiến độ thực hiện
-            <span className="text-xs font-normal text-blue-500 bg-blue-50 px-2 py-1 rounded-full">
-              (Bấm vào từng bước để xem chi tiết)
-            </span>
-          </h3>
+        {/* CỘT TRÁI: TIẾN ĐỘ THỰC HIỆN VÀ BẢN ĐỒ */}
+        <div className="space-y-8">
+          <div>
+            <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+              <i className="uil uil-map-marker-alt text-red-500"></i> Bản đồ Hành trình (Tracking)
+            </h3>
+            <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-2 z-0 relative">
+              <CheckpointMap trackingHistory={contractData.trackingHistory} />
+            </div>
+          </div>
+
+          <div>
+            <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+              Tiến độ thực hiện
+              <span className="text-xs font-normal text-blue-500 bg-blue-50 px-2 py-1 rounded-full">
+                (Bấm vào từng bước để xem chi tiết)
+              </span>
+            </h3>
 
           <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 sm:p-10 relative">
             <div className="absolute left-10 sm:left-[60px] top-10 bottom-10 w-0.5 bg-gray-100"></div>
@@ -663,6 +679,7 @@ const TrackingPage = () => {
               })}
             </div>
           </div>
+        </div>
         </div>
 
         {/* CỘT PHẢI: HỒ SƠ MINH CHỨNG PHÁP LÝ */}
