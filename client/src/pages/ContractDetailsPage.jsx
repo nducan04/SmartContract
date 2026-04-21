@@ -32,7 +32,7 @@ const ContractDetailsPage = () => {
   const [trackingNote, setTrackingNote] = useState("");
   const [manualLatLng, setManualLatLng] = useState(null);
   const [customLocationName, setCustomLocationName] = useState("");
-  
+
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
 
@@ -160,13 +160,18 @@ const ContractDetailsPage = () => {
     toast.info("Đang lấy vị trí...");
     navigator.geolocation.getCurrentPosition(
       (position) => {
-        setManualLatLng({ lat: position.coords.latitude, lng: position.coords.longitude });
+        setManualLatLng({
+          lat: position.coords.latitude,
+          lng: position.coords.longitude,
+        });
         setCustomLocationName("Vị trí hiện tại (GPS)");
         setSelectedCheckpoint("");
       },
       (error) => {
-        toast.error("Không thể lấy vị trí. Vui lòng cho phép quyền truy cập vị trí.");
-      }
+        toast.error(
+          "Không thể lấy vị trí. Vui lòng cho phép quyền truy cập vị trí.",
+        );
+      },
     );
   };
 
@@ -203,24 +208,24 @@ const ContractDetailsPage = () => {
 
   const handleDeleteCheckpoint = async (realIndex) => {
     const result = await Swal.fire({
-      title: 'Xóa điểm hành trình?',
+      title: "Xóa điểm hành trình?",
       text: "Bạn có chắc chắn muốn xóa điểm định vị này không?",
-      icon: 'warning',
+      icon: "warning",
       showCancelButton: true,
-      confirmButtonColor: '#d33',
-      cancelButtonColor: '#3085d6',
-      confirmButtonText: 'Đồng ý xóa',
-      cancelButtonText: 'Hủy'
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Đồng ý xóa",
+      cancelButtonText: "Hủy",
     });
-    
+
     if (!result.isConfirmed) return;
-    
+
     setActionLoading(true);
     try {
       const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
       await axios.put(`${API_URL}/api/contracts/delete-tracking`, {
         contractAddress: id,
-        index: realIndex
+        index: realIndex,
       });
       toast.success("Đã xóa vị trí thành công!");
       fetchDetails();
@@ -245,7 +250,9 @@ const ContractDetailsPage = () => {
       finalLng = preset.lng;
       finalName = preset.name;
     } else {
-      toast.error("Vui lòng chọn trạm điểm từ danh sách hoặc click trên bản đồ!");
+      toast.error(
+        "Vui lòng chọn trạm điểm từ danh sách hoặc click trên bản đồ!",
+      );
       return;
     }
 
@@ -255,7 +262,9 @@ const ContractDetailsPage = () => {
     }
 
     // Nối nội dung cho tương thích nếu DB cũ chưa có trường note
-    const payloadInfo = trackingNote ? `${finalName} - Ghi chú: ${trackingNote}` : finalName;
+    const payloadInfo = trackingNote
+      ? `${finalName} - Ghi chú: ${trackingNote}`
+      : finalName;
 
     setActionLoading(true);
     try {
@@ -265,10 +274,10 @@ const ContractDetailsPage = () => {
         lat: finalLat,
         lng: finalLng,
         locationName: payloadInfo,
-        note: trackingNote 
+        note: trackingNote,
       });
       toast.success("Cập nhật vị trí thành công!");
-      
+
       // Reset form
       setSelectedCheckpoint("");
       setTrackingNote("");
@@ -415,18 +424,18 @@ const ContractDetailsPage = () => {
       await tx.wait();
       await syncToBackend(statusNumber);
       Swal.fire({
-        title: 'Thành công!',
-        text: 'Đã cập nhật trạng thái hợp đồng thành công.',
-        icon: 'success',
-        confirmButtonColor: '#3085d6'
+        title: "Thành công!",
+        text: "Đã cập nhật trạng thái hợp đồng thành công.",
+        icon: "success",
+        confirmButtonColor: "#3085d6",
       });
       fetchDetails();
     } catch (error) {
       Swal.fire({
-        title: 'Giao dịch thất bại',
+        title: "Giao dịch thất bại",
         text: "Lỗi: " + (error.reason || error.message || "Không xác định"),
-        icon: 'error',
-        confirmButtonColor: '#d33'
+        icon: "error",
+        confirmButtonColor: "#d33",
       });
     } finally {
       setActionLoading(false);
@@ -462,18 +471,18 @@ const ContractDetailsPage = () => {
       await tx.wait();
       await syncToBackend(4);
       Swal.fire({
-        title: 'Hoàn tất thanh toán!',
-        text: 'Đã xác nhận và thanh toán thành công cho bên vận chuyển.',
-        icon: 'success',
-        confirmButtonColor: '#3085d6'
+        title: "Hoàn tất thanh toán!",
+        text: "Đã xác nhận và thanh toán thành công cho bên vận chuyển.",
+        icon: "success",
+        confirmButtonColor: "#3085d6",
       });
       fetchDetails();
     } catch (error) {
       Swal.fire({
-        title: 'Giao dịch thất bại',
+        title: "Giao dịch thất bại",
         text: "Lỗi: " + (error.reason || error.message || "Không xác định"),
-        icon: 'error',
-        confirmButtonColor: '#d33'
+        icon: "error",
+        confirmButtonColor: "#d33",
       });
     } finally {
       setActionLoading(false);
@@ -483,16 +492,16 @@ const ContractDetailsPage = () => {
   const handleCancel = async () => {
     // 1. Xác nhận trước khi hủy
     const result = await Swal.fire({
-      title: 'Xác nhận hủy hợp đồng',
+      title: "Xác nhận hủy hợp đồng",
       text: "Bạn có chắc chắn muốn hủy hợp đồng này? Toàn bộ tiền ký quỹ sẽ được hoàn lại về ví của bạn.",
-      icon: 'warning',
+      icon: "warning",
       showCancelButton: true,
-      confirmButtonColor: '#d33',
-      cancelButtonColor: '#3085d6',
-      confirmButtonText: 'Đồng ý hủy',
-      cancelButtonText: 'Đóng'
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Đồng ý hủy",
+      cancelButtonText: "Đóng",
     });
-    
+
     if (!result.isConfirmed) return;
 
     try {
@@ -516,35 +525,36 @@ const ContractDetailsPage = () => {
       });
 
       Swal.fire({
-        title: 'Đang xử lý',
-        text: 'Đang xử lý hoàn tiền trên Blockchain, vui lòng đợi...',
-        icon: 'info',
+        title: "Đang xử lý",
+        text: "Đang xử lý hoàn tiền trên Blockchain, vui lòng đợi...",
+        icon: "info",
         allowOutsideClick: false,
         showConfirmButton: false,
         didOpen: () => {
           Swal.showLoading();
-        }
+        },
       });
-      
+
       await tx.wait();
 
       // 4. Đồng bộ Trạng thái 5 (Đã hủy) về Database
       await syncToBackend(5);
-      
+
       Swal.fire({
-        title: 'Đã hủy hợp đồng!',
-        text: 'Đã hủy hợp đồng thành công và hoàn tiền về ví!',
-        icon: 'success',
-        confirmButtonColor: '#3085d6'
+        title: "Đã hủy hợp đồng!",
+        text: "Đã hủy hợp đồng thành công và hoàn tiền về ví!",
+        icon: "success",
+        confirmButtonColor: "#3085d6",
       });
-      
+
       fetchDetails(); // Tải lại giao diện
     } catch (error) {
       Swal.fire({
-        title: 'Giao dịch thất bại',
-        text: "Lỗi: " + (error.reason || error.message || "Giao dịch hủy thất bại"),
-        icon: 'error',
-        confirmButtonColor: '#d33'
+        title: "Giao dịch thất bại",
+        text:
+          "Lỗi: " + (error.reason || error.message || "Giao dịch hủy thất bại"),
+        icon: "error",
+        confirmButtonColor: "#d33",
       });
     } finally {
       setActionLoading(false);
@@ -951,26 +961,29 @@ const ContractDetailsPage = () => {
       {/* VÙNG THEO DÕI VỊ TRÍ TRÊN BẢN ĐỒ */}
       <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 mt-6 print:hidden">
         <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2 mb-4 border-b pb-2">
-          <i className="uil uil-map-marker-alt text-blue-500"></i> Lịch trình Vận chuyển (Tracking)
+          <i className="uil uil-map-marker-alt text-blue-500"></i> Lịch trình
+          vận chuyển
         </h3>
 
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
           {/* CỘT TRÁI: FORM CẬP NHẬT & TIMELINE (40% - col-span-2) */}
           <div className="lg:col-span-2 flex flex-col gap-6">
-            
             {/* Form Cập Nhật (chỉ hiện cho vận chuyển khi đang thực hiện) */}
             {details.state === 2 && isProvider && (
               <div className="bg-blue-50/50 p-4 rounded-xl border border-blue-100">
                 <h4 className="font-bold text-blue-800 mb-3 text-sm flex items-center gap-2">
-                  <i className="uil uil-edit"></i> Cập nhật Hành trình
+                  <i className="uil uil-edit"></i> Cập nhật hành trình
                 </h4>
-                
-                <div className="space-y-3">
+
+                <div className="space-y-5">
                   <div>
-                    <label className="block text-xs font-semibold text-gray-700 mb-1">1. Nội dung / Ghi chú <span className="text-red-500">*</span></label>
-                    <input 
-                      type="text" 
-                      placeholder="VD: Đã bốc hàng xong, đang di chuyển..." 
+                    <label className="block text-xs font-semibold text-gray-700 mb-1">
+                      1. Nội dung / Ghi chú{" "}
+                      <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="VD: Đã bốc hàng xong, đang di chuyển..."
                       className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                       value={trackingNote}
                       onChange={(e) => setTrackingNote(e.target.value)}
@@ -978,8 +991,10 @@ const ContractDetailsPage = () => {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-gray-700 mb-1">2. Vị trí <span className="text-red-500">*</span></label>
-                    
+                    <label className="block text-xs font-semibold text-gray-700 mb-1">
+                      2. Vị trí <span className="text-red-500">*</span>
+                    </label>
+
                     {/* Tùy chọn 1: Chọn từ danh sách */}
                     <select
                       value={selectedCheckpoint}
@@ -987,43 +1002,49 @@ const ContractDetailsPage = () => {
                         setSelectedCheckpoint(e.target.value);
                         setManualLatLng(null); // Bỏ manual nếu chọn preset
                       }}
-                      className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 outline-none focus:border-blue-500 bg-white mb-2"
+                      className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 outline-none focus:border-blue-500 bg-white mb-6"
                     >
-                      <option value="">-- Chọn điểm có sẵn (Demo) --</option>
+                      <option value="">-- Chọn điểm có sẵn --</option>
                       {CHECKPOINT_PRESETS.map((preset, idx) => (
-                        <option key={idx} value={idx}>{preset.name}</option>
+                        <option key={idx} value={idx}>
+                          {preset.name}
+                        </option>
                       ))}
                     </select>
 
                     <div className="flex items-center gap-2 mb-2">
-                      <span className="text-xs text-gray-400 font-medium">HOẶC TÌM KIẾM TỰ DO</span>
+                      <span className="text-xs text-gray-400 font-medium">
+                        HOẶC TÌM KIẾM TỰ DO
+                      </span>
                     </div>
 
                     {/* Tùy chọn 2 & 3: Lấy GPS hoặc Click map */}
                     <div className="flex gap-2">
-                      <button 
-                         onClick={handleGetCurrentLocation}
-                         disabled={actionLoading}
-                         className="flex-none bg-blue-50 border border-blue-200 text-blue-700 text-xs font-bold px-3 py-2 rounded-lg hover:bg-blue-100 flex items-center justify-center gap-1 transition-colors"
-                         title="Lấy GPS hiện tại"
+                      <button
+                        onClick={handleGetCurrentLocation}
+                        disabled={actionLoading}
+                        className="flex-none bg-blue-50 border border-blue-200 text-blue-700 text-xs font-bold px-3 py-2 rounded-lg hover:bg-blue-100 flex items-center justify-center gap-1 transition-colors cursor-pointer"
+                        title="Lấy GPS hiện tại"
                       >
                         <i className="uil uil-location-point"></i> GPS
                       </button>
                       <div className="flex-1 flex gap-1">
-                        <input 
-                           type="text" 
-                           placeholder="VD: Bắc Kinh, TQ..."
-                           className="w-full text-xs border border-gray-300 rounded-lg px-2 py-1 outline-none focus:border-blue-500"
-                           value={searchQuery}
-                           onChange={(e) => setSearchQuery(e.target.value)}
-                           onKeyDown={(e) => e.key === 'Enter' && handleSearchLocation()}
+                        <input
+                          type="text"
+                          placeholder="VD: Bắc Kinh, TQ..."
+                          className="w-full text-xs border border-gray-300 rounded-lg px-2 py-1 outline-none focus:border-blue-500"
+                          value={searchQuery}
+                          onChange={(e) => setSearchQuery(e.target.value)}
+                          onKeyDown={(e) =>
+                            e.key === "Enter" && handleSearchLocation()
+                          }
                         />
-                        <button 
-                           onClick={handleSearchLocation}
-                           disabled={isSearching}
-                           className="bg-gray-100 border border-gray-300 text-gray-700 px-3 py-1 rounded-lg text-xs font-bold hover:bg-gray-200 cursor-pointer"
+                        <button
+                          onClick={handleSearchLocation}
+                          disabled={isSearching}
+                          className="bg-gray-100 border border-gray-300 text-gray-700 px-3 py-1 rounded-lg text-xs font-bold hover:bg-gray-200 cursor-pointer"
                         >
-                           {isSearching ? "..." : "Tìm"}
+                          {isSearching ? "..." : "Tìm"}
                         </button>
                       </div>
                     </div>
@@ -1032,11 +1053,14 @@ const ContractDetailsPage = () => {
                   {/* Hiển thị tọa độ nếu là Manual */}
                   {manualLatLng && (
                     <div className="bg-yellow-50 text-yellow-800 text-xs p-2 rounded border border-yellow-200">
-                      <strong>📍 Vị trí chọn:</strong> {customLocationName} 
-                      <span 
-                         className="ml-2 text-red-500 cursor-pointer hover:underline" 
-                         onClick={() => setManualLatLng(null)}
-                      > (Hủy)</span>
+                      <strong>📍 Vị trí chọn:</strong> {customLocationName}
+                      <span
+                        className="ml-2 text-red-500 cursor-pointer hover:underline"
+                        onClick={() => setManualLatLng(null)}
+                      >
+                        {" "}
+                        (Hủy)
+                      </span>
                     </div>
                   )}
 
@@ -1045,7 +1069,14 @@ const ContractDetailsPage = () => {
                     disabled={actionLoading}
                     className="w-full bg-blue-600 text-white px-4 py-2 mt-2 rounded-lg text-sm font-bold hover:bg-blue-700 disabled:opacity-50 transition-colors flex justify-center items-center gap-2 shadow-sm cursor-pointer"
                   >
-                    {actionLoading ? "Đang xử lý..." : <><i className="uil uil-navigator"></i> Gửi Cập Nhật Hành Trình</>}
+                    {actionLoading ? (
+                      "Đang xử lý..."
+                    ) : (
+                      <>
+                        <i className="uil uil-navigator"></i> Gửi Cập Nhật Hành
+                        Trình
+                      </>
+                    )}
                   </button>
                 </div>
               </div>
@@ -1054,49 +1085,68 @@ const ContractDetailsPage = () => {
             {/* Trục Thời Gian (Timeline) */}
             <div className="bg-white p-4 rounded-xl border border-gray-200 flex-1">
               <h4 className="font-bold text-gray-800 mb-4 text-sm flex items-center gap-2">
-                <i className="uil uil-history"></i> Lịch sử Cập nhật
+                <i className="uil uil-history"></i> Lịch sử cập nhật
               </h4>
-              
+
               <div className="space-y-0 pl-2">
-                {(!details.trackingHistory || details.trackingHistory.length === 0) ? (
-                   <p className="text-xs text-gray-500 italic mb-4">Chưa có dữ liệu hành trình.</p>
+                {!details.trackingHistory ||
+                details.trackingHistory.length === 0 ? (
+                  <p className="text-xs text-gray-500 italic mb-4">
+                    Chưa có dữ liệu hành trình.
+                  </p>
                 ) : (
-                  details.trackingHistory.slice().reverse().map((point, index) => {
-                    const dt = new Date(point.timestamp);
-                    const isLatest = index === 0;
-                    const realIndex = details.trackingHistory.length - 1 - index;
-                    return (
-                      <div key={index} className="relative pl-6 border-l-2 border-gray-200 pb-6 last:border-0 last:pb-2">
-                        <div className={`absolute w-3 h-3 rounded-full -left-[7px] top-1 ${isLatest ? 'bg-blue-500 border-2 border-blue-200 shadow-[0_0_0_3px_rgba(59,130,246,0.2)]' : 'bg-gray-300'}`}></div>
-                        <div className="flex justify-between items-start gap-3">
-                          <div className="flex-1">
-                            <p className={`text-sm font-bold ${isLatest ? 'text-gray-900' : 'text-gray-700'}`}>
-                              {point.locationName.split(' - Ghi chú:')[0]}
-                            </p>
-                            {point.locationName.includes(' - Ghi chú:') && (
-                              <p className="text-sm text-gray-600 italic bg-gray-50 p-2 rounded mt-1 border border-gray-100">
-                                "{point.locationName.split(' - Ghi chú: ')[1]}"
+                  details.trackingHistory
+                    .slice()
+                    .reverse()
+                    .map((point, index) => {
+                      const dt = new Date(point.timestamp);
+                      const isLatest = index === 0;
+                      const realIndex =
+                        details.trackingHistory.length - 1 - index;
+                      return (
+                        <div
+                          key={index}
+                          className="relative pl-6 border-l-2 border-gray-200 pb-6 last:border-0 last:pb-2"
+                        >
+                          <div
+                            className={`absolute w-3 h-3 rounded-full -left-[7px] top-1 ${isLatest ? "bg-blue-500 border-2 border-blue-200 shadow-[0_0_0_3px_rgba(59,130,246,0.2)]" : "bg-gray-300"}`}
+                          ></div>
+                          <div className="flex justify-between items-start gap-3">
+                            <div className="flex-1">
+                              <p
+                                className={`text-sm font-bold ${isLatest ? "text-gray-900" : "text-gray-700"}`}
+                              >
+                                {point.locationName.split(" - Ghi chú:")[0]}
                               </p>
-                            )}
-                            <p className="text-xs text-gray-400 mt-1 flex items-center gap-1">
-                              <i className="uil uil-clock"></i> {dt.toLocaleTimeString("vi-VN")} - {dt.toLocaleDateString("vi-VN")}
-                            </p>
-                          </div>
-                          
-                          {details.state === 2 && isProvider && (
-                             <button
-                               onClick={() => handleDeleteCheckpoint(realIndex)}
-                               disabled={actionLoading}
-                               className="text-red-400 hover:text-red-700 hover:bg-red-50 px-2 py-1 rounded transition-colors cursor-pointer"
-                               title="Xóa điểm này"
-                             >
+                              {point.locationName.includes(" - Ghi chú:") && (
+                                <p className="text-sm text-gray-600 italic bg-gray-50 p-2 rounded mt-1 border border-gray-100">
+                                  "{point.locationName.split(" - Ghi chú: ")[1]}
+                                  "
+                                </p>
+                              )}
+                              <p className="text-xs text-gray-400 mt-1 flex items-center gap-1">
+                                <i className="uil uil-clock"></i>{" "}
+                                {dt.toLocaleTimeString("vi-VN")} -{" "}
+                                {dt.toLocaleDateString("vi-VN")}
+                              </p>
+                            </div>
+
+                            {details.state === 2 && isProvider && (
+                              <button
+                                onClick={() =>
+                                  handleDeleteCheckpoint(realIndex)
+                                }
+                                disabled={actionLoading}
+                                className="text-red-400 hover:text-red-700 hover:bg-red-50 px-2 py-1 rounded transition-colors cursor-pointer"
+                                title="Xóa điểm này"
+                              >
                                 <i className="uil uil-trash-alt text-lg"></i>
-                             </button>
-                          )}
+                              </button>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    )
-                  })
+                      );
+                    })
                 )}
               </div>
             </div>
@@ -1104,15 +1154,22 @@ const ContractDetailsPage = () => {
 
           {/* CỘT PHẢI: BẢN ĐỒ (60% - col-span-3) */}
           <div className="lg:col-span-3">
-             <div className="text-xs text-gray-500 mb-2 italic flex justify-between">
-                <span>Trực quan hóa lộ trình trên bản đồ</span>
-                {details.state === 2 && isProvider && <span className="text-blue-500 font-medium"><i className="uil uil-mouse-alt"></i> Click vào bản đồ để thả ghim cập nhật</span>}
-             </div>
-             <CheckpointMap 
-                 trackingHistory={details.trackingHistory} 
-                 onMapClick={details.state === 2 && isProvider ? handleMapClick : undefined}
-                 manualMarker={manualLatLng}
-             />
+            <div className="text-xs text-gray-500 mb-2 italic flex justify-between">
+              <span>Trực quan hóa lộ trình trên bản đồ</span>
+              {details.state === 2 && isProvider && (
+                <span className="text-blue-500 font-medium">
+                  <i className="uil uil-mouse-alt"></i> Click vào bản đồ để thả
+                  ghim cập nhật
+                </span>
+              )}
+            </div>
+            <CheckpointMap
+              trackingHistory={details.trackingHistory}
+              onMapClick={
+                details.state === 2 && isProvider ? handleMapClick : undefined
+              }
+              manualMarker={manualLatLng}
+            />
           </div>
         </div>
       </div>
