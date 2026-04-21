@@ -9,6 +9,7 @@ import {
   getContractByAddress,
   getAllContracts,
   addCheckpoint,
+  deleteCheckpoint,
 } from "../controllers/contractController.js";
 
 const router = express.Router();
@@ -24,6 +25,7 @@ router.get("/all-admin", getAllContractsForAdmin);
 
 router.put("/upload-proof", uploadProofHash);
 router.put("/update-tracking", addCheckpoint);
+router.put("/delete-tracking", deleteCheckpoint);
 router.get("/track/:address", getContractByAddress);
 
 export default router;

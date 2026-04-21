@@ -3,6 +3,7 @@ import { useWeb3 } from "../context/Web3Context";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import axios from "axios";
 import QRModal from "../components/QRModal";
+import Swal from "sweetalert2";
 
 import ContractListHeader from "../components/contractList/ContractListHeader";
 import ContractFilters from "../components/contractList/ContractFilters";
@@ -111,7 +112,13 @@ const ContractListPage = () => {
 
   const handleExportExcel = () => {
     if (filteredContracts.length === 0) {
-      alert("Không có dữ liệu nào phù hợp với bộ lọc hiện tại để xuất!");
+      Swal.fire({
+        title: 'Không có dữ liệu',
+        text: 'Không có dữ liệu nào phù hợp với bộ lọc hiện tại để xuất!',
+        icon: 'warning',
+        confirmButtonColor: '#3085d6',
+        confirmButtonText: 'Đã hiểu'
+      });
       return;
     }
 

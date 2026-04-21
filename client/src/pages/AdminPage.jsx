@@ -5,6 +5,7 @@ import axios from "axios";
 import { ethers } from "ethers";
 import AddressDisplay from "../components/AddressDisplay";
 import QRModal from "../components/QRModal"; // Bổ sung import QRModal
+import Swal from "sweetalert2";
 
 // HÀM GIẢI MÃ JSON
 const parseTerms = (termsString) => {
@@ -185,8 +186,15 @@ const AdminPage = () => {
     }
 
     if (!ADMIN_WALLETS.includes(walletAddress.toLowerCase())) {
-      alert("⛔ Bạn không có quyền truy cập trang Quản trị!");
-      navigate("/dashboard");
+      Swal.fire({
+        title: 'Từ chối truy cập',
+        text: '⛔ Bạn không có quyền truy cập trang Quản trị!',
+        icon: 'error',
+        confirmButtonColor: '#d33',
+        confirmButtonText: 'Quay lại'
+      }).then(() => {
+        navigate("/dashboard");
+      });
       return;
     }
 

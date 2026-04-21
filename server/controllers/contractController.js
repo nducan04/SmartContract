@@ -307,3 +307,30 @@ export const addCheckpoint = async (req, res) => {
     res.status(500).json({ message: "Lỗi Server" });
   }
 };
+
+export const deleteCheckpoint = async (req, res) => {
+  try {
+    const { contractAddress, index } = req.body;
+
+    if (!contractAddress || index === undefined) {
+      return res.status(400).json({ message: "Thiếu dữ liệu để xóa (contractAddress, index)" });
+    }
+
+    const contract = await Contract.findOne({ contractAddress: contractAddress });
+    if (!contract) {
+      return res.status(404).json({ message: "Không tìm thấy hợp đồng" });
+    }
+
+    if (index >= 0 && index < contract.trackingHistory.length) {
+      contract.trackingHistory.splice(index, 1);
+      await contract.save();
+    } else {
+      return res.status(400).json({ message: "Index không hợp lệ" });
+    }
+
+    res.status(200).json({ message: "Đã xóa checkpoint", contract });
+  } catch (error) {
+    console.error("Lỗi xóa checkpoint:", error);
+    res.status(500).json({ message: "Lỗi Server" });
+  }
+};

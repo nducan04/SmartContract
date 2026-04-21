@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap, useMapEvents } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 
@@ -36,8 +36,31 @@ const MapFitBounds = ({ positions }) => {
   return null;
 };
 
+// Component để bắt sự kiện click Map
 // eslint-disable-next-line react/prop-types
-const CheckpointMap = ({ trackingHistory = [] }) => {
+const MapEventHandler = ({ onMapClick }) => {
+  useMapEvents({
+    click: (e) => {
+      if (onMapClick) onMapClick(e.latlng);
+    },
+  });
+  return null;
+};
+
+// Component tự động fly tới marker mới
+// eslint-disable-next-line react/prop-types
+const MapPanTo = ({ latlng }) => {
+  const map = useMap();
+  useEffect(() => {
+    if (latlng) {
+      map.flyTo([latlng.lat, latlng.lng], 13);
+    }
+  }, [latlng, map]);
+  return null;
+};
+
+// eslint-disable-next-line react/prop-types
+const CheckpointMap = ({ trackingHistory = [], onMapClick, manualMarker }) => {
   const [positions, setPositions] = useState([]);
 
   useEffect(() => {
@@ -48,14 +71,16 @@ const CheckpointMap = ({ trackingHistory = [] }) => {
   }, [trackingHistory]);
 
   return (
-    <div className="h-[400px] w-full rounded-2xl overflow-hidden border border-gray-200 shadow-sm relative z-0">
+    <div className="h-[500px] lg:h-[700px] w-full rounded-2xl overflow-hidden border border-gray-200 shadow-sm relative z-0">
       <MapContainer 
         center={defaultCenter} 
         zoom={5} 
         scrollWheelZoom={false} 
-        className="h-full w-full z-0"
+        className={`h-full w-full z-0 ${onMapClick ? 'cursor-crosshair' : ''}`}
         style={{ zIndex: 0 }}
       >
+        <MapEventHandler onMapClick={onMapClick} />
+        <MapPanTo latlng={manualMarker} />
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -66,6 +91,16 @@ const CheckpointMap = ({ trackingHistory = [] }) => {
               positions={positions} 
               pathOptions={{ color: '#2563eb', weight: 4, dashArray: '8, 8' }} 
            />
+        )}
+
+        {manualMarker && (
+           <Marker position={[manualMarker.lat, manualMarker.lng]} icon={new L.Icon.Default()}>
+              <Popup>
+                 <div className="font-bold text-blue-600 text-sm mb-1">📍 Tọa độ đang chọn</div>
+                 <div className="text-xs text-gray-500">Lat: {manualMarker.lat.toFixed(4)}</div>
+                 <div className="text-xs text-gray-500">Lng: {manualMarker.lng.toFixed(4)}</div>
+              </Popup>
+           </Marker>
         )}
 
         {trackingHistory && trackingHistory.map((point, index) => {
