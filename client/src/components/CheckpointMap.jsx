@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap, useMapEvents } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap, useMapEvents, CircleMarker } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 
@@ -106,20 +106,43 @@ const CheckpointMap = ({ trackingHistory = [], onMapClick, manualMarker }) => {
         {trackingHistory && trackingHistory.map((point, index) => {
           const isCurrent = index === trackingHistory.length - 1;
           const dt = new Date(point.timestamp).toLocaleString("vi-VN");
+          
+          if (isCurrent) {
+            return (
+              <Marker 
+                key={index} 
+                position={[point.lat, point.lng]} 
+                icon={currentIcon}
+              >
+                <Popup>
+                  <div className="font-sans min-w-[150px]">
+                    <h3 className="font-bold text-gray-800 text-sm">{point.locationName}</h3>
+                    <p className="text-xs text-gray-500 mt-1">{dt}</p>
+                    <p className="text-blue-600 font-bold text-xs mt-2 bg-blue-50 px-2 py-1 rounded inline-block">📍 Vị trí xe hiện tại</p>
+                  </div>
+                </Popup>
+              </Marker>
+            );
+          }
+
           return (
-            <Marker 
-              key={index} 
-              position={[point.lat, point.lng]} 
-              icon={isCurrent ? currentIcon : new L.Icon.Default()}
+            <CircleMarker 
+              key={index}
+              center={[point.lat, point.lng]} 
+              radius={8}
+              fillColor="#3b82f6"
+              color="#ffffff"
+              weight={2}
+              fillOpacity={1}
             >
               <Popup>
                 <div className="font-sans min-w-[150px]">
                   <h3 className="font-bold text-gray-800 text-sm">{point.locationName}</h3>
                   <p className="text-xs text-gray-500 mt-1">{dt}</p>
-                  {isCurrent && <p className="text-blue-600 font-bold text-xs mt-2 bg-blue-50 px-2 py-1 rounded inline-block">📍 Vị trí xe hiện tại</p>}
+                  <p className="text-gray-600 font-bold text-xs mt-2 bg-gray-100 px-2 py-1 rounded inline-block">Trạm đã đi qua</p>
                 </div>
               </Popup>
-            </Marker>
+            </CircleMarker>
           );
         })}
 

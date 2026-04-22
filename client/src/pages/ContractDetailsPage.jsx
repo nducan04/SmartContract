@@ -793,9 +793,7 @@ const ContractDetailsPage = () => {
                 </p>
               </div>
               <div>
-                <h4 className="font-bold underline">
-                  Điều 3: Giá cả hàng hóa
-                </h4>
+                <h4 className="font-bold underline">Điều 3: Giá cả hàng hóa</h4>
                 <p className="whitespace-pre-wrap mt-1">
                   {parsedTerms.art3_price}
                 </p>
