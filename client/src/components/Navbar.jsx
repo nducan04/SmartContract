@@ -5,6 +5,8 @@ import { useWeb3 } from "../context/Web3Context";
 import Blockies from "./Blockies";
 import AddressDisplay from "./AddressDisplay";
 import ConnectWalletModal from "./ConnectWalletModal";
+import EmailSettingsModal from "./EmailSettingsModal";
+import axios from "axios";
 
 const Navbar = () => {
   const { walletAddress, walletBalance, connectWallet, disconnectWallet } =
@@ -12,6 +14,27 @@ const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
+  const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
+  const [linkedEmail, setLinkedEmail] = useState("");
+
+  const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
+
+  useEffect(() => {
+    if (walletAddress) {
+      axios
+        .get(`${backendUrl}/api/users/settings/${walletAddress}`)
+        .then((res) => {
+          if (res.data.email) {
+            setLinkedEmail(res.data.email);
+          } else {
+            setLinkedEmail("");
+          }
+        })
+        .catch(() => setLinkedEmail(""));
+    } else {
+      setLinkedEmail("");
+    }
+  }, [walletAddress, backendUrl, isEmailModalOpen]);
 
   const dropdownRef = useRef(null);
   const location = useLocation();
@@ -190,8 +213,33 @@ const Navbar = () => {
                     </div>
                   </div>
 
+                  {/* Nút Cài đặt Email */}
+                  <div className="border-t border-gray-100 mt-1 p-2 pb-0">
+                    <button
+                      onClick={() => {
+                        setShowDropdown(false);
+                        setIsEmailModalOpen(true);
+                      }}
+                      className={`w-full flex flex-col items-center justify-center gap-0.5 px-4 py-2 text-sm font-bold transition-colors cursor-pointer rounded-lg ${
+                        linkedEmail
+                          ? "bg-green-50 text-green-700 hover:bg-green-100 border border-green-100"
+                          : "text-blue-600 hover:bg-blue-50 hover:text-blue-700"
+                      }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <i className={`uil ${linkedEmail ? "uil-check-circle" : "uil-envelope"} text-lg`}></i>
+                        {linkedEmail ? "Đã liên kết Email" : "Nhận email thông báo"}
+                      </div>
+                      {linkedEmail && (
+                        <span className="text-xs font-normal text-green-600 truncate w-full text-center">
+                          {linkedEmail} (Bấm để đổi)
+                        </span>
+                      )}
+                    </button>
+                  </div>
+
                   {/* Footer: Nút Ngắt kết nối */}
-                  <div className="border-t border-gray-100 mt-1 p-2">
+                  <div className="p-2">
                     <button
                       onClick={() => {
                         disconnectWallet();
@@ -235,9 +283,16 @@ const Navbar = () => {
       </div>
 
       {/* WALLET CONNECT MODAL */}
-      <ConnectWalletModal 
-        isOpen={isWalletModalOpen} 
-        onClose={() => setIsWalletModalOpen(false)} 
+      <ConnectWalletModal
+        isOpen={isWalletModalOpen}
+        onClose={() => setIsWalletModalOpen(false)}
+      />
+
+      {/* EMAIL SETTINGS MODAL */}
+      <EmailSettingsModal
+        isOpen={isEmailModalOpen}
+        onClose={() => setIsEmailModalOpen(false)}
+        walletAddress={walletAddress}
       />
     </div>
   );

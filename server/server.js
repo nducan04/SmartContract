@@ -3,7 +3,9 @@ import "dotenv/config";
 import cors from "cors";
 import connectDB from "./configs/db.js";
 import startListener from "./services/eventListener.js";
+import { startCronJobs } from "./services/cronService.js";
 import contractRoutes from "./routes/contractRoutes.js";
+import userRoutes from "./routes/userRoutes.js";
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -18,8 +20,10 @@ app.get("/", (req, res) =>
   res.send("Logistics DApp Backend is Running on Render!"),
 );
 app.use("/api/contracts", contractRoutes);
+app.use("/api/users/settings", userRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server đang chạy tại port ${PORT}`);
   startListener();
+  startCronJobs();
 });
