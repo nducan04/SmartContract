@@ -607,7 +607,7 @@ const TrackingPage = () => {
         <div className="space-y-8">
           <div>
             <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
-              <i className="uil uil-map text-red-500"></i> Bản đồ Hành trình (Tracking)
+              <i className="uil uil-map-marker-alt text-red-500"></i> Bản đồ Hành trình (Tracking)
             </h3>
             <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-2 z-0 relative">
               <CheckpointMap trackingHistory={contractData.trackingHistory} />

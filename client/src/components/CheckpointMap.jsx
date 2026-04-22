@@ -1,22 +1,34 @@
 import React, { useEffect, useState } from "react";
-import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap, useMapEvents, CircleMarker } from "react-leaflet";
+import {
+  MapContainer,
+  TileLayer,
+  Marker,
+  Popup,
+  Polyline,
+  useMap,
+  useMapEvents,
+} from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 
 // Fix Leaflet's default icon missing issue in Vite/Webpack
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
-  iconRetinaUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png",
-  iconUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png",
-  shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
+  iconRetinaUrl:
+    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png",
+  iconUrl:
+    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png",
+  shadowUrl:
+    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
 });
 
 // Icon xe tải dùng cho vị trí hiện tại
-const currentIcon = new L.Icon({
-  iconUrl: "https://cdn-icons-png.flaticon.com/512/2733/2733355.png", // Icon xe tải
-  iconSize: [40, 40],
-  iconAnchor: [20, 40],
-  popupAnchor: [0, -40],
+const currentIcon = L.divIcon({
+  className: "truck-marker-icon",
+  html: `<div style="background-color: white; border: 2px solid #2563eb; border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); font-size: 20px;">🚚</div>`,
+  iconSize: [36, 36],
+  iconAnchor: [18, 18],
+  popupAnchor: [0, -18],
 });
 
 const defaultCenter = [16.0544, 108.2022]; // Đà Nẵng ở giữa VN
@@ -65,18 +77,18 @@ const CheckpointMap = ({ trackingHistory = [], onMapClick, manualMarker }) => {
 
   useEffect(() => {
     if (trackingHistory && trackingHistory.length > 0) {
-      const coords = trackingHistory.map(point => [point.lat, point.lng]);
+      const coords = trackingHistory.map((point) => [point.lat, point.lng]);
       setPositions(coords);
     }
   }, [trackingHistory]);
 
   return (
     <div className="h-[500px] lg:h-[700px] w-full rounded-2xl overflow-hidden border border-gray-200 shadow-sm relative z-0">
-      <MapContainer 
-        center={defaultCenter} 
-        zoom={5} 
-        scrollWheelZoom={false} 
-        className={`h-full w-full z-0 ${onMapClick ? 'cursor-crosshair' : ''}`}
+      <MapContainer
+        center={defaultCenter}
+        zoom={5}
+        scrollWheelZoom={false}
+        className={`h-full w-full z-0 ${onMapClick ? "cursor-crosshair" : ""}`}
         style={{ zIndex: 0 }}
       >
         <MapEventHandler onMapClick={onMapClick} />
@@ -85,66 +97,59 @@ const CheckpointMap = ({ trackingHistory = [], onMapClick, manualMarker }) => {
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
-        
+
         {positions.length > 0 && (
-           <Polyline 
-              positions={positions} 
-              pathOptions={{ color: '#2563eb', weight: 4, dashArray: '8, 8' }} 
-           />
+          <Polyline
+            positions={positions}
+            pathOptions={{ color: "#2563eb", weight: 4, dashArray: "8, 8" }}
+          />
         )}
 
         {manualMarker && (
-           <Marker position={[manualMarker.lat, manualMarker.lng]} icon={new L.Icon.Default()}>
-              <Popup>
-                 <div className="font-bold text-blue-600 text-sm mb-1">📍 Tọa độ đang chọn</div>
-                 <div className="text-xs text-gray-500">Lat: {manualMarker.lat.toFixed(4)}</div>
-                 <div className="text-xs text-gray-500">Lng: {manualMarker.lng.toFixed(4)}</div>
-              </Popup>
-           </Marker>
+          <Marker
+            position={[manualMarker.lat, manualMarker.lng]}
+            icon={new L.Icon.Default()}
+          >
+            <Popup>
+              <div className="font-bold text-blue-600 text-sm mb-1">
+                📍 Tọa độ đang chọn
+              </div>
+              <div className="text-xs text-gray-500">
+                Lat: {manualMarker.lat.toFixed(4)}
+              </div>
+              <div className="text-xs text-gray-500">
+                Lng: {manualMarker.lng.toFixed(4)}
+              </div>
+            </Popup>
+          </Marker>
         )}
 
-        {trackingHistory && trackingHistory.map((point, index) => {
-          const isCurrent = index === trackingHistory.length - 1;
-          const dt = new Date(point.timestamp).toLocaleString("vi-VN");
-          
-          if (isCurrent) {
+        {trackingHistory &&
+          trackingHistory.map((point, index) => {
+            const isCurrent = index === trackingHistory.length - 1;
+            const dt = new Date(point.timestamp).toLocaleString("vi-VN");
             return (
-              <Marker 
-                key={index} 
-                position={[point.lat, point.lng]} 
-                icon={currentIcon}
+              <Marker
+                key={index}
+                position={[point.lat, point.lng]}
+                icon={isCurrent ? currentIcon : new L.Icon.Default()}
               >
                 <Popup>
                   <div className="font-sans min-w-[150px]">
-                    <h3 className="font-bold text-gray-800 text-sm">{point.locationName}</h3>
+                    <h3 className="font-bold text-gray-800 text-sm">
+                      {point.locationName}
+                    </h3>
                     <p className="text-xs text-gray-500 mt-1">{dt}</p>
-                    <p className="text-blue-600 font-bold text-xs mt-2 bg-blue-50 px-2 py-1 rounded inline-block">📍 Vị trí xe hiện tại</p>
+                    {isCurrent && (
+                      <p className="text-blue-600 font-bold text-xs mt-2 bg-blue-50 px-2 py-1 rounded inline-block">
+                        📍 Vị trí xe hiện tại
+                      </p>
+                    )}
                   </div>
                 </Popup>
               </Marker>
             );
-          }
-
-          return (
-            <CircleMarker 
-              key={index}
-              center={[point.lat, point.lng]} 
-              radius={8}
-              fillColor="#3b82f6"
-              color="#ffffff"
-              weight={2}
-              fillOpacity={1}
-            >
-              <Popup>
-                <div className="font-sans min-w-[150px]">
-                  <h3 className="font-bold text-gray-800 text-sm">{point.locationName}</h3>
-                  <p className="text-xs text-gray-500 mt-1">{dt}</p>
-                  <p className="text-gray-600 font-bold text-xs mt-2 bg-gray-100 px-2 py-1 rounded inline-block">Trạm đã đi qua</p>
-                </div>
-              </Popup>
-            </CircleMarker>
-          );
-        })}
+          })}
 
         <MapFitBounds positions={positions} />
       </MapContainer>
