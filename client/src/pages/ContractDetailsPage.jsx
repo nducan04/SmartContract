@@ -794,10 +794,30 @@ const ContractDetailsPage = () => {
               </div>
               <div>
                 <h4 className="font-bold underline">
-                  Điều 3 & Điều 5: Giá cả và Phương thức thanh toán
+                  Điều 3: Giá cả hàng hóa
                 </h4>
                 <p className="whitespace-pre-wrap mt-1">
                   {parsedTerms.art3_price}
+                </p>
+              </div>
+              <div>
+                <h4 className="font-bold underline">
+                  Điều 4: Thời gian và Địa điểm giao hàng
+                </h4>
+                <p className="whitespace-pre-wrap mt-1">
+                  {parsedTerms.art4_delivery}
+                </p>
+                <p className="mt-2 font-bold text-red-600 bg-red-50 inline-block px-3 py-1 rounded print:border print:border-red-200">
+                  » Hạn chót cam kết ghi trên Blockchain:{" "}
+                  {formatDate(details.deadline)}
+                </p>
+              </div>
+              <div>
+                <h4 className="font-bold underline">
+                  Điều 5: Phương thức thanh toán
+                </h4>
+                <p className="whitespace-pre-wrap mt-1">
+                  {parsedTerms.art5_payment}
                 </p>
                 <div className="bg-gray-50 p-4 rounded-lg mt-3 border border-gray-200 print:border-gray-400">
                   <p>
@@ -816,18 +836,6 @@ const ContractDetailsPage = () => {
                     </span>
                   </p>
                 </div>
-              </div>
-              <div>
-                <h4 className="font-bold underline">
-                  Điều 4: Thời gian và Địa điểm giao hàng
-                </h4>
-                <p className="whitespace-pre-wrap mt-1">
-                  {parsedTerms.art4_delivery}
-                </p>
-                <p className="mt-2 font-bold text-red-600 bg-red-50 inline-block px-3 py-1 rounded print:border print:border-red-200">
-                  » Hạn chót cam kết ghi trên Blockchain:{" "}
-                  {formatDate(details.deadline)}
-                </p>
               </div>
               <div>
                 <h4 className="font-bold underline">
