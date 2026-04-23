@@ -38,22 +38,28 @@ const ContractListPage = () => {
 
   useEffect(() => {
     const fetchContracts = async () => {
-      // BƯỚC 1: Xóa bỏ rào cản ở trang Danh sách
-      // if (!walletAddress) { ... return; }
-
       try {
         setLoading(true);
         const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
-        // Nếu không có ví thì lấy tất cả, nếu có ví thì lấy của ví đó
-        // Hoặc yêu cầu là gọi API lấy toàn bộ danh sách công khai
-        const apiUrl = walletAddress
-          ? `${API_URL}/api/contracts?wallet=${walletAddress}&page=${pagination.page}&limit=10`
-          : `${API_URL}/api/contracts/all?page=${pagination.page}&limit=10`;
+        
+        let params = new URLSearchParams();
+        params.append("page", pagination.page);
+        params.append("limit", 10);
+        
+        if (roleFilter !== "all") params.append("role", roleFilter);
+        if (statusFilter !== "all") params.append("status", statusFilter);
+        if (startDate) params.append("startDate", startDate);
+        if (endDate) params.append("endDate", endDate);
+        if (walletAddress) params.append("wallet", walletAddress);
+
+        const endpoint = walletAddress ? "/api/contracts" : "/api/contracts/all";
+        const apiUrl = `${API_URL}${endpoint}?${params.toString()}`;
 
         const response = await axios.get(apiUrl);
 
         if (response.data && response.data.data) {
           setContracts(response.data.data);
+          setFilteredContracts(response.data.data);
           setPagination(response.data.pagination);
         } else {
           // Fallback api cũ
@@ -61,6 +67,7 @@ const ContractListPage = () => {
             (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
           );
           setContracts(sortedData);
+          setFilteredContracts(sortedData);
         }
       } catch (error) {
         console.error("Lỗi:", error);
@@ -69,34 +76,17 @@ const ContractListPage = () => {
       }
     };
     fetchContracts();
-  }, [walletAddress, pagination.page]);
+  }, [walletAddress, pagination.page, roleFilter, statusFilter, startDate, endDate]);
 
-  // --- LOGIC LỌC ĐA ĐIỀU KIỆN ---
+  // Reset trang về 1 khi thay đổi bộ lọc
   useEffect(() => {
-    let result = [...contracts];
-
-    if (roleFilter === "client" && walletAddress)
-      result = result.filter((c) => c.client === walletAddress.toLowerCase());
-    if (roleFilter === "provider" && walletAddress)
-      result = result.filter((c) => c.provider === walletAddress.toLowerCase());
-    if (roleFilter === "receiver" && walletAddress)
-      result = result.filter((c) => c.receiver === walletAddress.toLowerCase());
-
-    if (statusFilter !== "all") {
-      result = result.filter((c) => c.status.toString() === statusFilter);
-    }
-
-    if (startDate) {
-      const start = new Date(startDate).getTime();
-      result = result.filter((c) => new Date(c.createdAt).getTime() >= start);
-    }
-    if (endDate) {
-      const end = new Date(endDate).getTime() + 86400000;
-      result = result.filter((c) => new Date(c.createdAt).getTime() <= end);
-    }
-
-    setFilteredContracts(result);
-  }, [contracts, roleFilter, startDate, endDate, statusFilter, walletAddress]);
+    setPagination((p) => {
+      if (p.page !== 1) {
+        return { ...p, page: 1 };
+      }
+      return p;
+    });
+  }, [roleFilter, statusFilter, startDate, endDate, walletAddress]);
 
   // --- CÁC HÀM XỬ LÝ SỰ KIỆN ---
   const handleShowQR = (address) => {
@@ -113,11 +103,11 @@ const ContractListPage = () => {
   const handleExportExcel = () => {
     if (filteredContracts.length === 0) {
       Swal.fire({
-        title: 'Không có dữ liệu',
-        text: 'Không có dữ liệu nào phù hợp với bộ lọc hiện tại để xuất!',
-        icon: 'warning',
-        confirmButtonColor: '#3085d6',
-        confirmButtonText: 'Đã hiểu'
+        title: "Không có dữ liệu",
+        text: "Không có dữ liệu nào phù hợp với bộ lọc hiện tại để xuất!",
+        icon: "warning",
+        confirmButtonColor: "#3085d6",
+        confirmButtonText: "Đã hiểu",
       });
       return;
     }
@@ -262,7 +252,7 @@ const ContractListPage = () => {
                 onClick={() =>
                   setPagination((p) => ({ ...p, page: p.page + 1 }))
                 }
-                className="px-4 py-2 text-sm font-medium border border-gray-200 bg-white rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
+                className="cursor-pointer px-4 py-2 text-sm font-medium border border-gray-200 bg-white rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
               >
                 Tiếp
               </button>

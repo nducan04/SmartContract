@@ -8,14 +8,15 @@ const EmailSettingsModal = ({ isOpen, onClose, walletAddress }) => {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
-  const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
+  const backendUrl =
+    import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
 
   useEffect(() => {
     if (isOpen && walletAddress) {
       // Reset state mỗi lần mở modal
       setMessage("");
       setError("");
-      
+
       // Gọi API lấy email hiện tại
       axios
         .get(`${backendUrl}/api/users/settings/${walletAddress}`)
@@ -42,17 +43,17 @@ const EmailSettingsModal = ({ isOpen, onClose, walletAddress }) => {
     try {
       // Yêu cầu user ký xác nhận bằng MetaMask
       if (!window.ethereum) throw new Error("Vui lòng cài đặt MetaMask");
-      
+
       const provider = new ethers.BrowserProvider(window.ethereum);
       const signer = await provider.getSigner();
-      
+
       const messageToSign = `Cập nhật email nhận thông báo: ${email}`;
       const signature = await signer.signMessage(messageToSign);
 
       const response = await axios.post(`${backendUrl}/api/users/settings`, {
         walletAddress,
         email,
-        signature
+        signature,
       });
 
       setMessage("Đã lưu thiết lập email thành công!");
@@ -62,7 +63,11 @@ const EmailSettingsModal = ({ isOpen, onClose, walletAddress }) => {
       }, 2000);
     } catch (err) {
       console.error(err);
-      setError(err.response?.data?.error || err.message || "Đã xảy ra lỗi khi lưu email.");
+      setError(
+        err.response?.data?.error ||
+          err.message ||
+          "Đã xảy ra lỗi khi lưu email.",
+      );
     } finally {
       setLoading(false);
     }
@@ -80,13 +85,18 @@ const EmailSettingsModal = ({ isOpen, onClose, walletAddress }) => {
           <i className="uil uil-times text-2xl"></i>
         </button>
 
-        <h3 className="text-xl font-bold text-gray-800 mb-2">Cài đặt Thông báo</h3>
+        <h3 className="text-xl font-bold text-gray-800 mb-2">
+          Cài đặt thông báo
+        </h3>
         <p className="text-sm text-gray-500 mb-6">
-          Nhận email nhắc nhở khi hợp đồng vận chuyển sắp đến hạn chót (trước 48 giờ).
+          Nhận email nhắc nhở khi hợp đồng vận chuyển sắp đến hạn chót (trước 48
+          giờ).
         </p>
 
         <div className="mb-4">
-          <label className="block text-sm font-semibold text-gray-700 mb-2">Địa chỉ Email</label>
+          <label className="block text-sm font-semibold text-gray-700 mb-2">
+            Địa chỉ Email
+          </label>
           <input
             type="email"
             value={email}
@@ -97,12 +107,14 @@ const EmailSettingsModal = ({ isOpen, onClose, walletAddress }) => {
         </div>
 
         {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
-        {message && <p className="text-green-500 text-sm mb-4 font-semibold">{message}</p>}
+        {message && (
+          <p className="text-green-500 text-sm mb-4 font-semibold">{message}</p>
+        )}
 
         <button
           onClick={handleSave}
           disabled={loading}
-          className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl transition-colors flex items-center justify-center"
+          className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl transition-colors flex items-center justify-center cursor-pointer"
         >
           {loading ? (
             <span className="flex items-center">

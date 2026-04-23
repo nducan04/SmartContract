@@ -153,14 +153,20 @@ const MarketplacePage = () => {
   const [filter, setFilter] = useState("newest");
   const navigate = useNavigate();
 
-  const [pagination, setPagination] = useState({ page: 1, totalPages: 1, total: 0 });
+  const [pagination, setPagination] = useState({
+    page: 1,
+    totalPages: 1,
+    total: 0,
+  });
 
   useEffect(() => {
     const fetchAvailableContracts = async () => {
       try {
         setLoading(true);
         const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
-        const response = await axios.get(`${API_URL}/api/contracts/available?page=${pagination.page}&limit=10`);
+        const response = await axios.get(
+          `${API_URL}/api/contracts/available?page=${pagination.page}&limit=10`,
+        );
 
         let data = [];
         // Mới: API trả về { data, pagination }
@@ -252,15 +258,19 @@ const MarketplacePage = () => {
             <div className="flex gap-2">
               <button
                 disabled={pagination.page <= 1}
-                onClick={() => setPagination((p) => ({ ...p, page: p.page - 1 }))}
+                onClick={() =>
+                  setPagination((p) => ({ ...p, page: p.page - 1 }))
+                }
                 className="px-4 py-2 text-sm font-medium border border-gray-200 bg-white rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 Trước
               </button>
               <button
                 disabled={pagination.page >= pagination.totalPages}
-                onClick={() => setPagination((p) => ({ ...p, page: p.page + 1 }))}
-                className="px-4 py-2 text-sm font-medium border border-gray-200 bg-white rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                onClick={() =>
+                  setPagination((p) => ({ ...p, page: p.page + 1 }))
+                }
+                className="cursor-pointer px-4 py-2 text-sm font-medium border border-gray-200 bg-white rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 Tiếp
               </button>

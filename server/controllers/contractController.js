@@ -10,7 +10,7 @@ const getPaginationOptions = (req) => {
 
 export const getMyContracts = async (req, res) => {
   try {
-    const { wallet } = req.query;
+    const { wallet, role, status, startDate, endDate } = req.query;
 
     if (!wallet) {
       return res
@@ -21,13 +21,37 @@ export const getMyContracts = async (req, res) => {
     const lowerWallet = wallet.toLowerCase();
     const { page, limit, skip } = getPaginationOptions(req);
 
-    const query = {
-      $or: [
+    const query = {};
+
+    if (role === "client") {
+      query.client = lowerWallet;
+    } else if (role === "provider") {
+      query.provider = lowerWallet;
+    } else if (role === "receiver") {
+      query.receiver = lowerWallet;
+    } else {
+      query.$or = [
         { client: lowerWallet },
         { provider: lowerWallet },
         { receiver: lowerWallet },
-      ],
-    };
+      ];
+    }
+
+    if (status && status !== "all") {
+      query.status = parseInt(status);
+    }
+
+    if (startDate || endDate) {
+      query.createdAt = {};
+      if (startDate) {
+        query.createdAt.$gte = new Date(startDate);
+      }
+      if (endDate) {
+        const end = new Date(endDate);
+        end.setDate(end.getDate() + 1);
+        query.createdAt.$lt = end;
+      }
+    }
 
     const total = await Contract.countDocuments(query);
     const contracts = await Contract.find(query)
@@ -128,8 +152,26 @@ export const getAllContractsForAdmin = async (req, res) => {
     }
 
     const { page, limit, skip } = getPaginationOptions(req);
-    const total = await Contract.countDocuments();
-    const contracts = await Contract.find()
+    const { status, startDate, endDate } = req.query;
+
+    const query = {};
+    if (status && status !== "all") {
+      query.status = parseInt(status);
+    }
+    if (startDate || endDate) {
+      query.createdAt = {};
+      if (startDate) {
+        query.createdAt.$gte = new Date(startDate);
+      }
+      if (endDate) {
+        const end = new Date(endDate);
+        end.setDate(end.getDate() + 1);
+        query.createdAt.$lt = end;
+      }
+    }
+
+    const total = await Contract.countDocuments(query);
+    const contracts = await Contract.find(query)
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit);
@@ -151,8 +193,26 @@ export const getAllContractsForAdmin = async (req, res) => {
 export const getAllContracts = async (req, res) => {
   try {
     const { page, limit, skip } = getPaginationOptions(req);
-    const total = await Contract.countDocuments();
-    const contracts = await Contract.find()
+    const { status, startDate, endDate } = req.query;
+
+    const query = {};
+    if (status && status !== "all") {
+      query.status = parseInt(status);
+    }
+    if (startDate || endDate) {
+      query.createdAt = {};
+      if (startDate) {
+        query.createdAt.$gte = new Date(startDate);
+      }
+      if (endDate) {
+        const end = new Date(endDate);
+        end.setDate(end.getDate() + 1);
+        query.createdAt.$lt = end;
+      }
+    }
+
+    const total = await Contract.countDocuments(query);
+    const contracts = await Contract.find(query)
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit);

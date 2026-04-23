@@ -121,7 +121,7 @@ const AdminContractRow = ({ c, onShowQR, onViewDetails }) => {
       </td>
       <td className="p-4 align-top whitespace-nowrap">
         {c.provider &&
-          c.provider !== "0x0000000000000000000000000000000000000000" ? (
+        c.provider !== "0x0000000000000000000000000000000000000000" ? (
           <AddressDisplay address={c.provider} />
         ) : (
           <span className="text-xs font-medium text-gray-400 bg-gray-100 px-2 py-1 rounded">
@@ -175,8 +175,8 @@ const AdminPage = () => {
 
   const ADMIN_WALLETS = import.meta.env.VITE_ADMIN_WALLETS
     ? import.meta.env.VITE_ADMIN_WALLETS.split(",").map((addr) =>
-      addr.trim().toLowerCase(),
-    )
+        addr.trim().toLowerCase(),
+      )
     : [];
 
   useEffect(() => {
@@ -187,11 +187,11 @@ const AdminPage = () => {
 
     if (!ADMIN_WALLETS.includes(walletAddress.toLowerCase())) {
       Swal.fire({
-        title: 'Từ chối truy cập',
-        text: '⛔ Bạn không có quyền truy cập trang Quản trị!',
-        icon: 'error',
-        confirmButtonColor: '#d33',
-        confirmButtonText: 'Quay lại'
+        title: "Từ chối truy cập",
+        text: "⛔ Bạn không có quyền truy cập trang Quản trị!",
+        icon: "error",
+        confirmButtonColor: "#d33",
+        confirmButtonText: "Quay lại",
       }).then(() => {
         navigate("/dashboard");
       });
@@ -262,7 +262,6 @@ const AdminPage = () => {
 
   return (
     <div className="p-4 md:p-8 bg-gray-50 w-full overflow-hidden">
-
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <div className="bg-white p-6 rounded-2xl shadow-sm border-l-4 border-blue-500 relative overflow-hidden">
           <i className="uil uil-file-contract absolute -right-4 -bottom-4 text-8xl text-blue-50 opacity-50"></i>
@@ -307,14 +306,30 @@ const AdminPage = () => {
           <table className="w-full text-left border-collapse table-auto min-w-[1750px]">
             <thead className="bg-gray-800 text-white text-xs uppercase tracking-wider">
               <tr>
-                <th className="p-4 min-w-[180px] whitespace-nowrap">ID Blockchain</th>
-                <th className="p-4 min-w-[300px] whitespace-nowrap">Nội dung / Tên hàng</th>
-                <th className="p-4 min-w-[250px] whitespace-nowrap">Người tạo (Bên A)</th>
-                <th className="p-4 min-w-[250px] whitespace-nowrap">Người nhận (Bên B)</th>
-                <th className="p-4 min-w-[180px] whitespace-nowrap">Vận chuyển</th>
-                <th className="p-4 min-w-[150px] whitespace-nowrap">Trạng thái</th>
-                <th className="p-4 min-w-[120px] whitespace-nowrap">Ngày tạo</th>
-                <th className="p-4 min-w-[130px] text-center whitespace-nowrap">Hành động</th>
+                <th className="p-4 min-w-[180px] whitespace-nowrap">
+                  ID Blockchain
+                </th>
+                <th className="p-4 min-w-[300px] whitespace-nowrap">
+                  Nội dung / Tên hàng
+                </th>
+                <th className="p-4 min-w-[250px] whitespace-nowrap">
+                  Người tạo (Bên A)
+                </th>
+                <th className="p-4 min-w-[250px] whitespace-nowrap">
+                  Người nhận (Bên B)
+                </th>
+                <th className="p-4 min-w-[180px] whitespace-nowrap">
+                  Vận chuyển
+                </th>
+                <th className="p-4 min-w-[150px] whitespace-nowrap">
+                  Trạng thái
+                </th>
+                <th className="p-4 min-w-[120px] whitespace-nowrap">
+                  Ngày tạo
+                </th>
+                <th className="p-4 min-w-[130px] text-center whitespace-nowrap">
+                  Hành động
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
@@ -361,7 +376,7 @@ const AdminPage = () => {
                 onClick={() =>
                   setPagination((p) => ({ ...p, page: p.page + 1 }))
                 }
-                className="px-4 py-2 text-sm font-medium border border-gray-200 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                className="cursror-pointer x-4 py-2 text-sm font-medium border border-gray-200 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
               >
                 Tiếp
               </button>

@@ -17,7 +17,8 @@ const Navbar = () => {
   const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
   const [linkedEmail, setLinkedEmail] = useState("");
 
-  const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
+  const backendUrl =
+    import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
 
   useEffect(() => {
     if (walletAddress) {
@@ -227,8 +228,12 @@ const Navbar = () => {
                       }`}
                     >
                       <div className="flex items-center gap-2">
-                        <i className={`uil ${linkedEmail ? "uil-check-circle" : "uil-envelope"} text-lg`}></i>
-                        {linkedEmail ? "Đã liên kết Email" : "Nhận email thông báo"}
+                        <i
+                          className={`uil ${linkedEmail ? "uil-check-circle" : "uil-envelope"} text-lg`}
+                        ></i>
+                        {linkedEmail
+                          ? "Đã liên kết email"
+                          : "Nhận email thông báo"}
                       </div>
                       {linkedEmail && (
                         <span className="text-xs font-normal text-green-600 truncate w-full text-center">
