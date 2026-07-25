@@ -49,3 +49,94 @@ Web3-Logistics-DApp
 ├── .gitignore
 ├── LICENSE
 └── README.md
+⚙️ Installation and Setup
+Prerequisites
+Before running the project, ensure you have the following installed:
+
+Node.js (v18.x or higher)
+
+MetaMask Extension installed in your browser (configured for the Sepolia Testnet with some test ETH).
+
+A MongoDB Atlas account (or local MongoDB).
+
+A Pinata Cloud account (for IPFS API Keys).
+
+Step-by-Step Guide
+1. Clone the Repository:
+
+Bash
+git clone [https://github.com/your-username/Web3-Logistics-DApp.git](https://github.com/your-username/Web3-Logistics-DApp.git)
+cd Web3-Logistics-DApp
+2. Install Dependencies:
+You need to install dependencies for all three main directories:
+
+Bash
+# In the root directory, open three terminal tabs:
+cd client && npm install
+cd server && npm install
+cd blockchain && npm install
+3. Configure Environment Variables:
+You must create .env files in both the client and server directories.
+
+For client/: Create a .env file based on .env.example:
+
+Đoạn mã
+VITE_PINATA_JWT=your_pinata_jwt_here
+VITE_ADMIN_WALLETS=your_metamask_wallet_address_here
+For server/: Create a .env file based on .env.example:
+
+Đoạn mã
+MONGO_URI=your_mongodb_connection_string
+PORT=5000
+SEPOLIA_RPC_URL=your_alchemy_or_infura_url
+ADMIN_WALLETS=your_metamask_wallet_address_here
+SMTP_EMAIL=your_email@gmail.com
+SMTP_PASSWORD=your_google_app_password
+4. Run the Application:
+To run the full Web2.5 system, start both the backend and frontend simultaneously.
+
+Start the Backend:
+
+Bash
+cd server
+npm run server
+Start the Frontend:
+
+Bash
+cd client
+npm run dev
+The DApp will be available at http://localhost:5173.
+
+📖 Usage
+Connect Wallet: Click "Connect Wallet" on the homepage to link your MetaMask account.
+
+Create Agreement (Client): Fill in the delivery details, deadline, and penalty rules. The required ETH will be locked in the Smart Contract.
+
+Accept Agreement (Provider): The driver reviews the terms and signs the transaction to accept the job.
+
+Update Tracking (Off-chain): The driver updates location checkpoints (saved to MongoDB to save Gas).
+
+Complete Delivery: The driver uploads proof of delivery (uploaded to IPFS). The client verifies and triggers the Smart Contract to release funds.
+
+👨‍💻 Author
+Nguyễn Đức An
+
+Role: Full-Stack Web3 Developer
+
+Responsibilities: Entire system architecture, Smart Contract development, Frontend UI/UX, Backend APIs, and IPFS integration.
+
+This project was researched and developed independently as part of a University Scientific Research Program.
+
+📜 License
+This project is licensed under the MIT License. See the LICENSE file for more details.
+
+📬 Contact
+For any questions, feedback, or collaboration inquiries, please contact:
+
+Email: your.email@example.com
+
+GitHub: https://github.com/your-username
+
+LinkedIn: Your LinkedIn Profile URL
+
+Thank you for exploring the Web3 Logistics DApp!
