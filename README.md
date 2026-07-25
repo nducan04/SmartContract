@@ -1,4 +1,4 @@
-# 📦 Web3 Logistics DApp - Decentralized Supply Chain Management
+# Web3 Logistics DApp - Decentralized Supply Chain Management
 
 ## Introduction
 
@@ -8,7 +8,7 @@ Developed as an **Outstanding University Scientific Research Project (Đề tài
 
 ---
 
-## 🔥 Features
+## Features
 
 * **Smart Contract Escrow:** Locks transportation funds securely on the blockchain. Funds are automatically released upon successful delivery or deducted if penalties apply.
 * **Immutable Proof of Delivery:** Uses **IPFS** to store sensitive delivery evidence (documents, images). Documents are tamper-proof via unique Content Identifiers (CIDs).
@@ -18,7 +18,7 @@ Developed as an **Outstanding University Scientific Research Project (Đề tài
 
 ---
 
-## 💻 Technologies Used
+## Technologies Used
 
 * **Blockchain & Smart Contracts:** Solidity, Hardhat, Ethers.js, Sepolia Testnet
 * **Frontend:** React.js, Vite, Tailwind CSS (or your UI library)
@@ -28,7 +28,7 @@ Developed as an **Outstanding University Scientific Research Project (Đề tài
 
 ---
 
-## 📂 Folder Structure
+## Folder Structure
 
 ```text
 Web3-Logistics-DApp
@@ -50,7 +50,7 @@ Web3-Logistics-DApp
 
 ---
 
-## ⚙️ Installation and Setup
+## Installation and Setup
 
 ### Prerequisites
 
@@ -79,29 +79,6 @@ You need to install dependencies for all three main directories:
 cd client && npm install
 cd server && npm install
 cd blockchain && npm install
-
-```
-
-**3. Configure Environment Variables:**
-You must create `.env` files in both the `client` and `server` directories.
-
-* **For `client/`:** Create a `.env` file based on `.env.example`:
-
-```env
-VITE_PINATA_JWT=your_pinata_jwt_here
-VITE_ADMIN_WALLETS=your_metamask_wallet_address_here
-
-```
-
-* **For `server/`:** Create a `.env` file based on `.env.example`:
-
-```env
-MONGO_URI=your_mongodb_connection_string
-PORT=5000
-SEPOLIA_RPC_URL=your_alchemy_or_infura_url
-ADMIN_WALLETS=your_metamask_wallet_address_here
-SMTP_EMAIL=your_email@gmail.com
-SMTP_PASSWORD=your_google_app_password
 
 ```
 
