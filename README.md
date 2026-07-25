@@ -158,9 +158,8 @@ This project is licensed under the MIT License. See the LICENSE file for more de
 
 For any questions, feedback, or collaboration inquiries, please contact:
 
-* **Email:** your.email@example.com
-* **GitHub:** [https://github.com/your-username](https://github.com/your-username)
-* **LinkedIn:** [Your LinkedIn Profile URL](https://www.google.com/search?q=%23)
+* **Email:** nducan08@gmail.com
+* **GitHub:** https://github.com/nducan04/
 
 Thank you for exploring the Web3 Logistics DApp!
 
