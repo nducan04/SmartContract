@@ -6,6 +6,10 @@ Welcome to the **Web3 Logistics DApp**! This project is a comprehensive Web2.5 p
 
 Developed as an **Outstanding University Scientific Research Project (Đề tài NCKH)**, this application aims to provide a robust, secure, and practical solution for modern supply chain management.
 
+> **Demo:** [Please give me a Star ⭐️ on GitHub if you find this project useful!]
+> 
+> *(You can insert a Demo.mp4 or GIF here showcasing your DApp)*
+
 ---
 
 ## Features
@@ -50,7 +54,7 @@ Web3-Logistics-DApp
 
 ---
 
-## Installation and Setup
+## ⚙️ Installation and Setup
 
 ### Prerequisites
 
@@ -82,6 +86,29 @@ cd blockchain && npm install
 
 ```
 
+**3. Configure Environment Variables:**
+You must create `.env` files in both the `client` and `server` directories.
+
+* **For `client/`:** Create a `.env` file based on `.env.example`:
+
+```env
+VITE_PINATA_JWT=your_pinata_jwt_here
+VITE_ADMIN_WALLETS=your_metamask_wallet_address_here
+
+```
+
+* **For `server/`:** Create a `.env` file based on `.env.example`:
+
+```env
+MONGO_URI=your_mongodb_connection_string
+PORT=5000
+SEPOLIA_RPC_URL=your_alchemy_or_infura_url
+ADMIN_WALLETS=your_metamask_wallet_address_here
+SMTP_EMAIL=your_email@gmail.com
+SMTP_PASSWORD=your_google_app_password
+
+```
+
 **4. Run the Application:**
 To run the full Web2.5 system, start both the backend and frontend simultaneously.
 
@@ -105,7 +132,7 @@ The DApp will be available at `http://localhost:5173`.
 
 ---
 
-## 📖 Usage
+## Usage
 
 1. **Connect Wallet:** Click "Connect Wallet" on the homepage to link your MetaMask account.
 2. **Create Agreement (Client):** Fill in the delivery details, deadline, and penalty rules. The required ETH will be locked in the Smart Contract.
@@ -115,7 +142,7 @@ The DApp will be available at `http://localhost:5173`.
 
 ---
 
-## 👨‍💻 Author
+## Author
 
 **Nguyễn Đức An**
 
@@ -125,13 +152,13 @@ The DApp will be available at `http://localhost:5173`.
 
 ---
 
-## 📜 License
+## License
 
 This project is licensed under the MIT License. See the LICENSE file for more details.
 
 ---
 
-## 📬 Contact
+## Contact
 
 For any questions, feedback, or collaboration inquiries, please contact:
 
