@@ -4,6 +4,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import axios from "axios";
 import QRModal from "../components/QRModal";
 import Swal from "sweetalert2";
+import { useLanguage } from "../context/LanguageContext";
 
 import ContractListHeader from "../components/contractList/ContractListHeader";
 import ContractFilters from "../components/contractList/ContractFilters";
@@ -12,6 +13,7 @@ import { exportContractToExcel } from "../utils/exportExcel";
 
 const ContractListPage = () => {
   const { walletAddress } = useWeb3();
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -135,12 +137,10 @@ const ContractListPage = () => {
           <div className="bg-blue-50 border border-blue-200 text-blue-800 px-4 py-3 rounded-xl mb-6 shadow-sm flex items-start gap-3">
             <div>
               <p className="font-bold text-blue-900">
-                Bạn đang ở chế độ khách để trải nghiệm demo.
+                {t("listGuestWarning")}
               </p>
               <p className="text-sm mt-1">
-                Hệ thống đang hiển thị toàn bộ danh sách hợp đồng công khai trên
-                Blockchain. Để tạo và bảo mật quản lý hợp đồng của riêng bạn,
-                hãy <span className="font-bold">kết nối ví</span> của bạn.
+                {t("listGuestSub")}
               </p>
             </div>
           </div>
@@ -150,7 +150,7 @@ const ContractListPage = () => {
         <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 mb-6">
           <div className="flex items-center gap-2 mb-4">
             <h3 className="font-bold text-gray-800">
-              Bộ lọc & Trích xuất dữ liệu
+              {t("listFilterTitle")}
             </h3>
           </div>
 
@@ -164,24 +164,24 @@ const ContractListPage = () => {
 
             <div className="flex flex-wrap items-center gap-4 text-sm w-full lg:w-auto p-4 bg-gray-50 rounded-xl">
               <div className="flex items-center gap-2">
-                <span className="text-gray-500 font-medium">Trạng thái:</span>
+                <span className="text-gray-500 font-medium">{t("listFilterStatus")}</span>
                 <select
                   value={statusFilter}
                   onChange={(e) => setStatusFilter(e.target.value)}
                   className="border border-gray-200 rounded-lg px-3 py-2 text-gray-700 outline-none focus:border-blue-500 bg-white"
                 >
-                  <option value="all">-- Tất cả --</option>
-                  <option value="0">Mới tạo (Chờ nhận)</option>
-                  <option value="1">Đã chấp nhận</option>
-                  <option value="2">Đang thực hiện</option>
-                  <option value="3">Đã hoàn thành (Chờ TT)</option>
-                  <option value="4">Đã thanh toán (Xong)</option>
-                  <option value="5">Đã hủy</option>
+                  <option value="all">{t("listFilterAll")}</option>
+                  <option value="0">{t("listFilterStatus0")}</option>
+                  <option value="1">{t("listFilterStatus1")}</option>
+                  <option value="2">{t("listFilterStatus2")}</option>
+                  <option value="3">{t("listFilterStatus3")}</option>
+                  <option value="4">{t("listFilterStatus4")}</option>
+                  <option value="5">{t("listFilterStatus5")}</option>
                 </select>
               </div>
 
               <div className="flex items-center gap-2">
-                <span className="text-gray-500 font-medium">Từ:</span>
+                <span className="text-gray-500 font-medium">{t("listFilterFrom")}</span>
                 <input
                   type="date"
                   value={startDate}
@@ -190,7 +190,7 @@ const ContractListPage = () => {
                 />
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-gray-500 font-medium">Đến:</span>
+                <span className="text-gray-500 font-medium">{t("listFilterTo")}</span>
                 <input
                   type="date"
                   value={endDate}
@@ -208,7 +208,7 @@ const ContractListPage = () => {
                   }}
                   className="text-red-500 hover:bg-red-50 px-3 py-2 rounded-lg transition-colors font-bold"
                 >
-                  <i className="uil uil-times-circle"></i> Xóa lọc
+                  <i className="uil uil-times-circle"></i> {t("listFilterClear")}
                 </button>
               )}
             </div>
@@ -225,9 +225,9 @@ const ContractListPage = () => {
 
         {!loading && (
           <p className="text-xs text-gray-400 mt-4 ml-2 font-medium">
-            <i className="uil uil-info-circle"></i> Đang hiển thị{" "}
+            <i className="uil uil-info-circle"></i> {t("listShowing")}{" "}
             {filteredContracts.length} / {pagination.total || contracts.length}{" "}
-            hợp đồng theo tiêu chí.
+            {t("listContractsByCriteria")}
           </p>
         )}
 
@@ -235,7 +235,7 @@ const ContractListPage = () => {
         {pagination.totalPages > 1 && (
           <div className="mt-6 flex items-center justify-between">
             <span className="text-sm text-gray-500 font-medium">
-              Trang {pagination.page} / {pagination.totalPages}
+              {t("listPage")} {pagination.page} / {pagination.totalPages}
             </span>
             <div className="flex gap-2">
               <button
@@ -245,7 +245,7 @@ const ContractListPage = () => {
                 }
                 className="px-4 py-2 text-sm font-medium border border-gray-200 bg-white rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
               >
-                Trước
+                {t("listPrev")}
               </button>
               <button
                 disabled={pagination.page >= pagination.totalPages}
@@ -254,7 +254,7 @@ const ContractListPage = () => {
                 }
                 className="cursor-pointer px-4 py-2 text-sm font-medium border border-gray-200 bg-white rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
               >
-                Tiếp
+                {t("listNext")}
               </button>
             </div>
           </div>

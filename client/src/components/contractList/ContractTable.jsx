@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { ethers } from "ethers";
 import AddressDisplay from "../AddressDisplay";
+import { useLanguage } from "../../context/LanguageContext";
 
 const parseTerms = (termsString) => {
   if (!termsString) return null;
@@ -22,6 +23,7 @@ const ContractRow = ({
   getRoleBadge,
   getStatusBadge,
 }) => {
+  const { t } = useLanguage();
   const [terms, setTerms] = useState(c.terms || "");
   const [isSyncing, setIsSyncing] = useState(false);
 
@@ -93,7 +95,7 @@ const ContractRow = ({
             onClick={() => onViewDetails(c.contractAddress)}
             className="px-4 py-2 bg-blue-50 text-blue-600 font-bold text-sm hover:bg-blue-600 hover:text-white rounded-lg transition-colors cursor-pointer whitespace-nowrap"
           >
-            Chi tiết
+            {t("btnView")}
           </button>
         </div>
       </td>
@@ -108,6 +110,7 @@ const ContractTable = ({
   onShowQR,
   onViewDetails,
 }) => {
+  const { t } = useLanguage();
   if (loading)
     return <div className="text-center p-10">Đang tải dữ liệu...</div>;
 
@@ -115,7 +118,7 @@ const ContractTable = ({
     return (
       <div className="text-center py-16 bg-white rounded-2xl shadow-sm border border-gray-200">
         <i className="uil uil-folder-open text-4xl text-gray-300"></i>
-        <p className="text-gray-500 mt-2">Không có hợp đồng nào.</p>
+        <p className="text-gray-500 mt-2">{t("emptyTable")}</p>
       </div>
     );
   }
@@ -145,12 +148,12 @@ const ContractTable = ({
 
   const getStatusBadge = (status) => {
     const map = [
-      { text: "Mới tạo", color: "bg-gray-100 text-gray-600" },
-      { text: "Đã chấp nhận", color: "bg-purple-100 text-purple-700" },
-      { text: "Đang thực hiện", color: "bg-yellow-100 text-yellow-700" },
-      { text: "Đã hoàn thành", color: "bg-green-100 text-green-700" },
-      { text: "Đã thanh toán", color: "bg-blue-100 text-blue-700" },
-      { text: "Đã hủy", color: "bg-red-100 text-red-700" },
+      { text: t("listFilterStatus0"), color: "bg-gray-100 text-gray-600" },
+      { text: t("listFilterStatus1"), color: "bg-purple-100 text-purple-700" },
+      { text: t("listFilterStatus2"), color: "bg-yellow-100 text-yellow-700" },
+      { text: t("listFilterStatus3"), color: "bg-green-100 text-green-700" },
+      { text: t("listFilterStatus4"), color: "bg-blue-100 text-blue-700" },
+      { text: t("listFilterStatus5"), color: "bg-red-100 text-red-700" },
     ];
     const s = map[status] || map[0];
     return (
@@ -172,12 +175,12 @@ const ContractTable = ({
         <table className="w-full text-left border-collapse table-fixed min-w-[1000px]">
           <thead className="bg-gray-50 border-b border-gray-200 text-xs font-bold text-gray-500 uppercase tracking-wider">
             <tr>
-              <th className="px-4 py-4 w-[18%]">Mã Hợp Đồng (ID)</th>
-              <th className="px-4 py-4 w-[34%]">Tên Hàng Hóa / Dịch vụ</th>
-              <th className="px-4 py-4 w-[10%]">Vai Trò</th>
-              <th className="px-4 py-4 w-[12%]">Giá Trị</th>
-              <th className="px-4 py-4 w-[14%]">Trạng Thái</th>
-              <th className="px-4 py-4 w-[12%] text-center">Hành động</th>
+              <th className="px-4 py-4 w-[18%]">{t("tabAddress")}</th>
+              <th className="px-4 py-4 w-[34%]">{t("createArt1")}</th>
+              <th className="px-4 py-4 w-[10%]">{t("tabRole")}</th>
+              <th className="px-4 py-4 w-[12%]">{t("tabValue")}</th>
+              <th className="px-4 py-4 w-[14%]">{t("tabStatus")}</th>
+              <th className="px-4 py-4 w-[12%] text-center">{t("tabAction")}</th>
             </tr>
           </thead>
           <tbody>

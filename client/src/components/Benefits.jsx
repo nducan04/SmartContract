@@ -1,38 +1,37 @@
 import React from "react";
 import { assets } from "../assets/assets";
-
-const benefitData = [
-  {
-    icon: assets.transparency,
-    title: "Minh bạch tuyệt đối",
-    description:
-      "Mọi trạng thái, lịch sử của hợp đồng đều được ghi lại vĩnh viễn trên Blockchain, không thể thay đổi hay xóa bỏ.",
-  },
-  {
-    icon: assets.automaticMoney,
-    title: "Tự động thanh toán (Escrow)",
-    description:
-      "Tiền ký quỹ được khóa an toàn. Hợp đồng sẽ tự động thanh toán cho Nhà cung cấp ngay khi Người nhận xác nhận, không cần bên thứ ba.",
-  },
-  {
-    icon: assets.security,
-    title: "Bảo mật & Bất biến",
-    description:
-      "Sử dụng mã hóa và cơ chế đồng thuận phi tập trung, đảm bảo không ai có thể can thiệp hay làm giả thông tin hợp đồng.",
-  },
-];
+import { useLanguage } from "../context/LanguageContext";
 
 const Benefits = () => {
+  const { t } = useLanguage();
+
+  const benefitData = [
+    {
+      icon: assets.transparency,
+      title: t("benefit1Title"),
+      description: t("benefit1Desc"),
+    },
+    {
+      icon: assets.automaticMoney,
+      title: t("benefit2Title"),
+      description: t("benefit2Desc"),
+    },
+    {
+      icon: assets.security,
+      title: t("benefit3Title"),
+      description: t("benefit3Desc"),
+    },
+  ];
+
   return (
     <section id="benefits" className="bg-gray-50 py-20 lg:py-24">
       <div className="container mx-auto px-6 lg:px-24">
         <div className="text-center mb-16">
           <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
-            Tại Sao Nên Chọn Hệ thống Của Chúng Tôi?
+            {t("benefitsTitle")}
           </h2>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Khám phá những lợi ích vượt trội mà công nghệ hợp đồng thông minh
-            mang lại cho quy trình quản lý của bạn.
+            {t("benefitsSubtitle")}
           </p>
         </div>
 

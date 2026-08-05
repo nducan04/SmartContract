@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { assets, menuLinks } from "../assets/assets";
 import { useWeb3 } from "../context/Web3Context";
+import { useLanguage } from "../context/LanguageContext";
 import Blockies from "./Blockies";
 import AddressDisplay from "./AddressDisplay";
 import ConnectWalletModal from "./ConnectWalletModal";
@@ -11,6 +12,7 @@ import axios from "axios";
 const Navbar = () => {
   const { walletAddress, walletBalance, connectWallet, disconnectWallet } =
     useWeb3();
+  const { language, toggleLanguage, t } = useLanguage();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
@@ -104,16 +106,21 @@ const Navbar = () => {
           </button>
 
           {/* Links */}
-          {menuLinks.map((link, index) => (
-            <Link
-              key={index}
-              to={link.path}
-              onClick={() => setMobileMenuOpen(false)}
-              className="text-gray-600 font-medium hover:text-blue-600 transition-colors text-lg md:text-base"
-            >
-              {link.name}
-            </Link>
-          ))}
+          {menuLinks.map((link, index) => {
+            let label = link.name;
+            if (link.path === "/") label = t("navHome");
+            else if (link.path === "/tracking") label = t("navTracking");
+            return (
+              <Link
+                key={index}
+                to={link.path}
+                onClick={() => setMobileMenuOpen(false)}
+                className="text-gray-600 font-medium hover:text-blue-600 transition-colors text-lg md:text-base"
+              >
+                {label}
+              </Link>
+            );
+          })}
 
           {/* Search Bar */}
           <form
@@ -125,7 +132,7 @@ const Navbar = () => {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="py-1.5 w-full bg-transparent outline-none placeholder-gray-500 text-base lg:text-sm"
-              placeholder="Tìm kiếm theo ID..."
+              placeholder={t("navSearchPlaceholder")}
             />
             <button type="submit" className="shrink-0 p-1">
               <img
@@ -141,12 +148,22 @@ const Navbar = () => {
             onClick={() => handleNavigate("/dashboard")}
             className="text-gray-600 font-medium hover:text-blue-600 transition-colors cursor-pointer text-left text-lg md:text-base"
           >
-            Dashboard
+            {t("navDashboard")}
           </button>
         </div>
 
-        {/* 3. KHU VỰC VÍ / TÀI KHOẢN */}
-        <div className="flex items-center space-x-4">
+        {/* 3. KHU VỰC VÍ / TÀI KHOẢN & NGÔN NGỮ */}
+        <div className="flex items-center space-x-3 sm:space-x-4">
+          {/* Nút Đổi Ngôn Ngữ */}
+          <button
+            onClick={toggleLanguage}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-gray-200 bg-gray-50 hover:bg-gray-100 hover:border-gray-300 text-sm font-semibold text-gray-700 transition-all cursor-pointer shadow-xs active:scale-95"
+            title={language === "vi" ? "Switch to English" : "Chuyển sang Tiếng Việt"}
+          >
+            <span className="text-base leading-none">{language === "vi" ? "🇻🇳" : "🇬🇧"}</span>
+            <span className="tracking-wide">{language === "vi" ? "VI" : "EN"}</span>
+          </button>
+
           {walletAddress ? (
             // ĐÃ KẾT NỐI: HIỂN THỊ AVATAR BLOCKIES
             <div className="relative" ref={dropdownRef}>
@@ -179,7 +196,7 @@ const Navbar = () => {
                     </div>
                     <div>
                       <p className="text-sm font-bold text-gray-900">
-                        Tài khoản của tôi
+                        {t("navWalletTitle")}
                       </p>
                       <div className="flex items-center gap-1.5 mt-0.5">
                         <span className="relative flex h-2 w-2">
@@ -187,7 +204,7 @@ const Navbar = () => {
                           <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
                         </span>
                         <span className="text-xs text-green-600 font-medium">
-                          Đang kết nối
+                          Connected
                         </span>
                       </div>
                     </div>
@@ -197,7 +214,7 @@ const Navbar = () => {
                   <div className="px-5 py-4 space-y-3">
                     <div>
                       <p className="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1">
-                        Địa chỉ ví
+                        Wallet Address
                       </p>
                       <div className="flex justify-start">
                         <AddressDisplay address={walletAddress} />
@@ -206,7 +223,7 @@ const Navbar = () => {
 
                     <div>
                       <p className="text-xs text-gray-400 font-bold uppercase tracking-wider">
-                        Số dư hiện tại
+                        Balance
                       </p>
                       <p className="text-xl font-bold text-blue-600 mt-1">
                         {walletBalance} ETH
@@ -233,7 +250,7 @@ const Navbar = () => {
                         ></i>
                         {linkedEmail
                           ? "Đã liên kết email"
-                          : "Nhận email thông báo"}
+                          : t("navEmailSettings")}
                       </div>
                       {linkedEmail && (
                         <span className="text-xs font-normal text-green-600 truncate w-full text-center">
@@ -254,7 +271,7 @@ const Navbar = () => {
                       rounded-lg text-sm font-bold transition-colors cursor-pointer"
                     >
                       <i className="uil uil-sign-out-alt text-lg"></i>
-                      Ngắt kết nối ví
+                      {t("navDisconnect")}
                     </button>
                   </div>
                 </div>
@@ -264,15 +281,15 @@ const Navbar = () => {
             // === CHƯA KẾT NỐI ===
             <button
               onClick={() => setIsWalletModalOpen(true)}
-              className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-full font-medium shadow-lg shadow-blue-200 transition-all transform hover:-translate-y-0.5"
+              className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-full font-medium shadow-lg shadow-blue-200 transition-all transform hover:-translate-y-0.5 cursor-pointer"
             >
               <img
                 src={assets.walletIcon}
                 alt="wallet"
                 className="w-5 h-5 brightness-0 invert"
               />
-              <span className="hidden sm:inline cursor-pointer">
-                Kết nối Ví
+              <span className="hidden sm:inline">
+                {t("navConnectWallet")}
               </span>
             </button>
           )}

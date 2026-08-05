@@ -3,6 +3,7 @@ import { useWeb3 } from "../context/Web3Context";
 import { useNavigate } from "react-router-dom";
 import { ethers } from "ethers";
 import axios from "axios";
+import { useLanguage } from "../context/LanguageContext";
 
 const CreateContractPage = () => {
   const [receiver, setReceiver] = useState("");
@@ -42,6 +43,7 @@ const CreateContractPage = () => {
   const [status, setStatus] = useState("");
 
   const { factoryContract, signer, walletAddress, walletBalance } = useWeb3();
+  const { t } = useLanguage();
   const navigate = useNavigate();
 
   const uploadToIPFS = async () => {
@@ -176,19 +178,19 @@ const CreateContractPage = () => {
   return (
     <div className="p-4 max-w-7xl mx-auto">
       <h1 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2">
-        Khởi tạo hợp đồng kỹ thuật số
+        {t("createTitle")}
       </h1>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* THÔNG TIN BLOCKCHAIN (Người nhận, Tiền, Hạn chót) */}
         <div className="bg-white p-6 rounded-2xl shadow-sm border border-blue-100">
           <h2 className="text-lg font-bold text-black-800 mb-4 border-b border-blue-50 pb-2">
-            1. Thông số Smart Contract
+            {t("createSec1")}
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="lg:col-span-2">
               <label className="block text-xs font-bold text-gray-500 uppercase mb-1">
-                Ví Người nhận (Bên B) <span className="text-red-500">*</span>
+                {t("createReceiver")} <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
@@ -201,7 +203,7 @@ const CreateContractPage = () => {
             </div>
             <div>
               <label className="block text-xs font-bold text-gray-500 uppercase mb-1">
-                Ký quỹ (ETH) <span className="text-red-500">*</span>
+                {t("createDeposit")} <span className="text-red-500">*</span>
               </label>
               <input
                 type="number"
@@ -215,7 +217,7 @@ const CreateContractPage = () => {
             </div>
             <div>
               <label className="block text-xs font-bold text-gray-500 uppercase mb-1">
-                Phạt trễ (ETH) <span className="text-red-500">*</span>
+                {t("createPenalty")} <span className="text-red-500">*</span>
               </label>
               <input
                 type="number"
@@ -229,7 +231,7 @@ const CreateContractPage = () => {
             </div>
             <div className="lg:col-span-2">
               <label className="block text-xs font-bold text-gray-500 uppercase mb-1">
-                Hạn chót cam kết <span className="text-red-500">*</span>
+                {t("createDeadline")} <span className="text-red-500">*</span>
               </label>
               <input
                 type="datetime-local"
@@ -241,7 +243,7 @@ const CreateContractPage = () => {
             </div>
             <div className="lg:col-span-2">
               <label className="block text-xs font-bold text-gray-500 uppercase mb-1">
-                File Hợp đồng gốc (PDF có dấu) <span className="text-red-500">*</span>
+                {t("createOriginalFile")} <span className="text-red-500">*</span>
               </label>
               <input
                 type="file"
@@ -259,7 +261,7 @@ const CreateContractPage = () => {
           {/* BÊN A */}
           <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
             <h2 className="text-lg font-bold text-gray-800 mb-4 border-b pb-2">
-              2. Thông tin Bên Bán / Bên Gửi (Bên A)
+              {t("createSec2")}
             </h2>
             <div className="space-y-3">
               <input
@@ -267,7 +269,7 @@ const CreateContractPage = () => {
                 name="partyA_name"
                 value={contractDetails.partyA_name}
                 onChange={handleDetailChange}
-                placeholder="Tên Công ty / Cá nhân"
+                placeholder={t("createNamePlaceholder")}
                 className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:border-blue-500"
               />
               <input
@@ -275,7 +277,7 @@ const CreateContractPage = () => {
                 name="partyA_address"
                 value={contractDetails.partyA_address}
                 onChange={handleDetailChange}
-                placeholder="Địa chỉ trụ sở"
+                placeholder={t("createAddressPlaceholder")}
                 className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:border-blue-500"
               />
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -284,7 +286,7 @@ const CreateContractPage = () => {
                   name="partyA_mst"
                   value={contractDetails.partyA_mst}
                   onChange={handleDetailChange}
-                  placeholder="Mã số thuế"
+                  placeholder={t("createMstPlaceholder")}
                   className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:border-blue-500"
                 />
                 <input
@@ -292,7 +294,7 @@ const CreateContractPage = () => {
                   name="partyA_rep"
                   value={contractDetails.partyA_rep}
                   onChange={handleDetailChange}
-                  placeholder="Người đại diện"
+                  placeholder={t("createRepPlaceholder")}
                   className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:border-blue-500"
                 />
               </div>
@@ -302,7 +304,7 @@ const CreateContractPage = () => {
           {/* BÊN B */}
           <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
             <h2 className="text-lg font-bold text-gray-800 mb-4 border-b pb-2">
-              3. Thông tin Bên Mua / Bên Nhận (Bên B)
+              {t("createSec3")}
             </h2>
             <div className="space-y-3">
               <input
@@ -310,7 +312,7 @@ const CreateContractPage = () => {
                 name="partyB_name"
                 value={contractDetails.partyB_name}
                 onChange={handleDetailChange}
-                placeholder="Tên Công ty / Cá nhân"
+                placeholder={t("createNamePlaceholder")}
                 className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:border-blue-500"
               />
               <input
@@ -318,7 +320,7 @@ const CreateContractPage = () => {
                 name="partyB_address"
                 value={contractDetails.partyB_address}
                 onChange={handleDetailChange}
-                placeholder="Địa chỉ trụ sở"
+                placeholder={t("createAddressPlaceholder")}
                 className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:border-blue-500"
               />
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -327,7 +329,7 @@ const CreateContractPage = () => {
                   name="partyB_mst"
                   value={contractDetails.partyB_mst}
                   onChange={handleDetailChange}
-                  placeholder="Mã số thuế"
+                  placeholder={t("createMstPlaceholder")}
                   className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:border-blue-500"
                 />
                 <input
@@ -335,7 +337,7 @@ const CreateContractPage = () => {
                   name="partyB_rep"
                   value={contractDetails.partyB_rep}
                   onChange={handleDetailChange}
-                  placeholder="Người đại diện"
+                  placeholder={t("createRepPlaceholder")}
                   className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:border-blue-500"
                 />
               </div>
@@ -346,12 +348,12 @@ const CreateContractPage = () => {
         {/* CÁC ĐIỀU KHOẢN */}
         <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
           <h2 className="text-lg font-bold text-gray-800 mb-4 border-b pb-2">
-            4. Các điều khoản thỏa thuận
+            {t("createSec4")}
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-bold text-gray-600 mb-1">
-                Điều 1: Tên hàng, số lượng, chất lượng
+                {t("createArt1")}
               </label>
               <textarea
                 name="art1_items"
@@ -359,12 +361,11 @@ const CreateContractPage = () => {
                 value={contractDetails.art1_items}
                 onChange={handleDetailChange}
                 className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:border-blue-500"
-                placeholder="VD: 100 tấn thép cuộn..."
               />
             </div>
             <div>
               <label className="block text-xs font-bold text-gray-600 mb-1">
-                Điều 2: Quy cách đóng gói
+                {t("createArt2")}
               </label>
               <textarea
                 name="art2_packaging"
@@ -372,12 +373,11 @@ const CreateContractPage = () => {
                 value={contractDetails.art2_packaging}
                 onChange={handleDetailChange}
                 className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:border-blue-500"
-                placeholder="VD: Đóng container 20 feet..."
               />
             </div>
             <div>
               <label className="block text-xs font-bold text-gray-600 mb-1">
-                Điều 3: Giá cả hàng hóa
+                {t("createArt3")}
               </label>
               <textarea
                 name="art3_price"
@@ -385,12 +385,11 @@ const CreateContractPage = () => {
                 value={contractDetails.art3_price}
                 onChange={handleDetailChange}
                 className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:border-blue-500"
-                placeholder="VD: 50.000.000 VND / tấn..."
               />
             </div>
             <div>
               <label className="block text-xs font-bold text-gray-600 mb-1">
-                Điều 4: Thời gian & Địa điểm giao hàng
+                {t("createArt4")}
               </label>
               <textarea
                 name="art4_delivery"
@@ -398,12 +397,11 @@ const CreateContractPage = () => {
                 value={contractDetails.art4_delivery}
                 onChange={handleDetailChange}
                 className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:border-blue-500"
-                placeholder="Giao tại kho B, thời gian hoàn thành..."
               />
             </div>
             <div>
               <label className="block text-xs font-bold text-gray-600 mb-1">
-                Điều 5: Phương thức thanh toán
+                {t("createArt5")}
               </label>
               <textarea
                 name="art5_payment"
@@ -411,12 +409,11 @@ const CreateContractPage = () => {
                 value={contractDetails.art5_payment}
                 onChange={handleDetailChange}
                 className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:border-blue-500"
-                placeholder="VD: Chuyển khoản, thanh toán thành 2 đợt..."
               />
             </div>
             <div>
               <label className="block text-xs font-bold text-gray-600 mb-1">
-                Điều 6.1: Trách nhiệm Bên A
+                {t("createArt6_1")}
               </label>
               <textarea
                 name="art6_respA"
@@ -424,12 +421,11 @@ const CreateContractPage = () => {
                 value={contractDetails.art6_respA}
                 onChange={handleDetailChange}
                 className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:border-blue-500"
-                placeholder="Giao hàng đúng hạn..."
               />
             </div>
             <div>
               <label className="block text-xs font-bold text-gray-600 mb-1">
-                Điều 6.2: Trách nhiệm Bên B
+                {t("createArt6_2")}
               </label>
               <textarea
                 name="art6_respB"
@@ -437,12 +433,11 @@ const CreateContractPage = () => {
                 value={contractDetails.art6_respB}
                 onChange={handleDetailChange}
                 className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:border-blue-500"
-                placeholder="Thanh toán đúng cam kết..."
               />
             </div>
             <div className="md:col-span-2 bg-blue-50/30 p-4 rounded-xl border border-blue-100">
               <label className="block text-xs font-bold text-blue-700 uppercase mb-2 flex items-center gap-1">
-                Điều 7: Điều khoản chung
+                {t("createArt7")}
               </label>
               <textarea
                 name="art7_general"
@@ -475,7 +470,7 @@ const CreateContractPage = () => {
             disabled={loading}
             className={`w-full py-4 rounded-xl text-white font-bold text-lg shadow-lg transition-all ${loading ? "bg-gray-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700 hover:shadow-blue-200"}`}
           >
-            {loading ? "Đang xử lý giao dịch..." : "Ký & Khởi tạo hợp đồng"}
+            {loading ? t("createProcessing") : t("createSubmitBtn")}
           </button>
         </div>
       </form>

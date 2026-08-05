@@ -2,10 +2,12 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { assets } from "../assets/assets";
 import TutorialModal from "./TutorialModal";
+import { useLanguage } from "../context/LanguageContext";
 
 const Hero = () => {
   const navigate = useNavigate();
   const [showTutorial, setShowTutorial] = useState(false);
+  const { t } = useLanguage();
 
   return (
     <section className="relative bg-white overflow-hidden pt-10 pb-20 lg:pt-20 lg:pb-32">
@@ -19,20 +21,18 @@ const Hero = () => {
           <div className="lg:w-1/2 text-center lg:text-left z-10">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-50 border border-blue-100 text-blue-600 text-xs font-bold uppercase tracking-wider mb-6 animate-fade-in-up">
               <span className="w-2 h-2 rounded-full bg-blue-600 animate-pulse"></span>
-              Công nghệ Blockchain 4.0
+              {t("heroBadge")}
             </div>
 
             <h1 className="text-5xl lg:text-6xl font-extrabold text-gray-900 leading-[1.1] mb-6 tracking-tight">
-              Quản Lý Hợp Đồng <br />
+              {t("heroTitleLine1")} <br />
               <span className="text-gray-900 bg-clip-text bg-linear-to-r">
-                Minh Bạch & Tự Động
+                {t("heroTitleLine2")}
               </span>
             </h1>
 
             <p className="text-lg text-gray-600 mb-8 leading-relaxed max-w-xl mx-auto lg:mx-0">
-              Giải pháp tối ưu cho chuỗi cung ứng logistics. Loại bỏ trung gian,
-              giảm thiểu rủi ro và tự động hóa thanh toán với Smart Contract an
-              toàn tuyệt đối.
+              {t("heroDesc")}
             </p>
 
             <div className="flex flex-col sm:flex-row justify-center lg:justify-start gap-4">
@@ -41,14 +41,14 @@ const Hero = () => {
                 className="px-8 py-4 bg-blue-600 text-white font-bold rounded-xl shadow-lg shadow-blue-200 hover:bg-blue-700 hover:scale-105 
                 transition-all flex items-center justify-center gap-2 cursor-pointer"
               >
-                <i className="uil uil-rocket"></i> Bắt đầu ngay
+                <i className="uil uil-rocket"></i> {t("heroBtnStart")}
               </button>
               <button
                 onClick={() => setShowTutorial(true)}
                 className="px-8 py-4 bg-blue-600 text-white font-bold rounded-xl shadow-lg shadow-sky-100 hover:bg-sky-600 hover:scale-105 
                 transition-all flex items-center justify-center gap-2 cursor-pointer"
               >
-                <i className="uil uil-play-circle text-lg"></i> Xem hướng dẫn
+                <i className="uil uil-play-circle text-lg"></i> {t("heroBtnGuide")}
               </button>
             </div>
 
@@ -56,13 +56,13 @@ const Hero = () => {
             <div className="mt-10 flex items-center justify-center lg:justify-start gap-8 pt-8 border-t border-gray-100">
               <div>
                 <p className="text-3xl font-bold text-gray-900">100%</p>
-                <p className="text-sm text-gray-500 font-medium">Bảo mật</p>
+                <p className="text-sm text-gray-500 font-medium">{t("heroStatSecurity")}</p>
               </div>
               <div className="w-px h-10 bg-gray-200"></div>
               <div>
                 <p className="text-3xl font-bold text-gray-900">0s</p>
                 <p className="text-sm text-gray-500 font-medium">
-                  Độ trễ thanh toán
+                  {t("heroStatLatency")}
                 </p>
               </div>
             </div>

@@ -2,10 +2,12 @@ import React from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 import { assets, ownerMenuLinks } from "./../assets/assets";
 import { useWeb3 } from "../context/Web3Context";
+import { useLanguage } from "../context/LanguageContext";
 
 const Sidebar = ({ isMobileOpen, closeMobileMenu }) => {
   const location = useLocation();
   const { walletAddress } = useWeb3();
+  const { language, toggleLanguage, t } = useLanguage();
 
   // 1. Kiểm tra Admin y hệt Navbar cũ
   const ADMIN_WALLETS = import.meta.env.VITE_ADMIN_WALLETS
@@ -15,6 +17,21 @@ const Sidebar = ({ isMobileOpen, closeMobileMenu }) => {
     : [];
   const isAdmin =
     walletAddress && ADMIN_WALLETS.includes(walletAddress.toLowerCase());
+
+  const getMenuLabel = (path) => {
+    switch (path) {
+      case "/dashboard":
+        return t("sideOverview");
+      case "/dashboard/contracts":
+        return t("sideContracts");
+      case "/dashboard/marketplace":
+        return t("sideMarketplace");
+      case "/dashboard/create":
+        return t("sideCreate");
+      default:
+        return "";
+    }
+  };
 
   return (
     <>
@@ -42,12 +59,22 @@ const Sidebar = ({ isMobileOpen, closeMobileMenu }) => {
           <Link to="/" className="flex items-center gap-2">
             <img src={assets.blockchainLogo} alt="Logo" className="h-8 md:h-10 shrink-0" />
           </Link>
-          <button
-            onClick={closeMobileMenu}
-            className="md:hidden p-2 text-gray-400 hover:text-red-500 rounded-full hover:bg-red-50 transition-colors shrink-0"
-          >
-            <i className="uil uil-multiply text-2xl"></i>
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={toggleLanguage}
+              className="flex items-center gap-1 px-2.5 py-1 rounded-full border border-gray-200 bg-gray-50 hover:bg-gray-100 text-xs font-semibold text-gray-700 transition-all cursor-pointer shadow-xs active:scale-95"
+              title={language === "vi" ? "Switch to English" : "Chuyển sang Tiếng Việt"}
+            >
+              <span>{language === "vi" ? "🇻🇳" : "🇬🇧"}</span>
+              <span>{language === "vi" ? "VI" : "EN"}</span>
+            </button>
+            <button
+              onClick={closeMobileMenu}
+              className="md:hidden p-2 text-gray-400 hover:text-red-500 rounded-full hover:bg-red-50 transition-colors shrink-0"
+            >
+              <i className="uil uil-multiply text-2xl"></i>
+            </button>
+          </div>
         </div>
 
         {/* MENU AREA */}
@@ -82,7 +109,7 @@ const Sidebar = ({ isMobileOpen, closeMobileMenu }) => {
                 />
               </div>
               <span className="whitespace-nowrap text-sm tracking-wide">
-                {link.name}
+                {getMenuLabel(link.path) || link.name}
               </span>
               {location.pathname === link.path && (
                 <div className="ml-auto w-2 h-2 bg-blue-600 rounded-full shadow-lg shadow-blue-300"></div>
@@ -115,7 +142,7 @@ const Sidebar = ({ isMobileOpen, closeMobileMenu }) => {
                 <i className="uil uil-shield-check text-2xl"></i>
               </div>
               <span className="whitespace-nowrap text-sm tracking-wide">
-                Quản trị hệ thống
+                {t("sideAdmin")}
               </span>
               {location.pathname === "/dashboard/admin" && (
                 <div className="ml-auto w-2 h-2 bg-red-600 rounded-full shadow-lg shadow-red-300"></div>
@@ -131,10 +158,10 @@ const Sidebar = ({ isMobileOpen, closeMobileMenu }) => {
               <i className="uil uil-user"></i>
             </div>
             <div className="overflow-hidden">
-              <p className="text-xs font-bold text-gray-700">Tài khoản</p>
+              <p className="text-xs font-bold text-gray-700">{t("sideAccount")}</p>
               <p className="text-10px text-green-600 flex items-center gap-1">
                 <span className="w-1.5 h-1.5 bg-green-500 rounded-full"></span>{" "}
-                Online
+                {t("sideOnline")}
               </p>
             </div>
           </div>

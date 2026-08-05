@@ -7,14 +7,17 @@ import {
   Tooltip,
   Legend,
 } from "recharts";
+import { useLanguage } from "../context/LanguageContext";
 
 const ContractStatusChart = ({ contracts }) => {
+  const { t } = useLanguage();
+
   // 1. Xử lý dữ liệu
   const data = [
-    { name: "Mới tạo", value: 0, color: "#A78BFA" },
-    { name: "Đang xử lý", value: 0, color: "#FBBF24" },
-    { name: "Hoàn thành", value: 0, color: "#8B5CF6" },
-    { name: "Đã hủy", value: 0, color: "#F87171" },
+    { name: t("chartNew"), value: 0, color: "#A78BFA" },
+    { name: t("chartProcessing"), value: 0, color: "#FBBF24" },
+    { name: t("chartCompleted"), value: 0, color: "#8B5CF6" },
+    { name: t("chartCancelled"), value: 0, color: "#F87171" },
   ];
 
   contracts.forEach((c) => {
@@ -62,7 +65,7 @@ const ContractStatusChart = ({ contracts }) => {
     return (
       <div className="h-full flex flex-col items-center justify-center text-gray-400 bg-white rounded-3xl p-6 border border-gray-100 shadow-sm min-h-[300px]">
         <i className="uil uil-chart-pie text-4xl mb-2 opacity-50"></i>
-        <p className="text-sm">Chưa có dữ liệu biểu đồ</p>
+        <p className="text-sm">{t("chartNoData")}</p>
       </div>
     );
   }
@@ -70,7 +73,7 @@ const ContractStatusChart = ({ contracts }) => {
   return (
     <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 h-full flex flex-col min-h-[350px]">
       <h3 className="text-lg font-bold text-gray-800 mb-4">
-        Phân bổ trạng thái
+        {t("chartTitle")}
       </h3>
 
       <div className="flex-1 w-full relative">
@@ -96,7 +99,7 @@ const ContractStatusChart = ({ contracts }) => {
             {/* Center Label (Tổng số) */}
             <text x="50%" y="50%" textAnchor="middle" dominantBaseline="middle">
               <tspan x="50%" dy="-20" fontSize="14" fill="#9CA3AF">
-                Tổng số
+                {t("chartTotal")}
               </tspan>
               <tspan
                 x="50%"
@@ -110,7 +113,7 @@ const ContractStatusChart = ({ contracts }) => {
             </text>
 
             <Tooltip
-              formatter={(value) => [`${value} đơn`, "Số lượng"]}
+              formatter={(value) => [`${value} ${t("chartCount")}`, "Count"]}
               contentStyle={{
                 borderRadius: "12px",
                 border: "none",

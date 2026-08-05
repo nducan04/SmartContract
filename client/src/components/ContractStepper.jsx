@@ -1,12 +1,14 @@
 import React from "react";
+import { useLanguage } from "../context/LanguageContext";
 
 const ContractStepper = ({ currentStatus }) => {
+  const { t } = useLanguage();
   const steps = [
-    { label: "Mới tạo", statusId: 0 },
-    { label: "Chấp nhận", statusId: 1 },
-    { label: "Đang giao", statusId: 2 },
-    { label: "Hoàn thành", statusId: 3 },
-    { label: "Thanh toán", statusId: 4 },
+    { label: t("statusCreated"), statusId: 0 },
+    { label: t("statusAccepted"), statusId: 1 },
+    { label: t("statusShipping"), statusId: 2 },
+    { label: t("statusCompleted"), statusId: 3 },
+    { label: t("statusPaid"), statusId: 4 },
   ];
 
   // Xử lý nếu hủy
@@ -14,7 +16,7 @@ const ContractStepper = ({ currentStatus }) => {
     return (
       <div className="w-full bg-red-50 border border-red-200 text-red-700 py-3 px-4 rounded-lg flex items-center justify-center font-bold text-sm">
         <i className="uil uil-times-circle text-lg mr-2"></i>
-        Hợp đồng đã bị Hủy
+        {t("statusCancelled")}
       </div>
     );
   }

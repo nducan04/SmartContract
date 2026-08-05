@@ -1,33 +1,36 @@
 import React from "react";
-
-const steps = [
-  {
-    step: "01",
-    title: "Tạo Hợp Đồng",
-    desc: "Client nhập thông tin, tải điều khoản lên IPFS và ký quỹ tiền ETH.",
-    icon: "uil-file-plus-alt",
-  },
-  {
-    step: "02",
-    title: "Nhà Vận Chuyển Nhận",
-    desc: "Provider xem xét đơn hàng trên sàn và xác nhận thực hiện.",
-    icon: "uil-truck",
-  },
-  {
-    step: "03",
-    title: "Thực Hiện & Cập Nhật",
-    desc: "Cập nhật trạng thái vận chuyển theo thời gian thực lên Blockchain.",
-    icon: "uil-sync",
-  },
-  {
-    step: "04",
-    title: "Xác Nhận & Trả Tiền",
-    desc: "Người nhận xác nhận. Hợp đồng tự động mở khóa tiền chuyển cho Provider.",
-    icon: "uil-bill",
-  },
-];
+import { useLanguage } from "../context/LanguageContext";
 
 const HowItWorks = () => {
+  const { t } = useLanguage();
+
+  const steps = [
+    {
+      step: "01",
+      title: t("step1Title"),
+      desc: t("step1Desc"),
+      icon: "uil-file-plus-alt",
+    },
+    {
+      step: "02",
+      title: t("step2Title"),
+      desc: t("step2Desc"),
+      icon: "uil-truck",
+    },
+    {
+      step: "03",
+      title: t("step3Title"),
+      desc: t("step3Desc"),
+      icon: "uil-sync",
+    },
+    {
+      step: "04",
+      title: t("step4Title"),
+      desc: t("step4Desc"),
+      icon: "uil-bill",
+    },
+  ];
+
   return (
     <section
       id="how-it-works"
@@ -36,10 +39,10 @@ const HowItWorks = () => {
       <div className="container mx-auto px-6 lg:px-24 relative z-10">
         <div className="text-center mb-16">
           <h2 className="text-3xl lg:text-4xl font-bold text-gray-900">
-            Quy Trình Hoạt Động
+            {t("howTitle")}
           </h2>
           <p className="text-gray-500 mt-4">
-            Đơn giản hóa quy trình phức tạp chỉ trong 4 bước.
+            {t("howSubtitle")}
           </p>
         </div>
 

@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from "react";
+import { useLanguage } from "../context/LanguageContext";
 
 const TutorialModal = ({ isOpen, onClose }) => {
   const [currentStep, setCurrentStep] = useState(0);
+  const { t } = useLanguage();
 
   // Auto-show modal once if never seen before
   useEffect(() => {
@@ -16,41 +18,36 @@ const TutorialModal = ({ isOpen, onClose }) => {
 
   const steps = [
     {
-      title: "1. Ví điện tử là gì?",
-      content:
-        "Ví điện tử là một tài khoản online, ứng dụng trên thiết bị di động hoặc website, cho phép người dùng lưu trữ, quản lý tiền và thực hiện các giao dịch tài chính như thanh toán hóa đơn, mua sắm trực tuyến, chuyển tiền nhanh chóng mà không cần tiền mặt. Thay vì dùng tên đăng nhập và mật khẩu, bạn dùng ví để kết nối và xác thực danh tính nhanh chóng, an toàn.",
+      title: t("tutStep1Title"),
+      content: t("tutStep1Content"),
       icon: "uil-wallet",
       color: "text-orange-500",
       bg: "bg-orange-50",
     },
     {
-      title: "2. Cài đặt & bảo mật",
-      content:
-        "Bạn có thể tải MetaMask dưới dạng tiện ích mở rộng (Extension) trên Chrome/Edge. Lưu ý: không chia sẻ 12 từ khóa khôi phục (Seed code) cho bất kỳ ai.",
+      title: t("tutStep2Title"),
+      content: t("tutStep2Content"),
       icon: "uil-shield-check",
       color: "text-green-500",
       bg: "bg-green-50",
     },
     {
-      title: "3. Phí gas là gì?",
-      content:
-        'Mọi thao tác trên blockchain như ký hợp đồng,... đều cần một lượng phí nhỏ gọi là "Gas". Bạn cần có sẵn một ít ETH trong ví để trả phí này. Nếu đang dùng thử Testnet, bạn có thể nhận ETH miễn phí từ các trang web cung cấp một lượng nhỏ ETH.',
+      title: t("tutStep3Title"),
+      content: t("tutStep3Content"),
       icon: "uil-fire",
       color: "text-red-500",
       bg: "bg-red-50",
     },
     {
-      title: "4. Quy trình ký hợp đồng",
-      content:
-        "Bước 1: bên A tạo hợp đồng và nhập địa chỉ ví Bên B.\nBước 2: bên B vào web, kiểm tra nội dung và ký xác nhận (thanh toán tiền cọc nếu có).\nBước 3: mọi dữ liệu được lưu vĩnh viễn và minh bạch trên Blockchain.",
+      title: t("tutStep4Title"),
+      content: t("tutStep4Content"),
       icon: "uil-file-contract-dollar",
       color: "text-blue-500",
       bg: "bg-blue-50",
     },
     {
-      title: "Cùng Bắt Đầu Nhé!",
-      content:
-        'Sau khi đã nắm được các khái niệm cơ bản, hãy nhấn "Kết nối ví" ở góc phải màn hình để trải nghiệm hệ thống quản lý hợp đồng thông minh ngay.',
+      title: t("tutStep5Title"),
+      content: t("tutStep5Content"),
       icon: "uil-rocket",
       color: "text-purple-500",
       bg: "bg-purple-50",
@@ -124,13 +121,13 @@ const TutorialModal = ({ isOpen, onClose }) => {
                     : "bg-gray-100 text-gray-600 hover:bg-gray-200 cursor-pointer"
                 }`}
             >
-              Quay lại
+              {t("tutPrev")}
             </button>
             <button
               onClick={handleNext}
               className="flex-1 py-3 px-4 rounded-xl font-bold bg-blue-600 text-white hover:bg-blue-700 hover:shadow-lg transition-all cursor-pointer"
             >
-              {currentStep === steps.length - 1 ? "Hoàn tất" : "Tiếp theo"}
+              {currentStep === steps.length - 1 ? t("tutFinish") : t("tutNext")}
             </button>
           </div>
         </div>

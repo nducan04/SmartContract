@@ -7,6 +7,7 @@ import axios from "axios";
 import Swal from "sweetalert2";
 import { agreementABI } from "../constants";
 import CheckpointMap from "../components/CheckpointMap";
+import { useLanguage } from "../context/LanguageContext";
 
 const CHECKPOINT_PRESETS = [
   { name: "Cảng Hải Phòng", lat: 20.8651, lng: 106.6838 },
@@ -21,6 +22,7 @@ const CHECKPOINT_PRESETS = [
 const ContractDetailsPage = () => {
   const { id } = useParams();
   const { walletAddress, getAgreementContract } = useWeb3();
+  const { t } = useLanguage();
 
   const [details, setDetails] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -37,12 +39,12 @@ const ContractDetailsPage = () => {
   const [isSearching, setIsSearching] = useState(false);
 
   const stateLabels = [
-    "Mới tạo",
-    "Đã chấp nhận",
-    "Đang thực hiện",
-    "Đã hoàn thành",
-    "Đã thanh toán",
-    "Đã hủy",
+    t("listFilterStatus0"),
+    t("listFilterStatus1"),
+    t("listFilterStatus2"),
+    t("listFilterStatus3"),
+    t("listFilterStatus4"),
+    t("listFilterStatus5"),
   ];
   const stateColors = [
     "bg-blue-100 text-blue-800",
@@ -658,7 +660,7 @@ const ContractDetailsPage = () => {
           className="bg-blue-500 text-white px-5 py-2.5 rounded-xl text-sm font-bold flex 
           items-center gap-2 hover:bg-gray-600 transition-all shadow-lg transform active:scale-95 cursor-pointer"
         >
-          <i className="uil uil-print text-lg"></i> In Báo Cáo / Lưu PDF
+          <i className="uil uil-print text-lg"></i> {t("detailPrint")}
         </button>
       </div>
 
@@ -672,16 +674,16 @@ const ContractDetailsPage = () => {
           {parsedTerms ? (
             <>
               <h2 className="text-lg font-bold uppercase">
-                Cộng hòa xã hội chủ nghĩa Việt Nam
+                {t("detailRepublic")}
               </h2>
               <p className="font-bold underline text-md mt-1">
-                Độc lập - Tự do - Hạnh phúc
+                {t("detailMotto")}
               </p>
               <h1 className="text-2xl md:text-3xl font-bold mt-8 mb-2 uppercase">
-                Hợp đồng Giao nhận & Vận chuyển
+                {t("detailContractTitle")}
               </h1>
               <p className="italic text-sm text-gray-500">
-                Mã số (Smart Contract ID): {id}
+                {t("detailId")} {id}
               </p>
             </>
           ) : (
@@ -689,7 +691,7 @@ const ContractDetailsPage = () => {
               <h2 className="text-2xl font-bold uppercase tracking-wide">
                 Chứng Nhận Hợp Đồng Blockchain
               </h2>
-              <p className="text-sm text-gray-500 mt-2">Mã hợp đồng: {id}</p>
+              <p className="text-sm text-gray-500 mt-2">{t("detailId")} {id}</p>
             </div>
           )}
         </div>
@@ -697,37 +699,37 @@ const ContractDetailsPage = () => {
         {parsedTerms ? (
           <div className="space-y-6 text-sm md:text-base">
             <p className="italic">
-              Hôm nay, ngày {formatDate(details.createdAt || Date.now() / 1000)}
-              , chúng tôi gồm có:
+              {t("detailToday")} {formatDate(details.createdAt || Date.now() / 1000)}
+              {t("detailWeInclude")}
             </p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-6">
               <div>
                 <h3 className="font-bold text-lg uppercase mb-3 border-b border-gray-300 pb-1 text-blue-800">
-                  Bên Giao / Bên Bán (Bên A)
+                  {t("detailPartyA")}
                 </h3>
                 <ul className="space-y-2">
                   <li>
-                    <strong>Tên cá nhân/Tổ chức:</strong>{" "}
+                    <strong>{t("detailName")}</strong>{" "}
                     {parsedTerms.partyA_name ||
                       "..................................................."}
                   </li>
                   <li>
-                    <strong>Địa chỉ:</strong>{" "}
+                    <strong>{t("detailAddress")}</strong>{" "}
                     {parsedTerms.partyA_address ||
                       "..................................................."}
                   </li>
                   <li>
-                    <strong>Mã số thuế:</strong>{" "}
+                    <strong>{t("detailTax")}</strong>{" "}
                     {parsedTerms.partyA_mst ||
                       "..................................................."}
                   </li>
                   <li>
-                    <strong>Người đại diện:</strong>{" "}
+                    <strong>{t("detailRep")}</strong>{" "}
                     {parsedTerms.partyA_rep ||
                       "..................................................."}
                   </li>
                   <li className="break-all mt-2 pt-2 border-t border-dashed">
-                    <strong>Ví Blockchain xác thực:</strong>
+                    <strong>{t("detailWallet")}</strong>
                     <br />
                     <span className="font-mono text-xs text-gray-500">
                       {details.client}
@@ -737,31 +739,31 @@ const ContractDetailsPage = () => {
               </div>
               <div>
                 <h3 className="font-bold text-lg uppercase mb-3 border-b border-gray-300 pb-1 text-blue-800">
-                  Bên Nhận / Bên Mua (Bên B)
+                  {t("detailPartyB")}
                 </h3>
                 <ul className="space-y-2">
                   <li>
-                    <strong>Tên cá nhân/Tổ chức:</strong>{" "}
+                    <strong>{t("detailName")}</strong>{" "}
                     {parsedTerms.partyB_name ||
                       "..................................................."}
                   </li>
                   <li>
-                    <strong>Địa chỉ:</strong>{" "}
+                    <strong>{t("detailAddress")}</strong>{" "}
                     {parsedTerms.partyB_address ||
                       "..................................................."}
                   </li>
                   <li>
-                    <strong>Mã số thuế:</strong>{" "}
+                    <strong>{t("detailTax")}</strong>{" "}
                     {parsedTerms.partyB_mst ||
                       "..................................................."}
                   </li>
                   <li>
-                    <strong>Người đại diện:</strong>{" "}
+                    <strong>{t("detailRep")}</strong>{" "}
                     {parsedTerms.partyB_rep ||
                       "..................................................."}
                   </li>
                   <li className="break-all mt-2 pt-2 border-t border-dashed">
-                    <strong>Ví Blockchain xác thực:</strong>
+                    <strong>{t("detailWallet")}</strong>
                     <br />
                     <span className="font-mono text-xs text-gray-500">
                       {details.receiver}
@@ -772,8 +774,7 @@ const ContractDetailsPage = () => {
             </div>
 
             <p className="font-bold mt-6 mb-4">
-              Sau khi bàn bạc, hai bên thống nhất ký kết hợp đồng với những điều
-              khoản sau:
+              {t("detailAgreement")}
             </p>
             <div className="space-y-5 text-justify leading-relaxed">
               <div>

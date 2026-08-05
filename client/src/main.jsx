@@ -4,15 +4,17 @@ import { BrowserRouter } from "react-router-dom";
 import App from "./App.jsx";
 import "./index.css";
 
-// 1. Import Web3Provider bạn vừa tạo
 import { Web3Provider } from "./context/Web3Context";
+import { LanguageProvider } from "./context/LanguageContext";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <BrowserRouter>
-      <Web3Provider>
-        <App />
-      </Web3Provider>
+      <LanguageProvider>
+        <Web3Provider>
+          <App />
+        </Web3Provider>
+      </LanguageProvider>
     </BrowserRouter>
   </React.StrictMode>
 );

@@ -1,16 +1,18 @@
 import React from "react";
 import { assets, menuLinks } from "../assets/assets";
 import { Link } from "react-router-dom";
+import { useLanguage } from "../context/LanguageContext";
 
 const Footer = () => {
+  const { t } = useLanguage();
+
   return (
     <div className="px-6 md:px-16 lg:px-24 xl:px-32 mt-60 text-sm text-gray-500 bg-gray-50 pt-16">
       <div className="flex flex-wrap justify-between items-start gap-8 pb-6 border-borderColor border-b">
         <div>
           <img src={assets.blockchainLogo} alt="logo" className="h-8 md:h-9" />
           <p className="max-w-80 mt-3">
-            Nền tảng quản lý hợp đồng phi tập trung, đảm bảo minh bạch, tự động
-            và bảo mật bằng công nghệ Blockchain.
+            {t("footerDesc")}
           </p>
           <div className="flex items-center gap-3 mt-6">
             <a href="#">
@@ -38,19 +40,24 @@ const Footer = () => {
 
         <div>
           <h2 className="text-base font-medium text-gray-800 uppercase">
-            LIÊN KẾT NHANH
+            {t("footerQuickLinks")}
           </h2>
           <ul className="mt-3 flex flex-col gap-1.5">
-            {menuLinks.map((link, index) => (
-              <li key={index}>
-                <Link to={link.path} className="hover:text-blue-600">
-                  {link.name}
-                </Link>
-              </li>
-            ))}
+            {menuLinks.map((link, index) => {
+              let label = link.name;
+              if (link.path === "/") label = t("navHome");
+              else if (link.path === "/tracking") label = t("navTracking");
+              return (
+                <li key={index}>
+                  <Link to={link.path} className="hover:text-blue-600">
+                    {label}
+                  </Link>
+                </li>
+              );
+            })}
             <li>
               <Link to="/" className="hover:text-blue-600">
-                Về Chúng Tôi
+                {t("footerAboutUs")}
               </Link>
             </li>
           </ul>
@@ -58,27 +65,27 @@ const Footer = () => {
 
         <div>
           <h2 className="text-base font-medium text-gray-800 uppercase">
-            HỖ TRỢ
+            {t("footerSupport")}
           </h2>
           <ul className="mt-3 flex flex-col gap-1.5">
             <li>
-              <a href="#">Câu Hỏi Thường Gặp - FAQ</a>
+              <a href="#">{t("footerFaq")}</a>
             </li>
             <li>
-              <a href="#">Điều Khoản Dịch Vụ</a>
+              <a href="#">{t("footerTerms")}</a>
             </li>
             <li>
-              <a href="#">Chính Sách Bảo Mật </a>
+              <a href="#">{t("footerPrivacy")}</a>
             </li>
             <li>
-              <a href="#">Chính Sách Bảo Hiểm</a>
+              <a href="#">{t("footerInsurance")}</a>
             </li>
           </ul>
         </div>
 
         <div>
           <h2 className="text-base font-medium text-gray-800 uppercase">
-            LIÊN HỆ
+            {t("footerContact")}
           </h2>
           <ul className="mt-3 flex flex-col gap-1.5">
             <li>
@@ -104,15 +111,15 @@ const Footer = () => {
         </p>
         <ul className="flex items-center gap-4">
           <li>
-            <a href="#">Chính Sách</a>
+            <a href="#">{t("footerPolicy")}</a>
           </li>
           <li>|</li>
           <li>
-            <a href="#">Điều Khoản</a>
+            <a href="#">{t("footerTerms")}</a>
           </li>
           <li>|</li>
           <li>
-            <a href="#">Cookies</a>
+            <a href="#">{t("footerCookies")}</a>
           </li>
         </ul>
       </div>

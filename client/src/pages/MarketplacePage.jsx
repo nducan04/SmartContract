@@ -4,6 +4,7 @@ import axios from "axios";
 import { useWeb3 } from "../context/Web3Context";
 import AddressDisplay from "../components/AddressDisplay";
 import { ethers } from "ethers";
+import { useLanguage } from "../context/LanguageContext";
 
 // HÀM GIẢI MÃ JSON
 const parseTerms = (termsString) => {
@@ -20,6 +21,7 @@ const parseTerms = (termsString) => {
 
 // COMPONENT DÒNG THÔNG MINH
 const ContractRow = ({ contract, walletAddress, navigate }) => {
+  const { t } = useLanguage();
   const [terms, setTerms] = useState(contract.terms || "");
   const [isSyncing, setIsSyncing] = useState(false);
 
@@ -74,7 +76,7 @@ const ContractRow = ({ contract, walletAddress, navigate }) => {
         </p>
         <div className="flex items-center gap-2 mt-2">
           <span className="text-[10px] bg-green-100 text-green-700 px-2 py-0.5 rounded font-bold border border-green-200">
-            MỚI
+            {t("marketNew")}
           </span>
           <AddressDisplay address={contract.contractAddress} />
         </div>
@@ -125,11 +127,11 @@ const ContractRow = ({ contract, walletAddress, navigate }) => {
       <td className="px-4 py-5 align-top text-center">
         {isClient ? (
           <span className="text-xs font-bold text-gray-400 bg-gray-100 px-3 py-1.5 rounded-lg cursor-not-allowed">
-            Hợp đồng của bạn
+            {t("marketYourContract")}
           </span>
         ) : isReceiver ? (
           <span className="text-xs font-bold text-purple-600 bg-purple-50 px-3 py-1.5 rounded-lg border border-purple-100">
-            Bạn là người nhận
+            {t("marketYouAreReceiver")}
           </span>
         ) : (
           <button
@@ -138,7 +140,7 @@ const ContractRow = ({ contract, walletAddress, navigate }) => {
             }
             className="bg-blue-600 text-white px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-blue-700 hover:shadow-lg transition-all cursor-pointer whitespace-nowrap"
           >
-            Nhận việc ngay
+            {t("marketTakeJob")}
           </button>
         )}
       </td>
@@ -148,6 +150,7 @@ const ContractRow = ({ contract, walletAddress, navigate }) => {
 
 const MarketplacePage = () => {
   const { walletAddress } = useWeb3();
+  const { t } = useLanguage();
   const [contracts, setContracts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("newest");
@@ -201,13 +204,13 @@ const MarketplacePage = () => {
             onClick={() => setFilter("newest")}
             className={`flex-1 md:flex-none px-4 py-2 text-sm font-medium rounded-lg transition-all cursor-pointer ${filter === "newest" ? "bg-white text-blue-600 shadow-sm" : "text-gray-500 hover:text-gray-800"}`}
           >
-            Mới nhất
+            {t("marketFilterNewest")}
           </button>
           <button
             onClick={() => setFilter("high-price")}
             className={`flex-1 md:flex-none px-4 py-2 text-sm font-medium rounded-lg transition-all cursor-pointer ${filter === "high-price" ? "bg-white text-blue-600 shadow-sm" : "text-gray-500 hover:text-gray-800"}`}
           >
-            Giá cao nhất
+            {t("marketFilterHighPrice")}
           </button>
         </div>
       </div>
@@ -220,7 +223,7 @@ const MarketplacePage = () => {
         ) : contracts.length === 0 ? (
           <div className="text-center py-16 text-gray-400">
             <i className="uil uil-box text-4xl mb-2"></i>
-            <p>Hiện tại chưa có đơn hàng nào.</p>
+            <p>{t("marketEmpty")}</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -228,11 +231,11 @@ const MarketplacePage = () => {
             <table className="w-full text-left border-collapse table-fixed min-w-[1000px]">
               <thead>
                 <tr className="bg-gray-50 border-b border-gray-200 text-xs uppercase text-gray-500 font-bold tracking-wider">
-                  <th className="px-4 py-4 w-[32%]">Nội dung đơn hàng</th>
-                  <th className="px-4 py-4 w-[24%]">Bên Giao (Bên A)</th>
-                  <th className="px-4 py-4 w-[24%]">Bên Nhận (Bên B)</th>
-                  <th className="px-4 py-4 w-[10%]">Ký quỹ</th>
-                  <th className="px-4 py-4 w-[10%] text-center">Hành động</th>
+                  <th className="px-4 py-4 w-[32%]">{t("marketOrderContent")}</th>
+                  <th className="px-4 py-4 w-[24%]">{t("marketPartyA")}</th>
+                  <th className="px-4 py-4 w-[24%]">{t("marketPartyB")}</th>
+                  <th className="px-4 py-4 w-[10%]">{t("marketDeposit")}</th>
+                  <th className="px-4 py-4 w-[10%] text-center">{t("marketAction")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -253,7 +256,7 @@ const MarketplacePage = () => {
         {pagination.totalPages > 1 && (
           <div className="p-4 border-t border-gray-100 flex items-center justify-between bg-gray-50/50">
             <span className="text-sm text-gray-500 font-medium">
-              Trang {pagination.page} / {pagination.totalPages}
+              {t("listPage")} {pagination.page} / {pagination.totalPages}
             </span>
             <div className="flex gap-2">
               <button
@@ -263,7 +266,7 @@ const MarketplacePage = () => {
                 }
                 className="px-4 py-2 text-sm font-medium border border-gray-200 bg-white rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
-                Trước
+                {t("listPrev")}
               </button>
               <button
                 disabled={pagination.page >= pagination.totalPages}
@@ -272,7 +275,7 @@ const MarketplacePage = () => {
                 }
                 className="cursor-pointer px-4 py-2 text-sm font-medium border border-gray-200 bg-white rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
-                Tiếp
+                {t("listNext")}
               </button>
             </div>
           </div>
