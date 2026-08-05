@@ -152,7 +152,42 @@ const Sidebar = ({ isMobileOpen, closeMobileMenu }) => {
         </nav>
 
         {/* FOOTER AREA */}
-        <div className="p-4 border-t border-gray-50 mt-auto shrink-0">
+        <div className="p-4 border-t border-gray-50 mt-auto shrink-0 space-y-3">
+          {/* Nút Đổi Ngôn Ngữ - Segmented Toggle Switch */}
+          <div
+            onClick={toggleLanguage}
+            className="flex items-center justify-between bg-gray-100 p-1.5 rounded-xl border border-gray-200/80 cursor-pointer select-none transition-all hover:border-blue-300 shadow-xs"
+            title={language === "vi" ? "Switch to English" : "Chuyển sang Tiếng Việt"}
+          >
+            <div className="flex items-center gap-1.5 pl-1 text-gray-600 text-xs font-semibold">
+              <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8}
+                  d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+              </svg>
+              <span>Ngôn ngữ / Lang</span>
+            </div>
+            <div className="flex items-center text-xs font-bold bg-gray-200/60 p-0.5 rounded-lg">
+              <span
+                className={`px-2 py-0.5 rounded-md transition-all duration-200 ${
+                  language === "vi"
+                    ? "bg-white text-blue-600 shadow-xs"
+                    : "text-gray-400 hover:text-gray-600"
+                }`}
+              >
+                VIE
+              </span>
+              <span
+                className={`px-2 py-0.5 rounded-md transition-all duration-200 ${
+                  language === "en"
+                    ? "bg-white text-blue-600 shadow-xs"
+                    : "text-gray-400 hover:text-gray-600"
+                }`}
+              >
+                ENG
+              </span>
+            </div>
+          </div>
+
           <div className="bg-gray-50 rounded-xl p-3 flex items-center gap-3">
             <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
               <i className="uil uil-user"></i>

@@ -6,6 +6,7 @@ import startListener from "./services/eventListener.js";
 import { startCronJobs } from "./services/cronService.js";
 import contractRoutes from "./routes/contractRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
+import chatRoutes from "./routes/chatRoutes.js";
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -21,6 +22,7 @@ app.get("/", (req, res) =>
 );
 app.use("/api/contracts", contractRoutes);
 app.use("/api/users/settings", userRoutes);
+app.use("/api/chat", chatRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server đang chạy tại port ${PORT}`);

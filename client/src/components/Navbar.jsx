@@ -154,15 +154,39 @@ const Navbar = () => {
 
         {/* 3. KHU VỰC VÍ / TÀI KHOẢN & NGÔN NGỮ */}
         <div className="flex items-center space-x-3 sm:space-x-4">
-          {/* Nút Đổi Ngôn Ngữ */}
-          <button
+          {/* Nút Đổi Ngôn Ngữ - Segmented Toggle Switch */}
+          <div
             onClick={toggleLanguage}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-gray-200 bg-gray-50 hover:bg-gray-100 hover:border-gray-300 text-sm font-semibold text-gray-700 transition-all cursor-pointer shadow-xs active:scale-95"
+            className="flex items-center gap-1 bg-gray-100 p-1 rounded-full border border-gray-200/80 cursor-pointer select-none transition-all hover:border-blue-300 shadow-xs active:scale-95"
             title={language === "vi" ? "Switch to English" : "Chuyển sang Tiếng Việt"}
           >
-            <span className="text-base leading-none">{language === "vi" ? "🇻🇳" : "🇬🇧"}</span>
-            <span className="tracking-wide">{language === "vi" ? "VI" : "EN"}</span>
-          </button>
+            <div className="pl-1.5 text-gray-500 flex items-center">
+              <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8}
+                  d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+              </svg>
+            </div>
+            <div className="flex items-center text-xs font-bold">
+              <span
+                className={`px-2.5 py-1 rounded-full transition-all duration-200 ${
+                  language === "vi"
+                    ? "bg-white text-blue-600 shadow-sm"
+                    : "text-gray-400 hover:text-gray-600"
+                }`}
+              >
+                VIE
+              </span>
+              <span
+                className={`px-2.5 py-1 rounded-full transition-all duration-200 ${
+                  language === "en"
+                    ? "bg-white text-blue-600 shadow-sm"
+                    : "text-gray-400 hover:text-gray-600"
+                }`}
+              >
+                ENG
+              </span>
+            </div>
+          </div>
 
           {walletAddress ? (
             // ĐÃ KẾT NỐI: HIỂN THỊ AVATAR BLOCKIES

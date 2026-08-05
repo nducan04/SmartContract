@@ -244,6 +244,17 @@ export const translations = {
     marketYouAreReceiver: "Bạn là người nhận",
     marketTakeJob: "Nhận việc ngay",
     marketNew: "MỚI",
+    // Chatbot AI
+    chatTitle: "Trợ lý AI",
+    chatSubtitle: "Hỏi tôi bất cứ điều gì về hệ thống",
+    chatPlaceholder: "Nhập câu hỏi của bạn...",
+    chatSend: "Gửi",
+    chatThinking: "Đang suy nghĩ...",
+    chatError: "Đã xảy ra lỗi. Vui lòng thử lại.",
+    chatWelcome: "Xin chào! 👋 Tôi là trợ lý AI của hệ thống Smart Contract. Tôi có thể giúp bạn tra cứu hợp đồng, hướng dẫn sử dụng và giải đáp mọi thắc mắc.",
+    chatSuggest1: "Smart Contract là gì?",
+    chatSuggest2: "Làm sao để tạo hợp đồng?",
+    chatSuggest3: "Kiểm tra hợp đồng của tôi",
   },
   en: {
     // Navbar
@@ -486,6 +497,17 @@ export const translations = {
     marketYouAreReceiver: "You are the receiver",
     marketTakeJob: "Take Job Now",
     marketNew: "NEW",
+    // Chatbot AI
+    chatTitle: "AI Assistant",
+    chatSubtitle: "Ask me anything about the system",
+    chatPlaceholder: "Type your question...",
+    chatSend: "Send",
+    chatThinking: "Thinking...",
+    chatError: "An error occurred. Please try again.",
+    chatWelcome: "Hello! 👋 I'm the AI assistant for the Smart Contract system. I can help you look up contracts, guide you through the platform, and answer your questions.",
+    chatSuggest1: "What is a Smart Contract?",
+    chatSuggest2: "How to create a contract?",
+    chatSuggest3: "Check my contracts",
   },
 };
 

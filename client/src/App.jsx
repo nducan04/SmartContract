@@ -13,6 +13,7 @@ import TrackingPage from "./pages/TrackingPage";
 import NotFound from "./pages/NotFound";
 import MarketplacePage from "./pages/MarketplacePage";
 import AdminPage from "./pages/AdminPage";
+import AIChatWidget from "./components/AIChatWidget";
 
 const App = () => {
   const location = useLocation();
@@ -49,6 +50,9 @@ const App = () => {
       </main>
 
       {!isDashboard && !isTrackingDetail && <Footer />}
+
+      {/* AI Chatbot Widget - hiển thị trên mọi trang */}
+      <AIChatWidget />
     </div>
   );
 };
