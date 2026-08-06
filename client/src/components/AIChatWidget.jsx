@@ -65,9 +65,13 @@ const AIChatWidget = () => {
       ]);
     } catch (error) {
       console.error("Chat error:", error);
+      const serverErrorMessage = error.response?.data?.error;
       setMessages((prev) => [
         ...prev,
-        { role: "assistant", content: t("chatError") },
+        {
+          role: "assistant",
+          content: serverErrorMessage || t("chatError"),
+        },
       ]);
     } finally {
       setIsLoading(false);
