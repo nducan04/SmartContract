@@ -164,10 +164,10 @@ const DashboardOverview = () => {
       ) : (
         <>
           {/* PHẦN 1: BENTO STATS CARDS */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3.5 sm:gap-4 items-stretch">
             <div
               onClick={() => navigate("/dashboard/contracts?role=client")}
-              className="cursor-pointer transition-transform active:scale-95"
+              className="h-full flex flex-col cursor-pointer transition-transform active:scale-95"
             >
               <StatsCard
                 title={t("statCreated")}
@@ -179,7 +179,7 @@ const DashboardOverview = () => {
 
             <div
               onClick={() => navigate("/dashboard/contracts?role=receiver")}
-              className="cursor-pointer transition-transform active:scale-95"
+              className="h-full flex flex-col cursor-pointer transition-transform active:scale-95"
             >
               <StatsCard
                 title={t("statReceived")}
@@ -191,7 +191,7 @@ const DashboardOverview = () => {
 
             <div
               onClick={() => navigate("/dashboard/contracts?role=provider")}
-              className="cursor-pointer transition-transform active:scale-95"
+              className="h-full flex flex-col cursor-pointer transition-transform active:scale-95"
             >
               <StatsCard
                 title={t("statShipping")}
@@ -205,7 +205,7 @@ const DashboardOverview = () => {
               onClick={() =>
                 navigate("/dashboard/contracts?role=receiver&status=3")
               }
-              className="cursor-pointer transition-transform active:scale-95"
+              className="h-full flex flex-col cursor-pointer transition-transform active:scale-95"
             >
               <StatsCard
                 title={t("statWaiting")}
@@ -217,7 +217,7 @@ const DashboardOverview = () => {
 
             <div
               onClick={() => navigate("/dashboard/contracts?status=4")}
-              className="cursor-pointer transition-transform active:scale-95"
+              className="h-full flex flex-col cursor-pointer transition-transform active:scale-95"
             >
               <StatsCard
                 title={t("statCompleted")}
@@ -229,7 +229,7 @@ const DashboardOverview = () => {
 
             <div
               onClick={() => navigate("/dashboard/contracts")}
-              className="cursor-pointer transition-transform active:scale-95"
+              className="h-full flex flex-col cursor-pointer transition-transform active:scale-95"
             >
               <StatsCard
                 title={t("statTotal")}

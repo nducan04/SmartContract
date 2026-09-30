@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   /* ===== MODERN DESIGN TOKENS (2025-2026 Web3 / SaaS) ===== */
 

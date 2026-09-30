@@ -99,23 +99,23 @@ const Navbar = () => {
 
   return (
     <header className="sticky top-0 z-40 w-full backdrop-blur-xl bg-white/85 dark:bg-slate-900/85 border-b border-slate-200/80 dark:border-slate-800/80 transition-colors">
-      <div className="flex items-center justify-between px-4 sm:px-8 lg:px-16 xl:px-24 py-3.5 max-w-7xl mx-auto">
+      <div className="flex items-center justify-between px-4 sm:px-6 lg:px-8 py-3 max-w-7xl mx-auto gap-4">
         {/* 1. LOGO */}
-        <Link to="/" className="flex items-center gap-3 shrink-0 group">
-          <div className="relative">
+        <Link to="/" className="flex items-center gap-2.5 shrink-0 group">
+          <div className="relative flex items-center justify-center w-9 h-9 rounded-xl bg-blue-500/10 dark:bg-slate-800 border border-blue-500/20 shadow-xs group-hover:scale-105 transition-all">
             <img
-              src={assets.blockchainLogo}
+              src={assets.iconLogo}
               alt="Logo"
-              className="h-8 sm:h-9 object-contain group-hover:scale-105 transition-transform"
+              className="w-6 h-6 object-contain"
             />
           </div>
-          <span className="font-extrabold text-lg sm:text-xl tracking-tight hidden sm:inline-block gradient-text">
-            SmartContract
+          <span className="font-black text-lg tracking-tight hidden sm:inline-block text-slate-900 dark:text-white">
+            Smart<span className="text-blue-600 dark:text-blue-400">Contract</span>
           </span>
         </Link>
 
         {/* 2. DESKTOP NAVIGATION LINKS */}
-        <nav className="hidden md:flex items-center gap-1 lg:gap-2">
+        <nav className="hidden md:flex items-center gap-1 lg:gap-2 shrink-0">
           {menuLinks.map((link, index) => {
             let label = link.name;
             if (link.path === "/") label = t("navHome");
@@ -127,7 +127,7 @@ const Navbar = () => {
               <Link
                 key={index}
                 to={link.path}
-                className={`px-3.5 py-1.5 rounded-full text-sm font-semibold transition-all ${
+                className={`px-3.5 py-1.5 rounded-full text-sm font-semibold transition-all whitespace-nowrap shrink-0 ${
                   isActive
                     ? "bg-blue-50 text-blue-600 dark:bg-blue-950/50 dark:text-blue-400"
                     : "text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60"
@@ -140,7 +140,7 @@ const Navbar = () => {
 
           <Link
             to="/dashboard"
-            className={`px-3.5 py-1.5 rounded-full text-sm font-semibold transition-all flex items-center gap-1.5 ${
+            className={`px-3.5 py-1.5 rounded-full text-sm font-semibold transition-all whitespace-nowrap shrink-0 flex items-center gap-1.5 ${
               location.pathname.startsWith("/dashboard")
                 ? "bg-blue-50 text-blue-600 dark:bg-blue-950/50 dark:text-blue-400"
                 : "text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60"
@@ -154,7 +154,7 @@ const Navbar = () => {
         {/* 3. SEARCH BAR (DESKTOP) */}
         <form
           onSubmit={handleSearch}
-          className="hidden lg:flex items-center gap-2 bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/80 rounded-full px-3.5 py-1.5 text-xs w-48 xl:w-60 focus-within:w-72 focus-within:border-blue-500 focus-within:bg-white dark:focus-within:bg-slate-900 focus-within:ring-2 focus-within:ring-blue-500/20 transition-all duration-300"
+          className="hidden xl:flex items-center gap-2 bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/80 rounded-full px-3.5 py-1.5 text-xs w-44 focus-within:w-60 focus-within:border-blue-500 focus-within:bg-white dark:focus-within:bg-slate-900 focus-within:ring-2 focus-within:ring-blue-500/20 transition-all duration-300"
         >
           <Search className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 shrink-0" />
           <input

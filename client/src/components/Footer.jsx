@@ -13,14 +13,16 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 pb-12 border-b border-slate-200/80 dark:border-slate-800/80">
           {/* Logo & Info (Span 2 cols on lg) */}
           <div className="lg:col-span-2 space-y-4">
-            <Link to="/" className="flex items-center gap-3">
-              <img
-                src={assets.blockchainLogo}
-                alt="Logo"
-                className="h-9 object-contain"
-              />
-              <span className="font-extrabold text-xl tracking-tight gradient-text">
-                SmartContract
+            <Link to="/" className="flex items-center gap-2.5">
+              <div className="w-9 h-9 rounded-xl bg-blue-500/10 dark:bg-slate-800 border border-blue-500/20 shadow-xs flex items-center justify-center shrink-0">
+                <img
+                  src={assets.iconLogo}
+                  alt="Logo"
+                  className="w-6 h-6 object-contain"
+                />
+              </div>
+              <span className="font-black text-xl tracking-tight text-slate-900 dark:text-white">
+                Smart<span className="text-blue-600 dark:text-blue-400">Contract</span>
               </span>
             </Link>
 
