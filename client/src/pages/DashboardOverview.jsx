@@ -293,7 +293,7 @@ const DashboardOverview = () => {
                               {roleBadge.text}
                             </span>
                             {contract.createdAt && (
-                              <span className="text-[10px] text-gray-400 font-medium whitespace-nowrap">
+                              <span className="text-[10px] text-gray-400 dark:text-gray-500 font-medium whitespace-nowrap">
                                 •{" "}
                                 {new Date(
                                   contract.createdAt,
@@ -302,7 +302,7 @@ const DashboardOverview = () => {
                             )}
                           </div>
                           <h4
-                            className="font-bold text-gray-800 text-lg md:text-xl line-clamp-2 md:line-clamp-1 group-hover:text-blue-600 transition-colors"
+                            className="font-bold text-gray-800 dark:text-gray-200 text-lg md:text-xl line-clamp-2 md:line-clamp-1 group-hover:text-blue-600 transition-colors"
                             title={displayTitle}
                           >
                             {displayTitle}
@@ -331,7 +331,7 @@ const DashboardOverview = () => {
                           </div>
                         </div>
                         <div className="bg-blue-50 dark:bg-blue-950/20 px-4 py-2 mt-2 md:mt-0 rounded-xl border border-blue-100 dark:border-blue-900/20 text-center md:min-w-[100px] shrink-0 w-full md:w-auto flex flex-row md:flex-col items-center md:items-stretch justify-between md:justify-start">
-                          <span className="block text-[10px] font-bold text-blue-400 uppercase tracking-wider">
+                          <span className="block text-[10px] font-bold text-blue-400 dark:text-blue-300 uppercase tracking-wider">
                             {t("labelValue")}
                           </span>
                           <span className="text-blue-700 dark:text-blue-300 font-black text-lg md:text-lg">
