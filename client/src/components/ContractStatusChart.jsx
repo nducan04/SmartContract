@@ -5,30 +5,66 @@ import {
   Cell,
   ResponsiveContainer,
   Tooltip,
-  Legend,
 } from "recharts";
 import { useLanguage } from "../context/LanguageContext";
-import { PieChart as PieChartIcon } from "lucide-react";
+import { PieChart as PieChartIcon, PlusCircle, ArrowUpRight } from "lucide-react";
+import { Link } from "react-router-dom";
 
-const ContractStatusChart = ({ contracts = [] }) => {
+const ContractStatusChart = ({
+  contracts = [],
+  statusDistribution = null,
+  totalContracts = undefined,
+}) => {
   const { t } = useLanguage();
 
+  // Thống kê giá trị theo từng nhóm trạng thái
+  let valNew = 0;
+  let valProcessing = 0;
+  let valCompleted = 0;
+  let valCancelled = 0;
+
+  if (statusDistribution && typeof statusDistribution === "object") {
+    valNew = Number(statusDistribution[0]) || 0;
+    valProcessing =
+      (Number(statusDistribution[1]) || 0) + (Number(statusDistribution[2]) || 0);
+    valCompleted =
+      (Number(statusDistribution[3]) || 0) + (Number(statusDistribution[4]) || 0);
+    valCancelled = Number(statusDistribution[5]) || 0;
+  } else if (Array.isArray(contracts)) {
+    contracts.forEach((c) => {
+      if (c.status === 0) valNew++;
+      else if (c.status === 1 || c.status === 2) valProcessing++;
+      else if (c.status === 3 || c.status === 4) valCompleted++;
+      else if (c.status === 5) valCancelled++;
+    });
+  }
+
+  const calculatedTotal = valNew + valProcessing + valCompleted + valCancelled;
+  const total = totalContracts !== undefined ? Number(totalContracts) : calculatedTotal;
+
   const data = [
-    { name: t("chartNew") || "Mới tạo", value: 0, color: "#3B82F6" },
-    { name: t("chartProcessing") || "Đang xử lý", value: 0, color: "#F59E0B" },
-    { name: t("chartCompleted") || "Hoàn thành", value: 0, color: "#10B981" },
-    { name: t("chartCancelled") || "Đã hủy", value: 0, color: "#F43F5E" },
+    { name: t("chartNew") || "Mới tạo", value: valNew, color: "#3B82F6", key: "new" },
+    {
+      name: t("chartProcessing") || "Đang xử lý",
+      value: valProcessing,
+      color: "#F59E0B",
+      key: "proc",
+    },
+    {
+      name: t("chartCompleted") || "Hoàn thành",
+      value: valCompleted,
+      color: "#10B981",
+      key: "done",
+    },
+    {
+      name: t("chartCancelled") || "Đã hủy",
+      value: valCancelled,
+      color: "#F43F5E",
+      key: "cancel",
+    },
   ];
 
-  contracts.forEach((c) => {
-    if (c.status === 0) data[0].value++;
-    else if (c.status === 1 || c.status === 2) data[1].value++;
-    else if (c.status === 3 || c.status === 4) data[2].value++;
-    else if (c.status === 5) data[3].value++;
-  });
-
   const activeData = data.filter((item) => item.value > 0);
-  const totalContracts = contracts.length;
 
   const RADIAN = Math.PI / 180;
   const renderCustomizedLabel = ({
@@ -52,88 +88,141 @@ const ContractStatusChart = ({ contracts = [] }) => {
         fill="white"
         textAnchor="middle"
         dominantBaseline="central"
-        className="text-[11px] font-bold"
+        className="text-[11px] font-bold pointer-events-none select-none"
       >
         {`${(percent * 100).toFixed(0)}%`}
       </text>
     );
   };
 
-  if (contracts.length === 0) {
-    return (
-      <div className="h-full flex flex-col items-center justify-center text-slate-400 bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-sm min-h-[350px]">
-        <PieChartIcon className="w-10 h-10 mb-2 opacity-40 text-blue-500" />
-        <p className="text-xs font-semibold">{t("chartNoData") || "Chưa có dữ liệu thống kê"}</p>
-      </div>
-    );
-  }
-
   return (
-    <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl shadow-sm border border-slate-200/80 dark:border-slate-800 h-full flex flex-col min-h-[380px]">
-      <h3 className="text-base font-bold text-slate-900 dark:text-white mb-2 tracking-tight">
-        {t("chartTitle") || "Tỷ lệ trạng thái hợp đồng"}
-      </h3>
-      <p className="text-xs text-slate-400 dark:text-slate-500 mb-4">
-        Phân bố theo các giai đoạn thực hiện
-      </p>
-
-      <div className="flex-1 w-full relative min-h-[250px]">
-        <ResponsiveContainer width="100%" height="100%">
-          <PieChart>
-            <Pie
-              data={activeData}
-              cx="50%"
-              cy="50%"
-              innerRadius={70}
-              outerRadius={100}
-              paddingAngle={4}
-              dataKey="value"
-              cornerRadius={6}
-              labelLine={false}
-              label={renderCustomizedLabel}
-            >
-              {activeData.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={entry.color} stroke="none" />
-              ))}
-            </Pie>
-
-            <text x="50%" y="50%" textAnchor="middle" dominantBaseline="middle">
-              <tspan x="50%" dy="-16" fontSize="11" fill="#94A3B8" fontWeight="600">
-                {t("chartTotal") || "TỔNG SỐ"}
-              </tspan>
-              <tspan
-                x="50%"
-                dy="26"
-                fontSize="28"
-                fontWeight="800"
-                fill="currentColor"
-                className="text-slate-900 dark:text-white"
-              >
-                {totalContracts}
-              </tspan>
-            </text>
-
-            <Tooltip
-              formatter={(value) => [`${value} hợp đồng`, "Số lượng"]}
-              contentStyle={{
-                borderRadius: "16px",
-                border: "1px solid rgba(226, 232, 240, 0.8)",
-                boxShadow: "0 10px 25px rgba(0,0,0,0.1)",
-                backgroundColor: "rgba(255, 255, 255, 0.95)",
-                fontSize: "12px",
-                fontWeight: "600"
-              }}
-            />
-            <Legend
-              verticalAlign="bottom"
-              height={36}
-              iconType="circle"
-              iconSize={8}
-              wrapperStyle={{ fontSize: "12px", fontWeight: "500" }}
-            />
-          </PieChart>
-        </ResponsiveContainer>
+    <div className="bg-white dark:bg-slate-900 p-5 sm:p-6 rounded-3xl shadow-sm border border-slate-200/80 dark:border-slate-800 flex flex-col justify-between">
+      {/* Header */}
+      <div>
+        <div className="flex items-center justify-between mb-1">
+          <div className="flex items-center gap-2">
+            <span className="p-1 rounded-md bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400">
+              <PieChartIcon className="w-4 h-4" />
+            </span>
+            <h3 className="text-base font-bold text-slate-900 dark:text-white tracking-tight">
+              {t("chartTitle") || "Phân bố trạng thái"}
+            </h3>
+          </div>
+          <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400">
+            {total} hợp đồng
+          </span>
+        </div>
+        <p className="text-xs text-slate-400 dark:text-slate-500 mb-4">
+          Tỷ lệ hợp đồng theo các giai đoạn thực hiện
+        </p>
       </div>
+
+      {/* Main Content Area */}
+      {total === 0 || activeData.length === 0 ? (
+        <div className="h-[280px] flex flex-col items-center justify-center text-center p-4 rounded-2xl bg-slate-50/60 dark:bg-slate-800/30 border border-dashed border-slate-200 dark:border-slate-700/60">
+          <div className="w-14 h-14 rounded-2xl bg-blue-50 dark:bg-blue-950/40 text-blue-500 flex items-center justify-center mb-3">
+            <PieChartIcon className="w-7 h-7 opacity-75" />
+          </div>
+          <p className="text-sm font-bold text-slate-700 dark:text-slate-300">
+            {t("chartNoData") || "Chưa có dữ liệu biểu đồ"}
+          </p>
+          <p className="text-xs text-slate-400 dark:text-slate-500 mt-1 max-w-[220px]">
+            Tạo hợp đồng mới hoặc nhận việc để xem tỷ lệ phân bố trạng thái
+          </p>
+          <Link
+            to="/dashboard/create"
+            className="mt-4 inline-flex items-center gap-1.5 text-xs font-bold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300"
+          >
+            <PlusCircle className="w-3.5 h-3.5" />
+            <span>Tạo hợp đồng ngay</span>
+          </Link>
+        </div>
+      ) : (
+        <>
+          {/* Chart Canvas */}
+          <div className="w-full h-[260px] relative">
+            <ResponsiveContainer width="100%" height={260}>
+              <PieChart>
+                <Pie
+                  data={activeData}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={68}
+                  outerRadius={96}
+                  paddingAngle={activeData.length > 1 ? 4 : 0}
+                  dataKey="value"
+                  cornerRadius={6}
+                  labelLine={false}
+                  label={renderCustomizedLabel}
+                >
+                  {activeData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} stroke="none" />
+                  ))}
+                </Pie>
+
+                {/* Inner Text Center of Donut */}
+                <text x="50%" y="50%" textAnchor="middle" dominantBaseline="middle">
+                  <tspan
+                    x="50%"
+                    dy="-12"
+                    fontSize="10"
+                    fill="#94A3B8"
+                    fontWeight="700"
+                    letterSpacing="0.05em"
+                  >
+                    TỔNG SỐ
+                  </tspan>
+                  <tspan
+                    x="50%"
+                    dy="24"
+                    fontSize="26"
+                    fontWeight="800"
+                    fill="currentColor"
+                    className="text-slate-900 dark:text-white"
+                  >
+                    {total}
+                  </tspan>
+                </text>
+
+                <Tooltip
+                  formatter={(value, name) => [`${value} hợp đồng`, name]}
+                  contentStyle={{
+                    borderRadius: "16px",
+                    border: "1px solid rgba(226, 232, 240, 0.8)",
+                    boxShadow: "0 10px 25px rgba(0,0,0,0.1)",
+                    backgroundColor: "rgba(255, 255, 255, 0.95)",
+                    fontSize: "12px",
+                    fontWeight: "600",
+                  }}
+                />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* Breakdown summary pills */}
+          <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+            {data.map((item) => (
+              <div
+                key={item.key}
+                className="flex items-center justify-between p-2 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800"
+              >
+                <div className="flex items-center gap-1.5 min-w-0">
+                  <span
+                    className="w-2.5 h-2.5 rounded-full shrink-0"
+                    style={{ backgroundColor: item.color }}
+                  ></span>
+                  <span className="text-[11px] font-medium text-slate-600 dark:text-slate-400 truncate">
+                    {item.name}
+                  </span>
+                </div>
+                <span className="text-xs font-bold text-slate-800 dark:text-slate-200 shrink-0">
+                  {item.value}
+                </span>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
     </div>
   );
 };

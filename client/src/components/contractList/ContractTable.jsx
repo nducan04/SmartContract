@@ -79,10 +79,12 @@ const ContractRow = ({
         </span>
       </td>
 
-      <td className="px-5 py-4 align-middle">{getStatusBadge(c.status)}</td>
+      <td className="px-4 py-4 align-middle whitespace-nowrap">
+        {getStatusBadge(c.status)}
+      </td>
 
-      <td className="px-5 py-4 align-middle text-right">
-        <div className="flex items-center justify-end gap-2">
+      <td className="px-4 py-4 align-middle text-right pr-6 sm:pr-8 whitespace-nowrap">
+        <div className="flex items-center justify-end gap-2 shrink-0">
           <button
             onClick={() => onShowQR(c.contractAddress)}
             className="p-2 text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 bg-slate-100/60 dark:bg-slate-800/60 hover:bg-blue-50 dark:hover:bg-blue-950/40 rounded-xl transition-colors cursor-pointer"
@@ -174,7 +176,7 @@ const ContractTable = ({
     const s = map[status] || map[0];
     return (
       <span
-        className={`px-2.5 py-0.5 rounded-full text-xs font-semibold border flex items-center gap-1.5 w-max ${s.color}`}
+        className={`inline-flex items-center gap-1.5 whitespace-nowrap px-2.5 py-1 rounded-full text-xs font-semibold border ${s.color}`}
       >
         <span className="w-1.5 h-1.5 rounded-full bg-current opacity-70"></span>
         {s.text}
@@ -185,15 +187,15 @@ const ContractTable = ({
   return (
     <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200/80 dark:border-slate-800 overflow-hidden">
       <div className="overflow-x-auto">
-        <table className="w-full text-left border-collapse table-fixed min-w-[900px]">
+        <table className="w-full text-left border-collapse table-fixed min-w-[1080px]">
           <thead className="bg-slate-50/80 dark:bg-slate-800/60 border-b border-slate-200/80 dark:border-slate-800 text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
             <tr>
-              <th className="px-5 py-3.5 w-[20%]">{t("tabAddress")}</th>
-              <th className="px-5 py-3.5 w-[32%]">{t("createArt1")}</th>
-              <th className="px-5 py-3.5 w-[14%]">{t("tabRole")}</th>
-              <th className="px-5 py-3.5 w-[12%]">{t("tabValue")}</th>
-              <th className="px-5 py-3.5 w-[12%]">{t("tabStatus")}</th>
-              <th className="px-5 py-3.5 w-[10%] text-right">{t("tabAction")}</th>
+              <th className="px-5 py-3.5 w-[17%]">{t("tabAddress")}</th>
+              <th className="px-5 py-3.5 w-[27%]">{t("createArt1")}</th>
+              <th className="px-5 py-3.5 w-[13%]">{t("tabRole")}</th>
+              <th className="px-5 py-3.5 w-[11%]">{t("tabValue")}</th>
+              <th className="px-5 py-3.5 w-[16%]">{t("tabStatus")}</th>
+              <th className="px-5 py-3.5 w-[16%] text-right pr-6 sm:pr-8">{t("tabAction")}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
