@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import axios from "axios";
 import { useLanguage } from "../context/LanguageContext";
 import { useWeb3 } from "../context/Web3Context";
@@ -10,9 +10,18 @@ import {
   X,
   MessageSquare,
   Bot,
-  User
+  User,
+  RotateCcw,
+  Move
 } from "lucide-react";
 import animeAvatar from "../assets/anime-ai-avatar.jpg";
+
+const GREETINGS = [
+  "✨ Chào bạn! Cần em hỗ trợ gì không?",
+  "💬 Hỏi em về Smart Contract & Ký quỹ nhé!",
+  "🚀 Em hỗ trợ 24/7 kiến thức Blockchain nè!",
+  "💡 Bạn có thể kéo thả em đi khắp màn hình đó!",
+];
 
 const AIChatWidget = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -24,6 +33,104 @@ const AIChatWidget = () => {
   const inputRef = useRef(null);
   const { t } = useLanguage();
   const { walletAddress } = useWeb3();
+
+  // --- TRẠNG THÁI DI CHUYỂN & BONG BÓNG THOẠI ---
+  const [position, setPosition] = useState({ x: 0, y: 0 }); // offset so với góc ban đầu
+  const [isDragging, setIsDragging] = useState(false);
+  const [hasMoved, setHasMoved] = useState(false);
+  const dragRef = useRef({ startX: 0, startY: 0, initPosX: 0, initPosY: 0, moved: false });
+  const [greetingIndex, setGreetingIndex] = useState(0);
+  const [showSpeech, setShowSpeech] = useState(true);
+
+  // Tự động xoay vòng câu chào
+  useEffect(() => {
+    if (isOpen) {
+      setShowSpeech(false);
+      return;
+    }
+    const interval = setInterval(() => {
+      setGreetingIndex((prev) => (prev + 1) % GREETINGS.length);
+      setShowSpeech(true);
+    }, 9000);
+    return () => clearInterval(interval);
+  }, [isOpen]);
+
+  // Xử lý kéo thả Mascot (chuột & cảm ứng)
+  const handlePointerDown = (e) => {
+    // Không drag nếu click vào nút con (ví dụ nút đóng hoặc nút reset)
+    if (e.target.closest("button[data-no-drag]")) return;
+
+    const clientX = e.clientX ?? e.touches?.[0]?.clientX ?? 0;
+    const clientY = e.clientY ?? e.touches?.[0]?.clientY ?? 0;
+
+    dragRef.current = {
+      startX: clientX,
+      startY: clientY,
+      initPosX: position.x,
+      initPosY: position.y,
+      moved: false,
+    };
+    setIsDragging(true);
+  };
+
+  const handlePointerMove = useCallback(
+    (e) => {
+      if (!isDragging) return;
+      const clientX = e.clientX ?? e.touches?.[0]?.clientX ?? 0;
+      const clientY = e.clientY ?? e.touches?.[0]?.clientY ?? 0;
+
+      const deltaX = clientX - dragRef.current.startX;
+      const deltaY = clientY - dragRef.current.startY;
+
+      if (Math.hypot(deltaX, deltaY) > 5) {
+        dragRef.current.moved = true;
+      }
+
+      // Giới hạn trong khung nhìn màn hình
+      const maxLeft = -(window.innerWidth - 90);
+      const maxTop = -(window.innerHeight - 90);
+
+      const nextX = Math.min(20, Math.max(maxLeft, dragRef.current.initPosX + deltaX));
+      const nextY = Math.min(20, Math.max(maxTop, dragRef.current.initPosY + deltaY));
+
+      setPosition({ x: nextX, y: nextY });
+      if (Math.hypot(nextX, nextY) > 20) {
+        setHasMoved(true);
+      }
+    },
+    [isDragging],
+  );
+
+  const handlePointerUp = useCallback(() => {
+    if (!isDragging) return;
+    setIsDragging(false);
+
+    // Nếu không kéo hoặc kéo < 5px thì tính là CLICK -> Mở/đóng chat
+    if (!dragRef.current.moved) {
+      setIsOpen((prev) => !prev);
+    }
+  }, [isDragging]);
+
+  useEffect(() => {
+    if (isDragging) {
+      window.addEventListener("mousemove", handlePointerMove);
+      window.addEventListener("mouseup", handlePointerUp);
+      window.addEventListener("touchmove", handlePointerMove);
+      window.addEventListener("touchend", handlePointerUp);
+    }
+    return () => {
+      window.removeEventListener("mousemove", handlePointerMove);
+      window.removeEventListener("mouseup", handlePointerUp);
+      window.removeEventListener("touchmove", handlePointerMove);
+      window.removeEventListener("touchend", handlePointerUp);
+    };
+  }, [isDragging, handlePointerMove, handlePointerUp]);
+
+  const resetPosition = (e) => {
+    e.stopPropagation();
+    setPosition({ x: 0, y: 0 });
+    setHasMoved(false);
+  };
 
   useEffect(() => {
     if (messages.length === 0) {
@@ -100,28 +207,110 @@ const AIChatWidget = () => {
 
   return (
     <>
-      {/* Floating Trigger Button */}
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className={`fixed bottom-6 right-6 z-40 w-14 h-14 rounded-full bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white shadow-xl shadow-indigo-500/30 hover:shadow-2xl hover:shadow-indigo-500/50 hover:scale-110 active:scale-95 transition-all duration-300 flex items-center justify-center cursor-pointer group p-0.5 ring-4 ring-indigo-400/30 dark:ring-indigo-600/40`}
-        aria-label="Toggle AI Assistant"
-        title="Trợ lý AI"
+      {/* KHU VỰC MASCOT DI CHUYỂN SỐNG ĐỘNG */}
+      <div
+        style={{
+          transform: `translate3d(${position.x}px, ${position.y}px, 0)`,
+          touchAction: "none",
+        }}
+        className={`fixed bottom-6 right-6 z-40 transition-transform ${
+          isDragging ? "duration-0" : "duration-200"
+        }`}
       >
-        {isOpen ? (
-          <div className="w-full h-full rounded-full bg-slate-900/80 backdrop-blur-xs flex items-center justify-center text-white">
-            <X className="w-6 h-6 transition-transform group-hover:rotate-90 duration-200" />
-          </div>
-        ) : (
-          <div className="relative w-full h-full rounded-full overflow-hidden">
-            <img
-              src={animeAvatar}
-              alt="AI Assistant Anime"
-              className="w-full h-full object-cover rounded-full group-hover:scale-110 transition-transform duration-300"
-            />
-            <span className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-400 rounded-full ring-2 ring-white dark:ring-slate-900 animate-pulse"></span>
+        {/* Bong bóng thoại tương tác dễ thương */}
+        {!isOpen && showSpeech && (
+          <div
+            onClick={() => setIsOpen(true)}
+            className="absolute -top-14 right-0 sm:right-2 w-max max-w-[240px] px-3 py-2 rounded-2xl bg-white/95 dark:bg-slate-900/95 backdrop-blur-md text-slate-800 dark:text-slate-100 text-xs font-semibold shadow-xl border border-blue-200/80 dark:border-blue-900/60 animate-bubble-pop cursor-pointer hover:scale-105 transition-all select-none group"
+          >
+            <div className="flex items-center gap-1.5">
+              <span>{GREETINGS[greetingIndex]}</span>
+              <button
+                data-no-drag="true"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowSpeech(false);
+                }}
+                className="opacity-40 hover:opacity-100 text-slate-500 hover:text-rose-500 p-0.5 rounded-full transition-opacity ml-1"
+                title="Đóng bong bóng"
+              >
+                <X className="w-3 h-3" />
+              </button>
+            </div>
+            {/* Mũi tên bong bóng chỉ xuống mascot */}
+            <div className="absolute -bottom-1.5 right-6 w-3 h-3 bg-white dark:bg-slate-900 border-r border-b border-blue-200/80 dark:border-blue-900/60 rotate-45"></div>
           </div>
         )}
-      </button>
+
+        {/* Nút Reset vị trí nếu đã kéo đi */}
+        {hasMoved && !isOpen && (
+          <button
+            data-no-drag="true"
+            onClick={resetPosition}
+            className="absolute -top-3 -left-3 z-50 p-1.5 rounded-full bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-300 shadow-md border border-slate-200 dark:border-slate-700 hover:text-blue-600 hover:scale-110 active:scale-95 transition-all cursor-pointer"
+            title="Đưa mascot về góc ban đầu"
+          >
+            <RotateCcw className="w-3 h-3" />
+          </button>
+        )}
+
+        {/* NÚT MASCOT CHÍNH: Lơ lửng, Vòng xoay Cyber Orbit, Avatar Anime */}
+        <div
+          onMouseDown={handlePointerDown}
+          onTouchStart={handlePointerDown}
+          className={`relative group ${
+            isDragging ? "cursor-grabbing scale-105" : "cursor-grab"
+          }`}
+          title="Bấm để trò chuyện hoặc Giữ chuột để kéo thả di chuyển"
+        >
+          {/* Lớp 1: Hào quang năng lượng tỏa sáng (Aura Glow) */}
+          <div className="absolute -inset-2.5 rounded-full bg-gradient-to-r from-blue-500/30 via-indigo-500/30 to-purple-500/30 blur-md group-hover:blur-lg opacity-80 group-hover:opacity-100 transition-all duration-300 pointer-events-none animate-pulse"></div>
+
+          {/* Lớp 2: Vòng quỹ đạo công nghệ quay tròn (Cyber Holographic Orbit) */}
+          {!isOpen && (
+            <div className="absolute -inset-2 rounded-full border border-dashed border-cyan-400/60 dark:border-cyan-300/50 animate-spin-slow pointer-events-none">
+              <span className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 rounded-full bg-cyan-400 shadow-[0_0_8px_#22d3ee]"></span>
+              <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-purple-400 shadow-[0_0_8px_#c084fc]"></span>
+            </div>
+          )}
+
+          {/* Lớp 3: Nút Avatar Mascot lơ lửng nhịp nhàng (Breathing & Floating) */}
+          <div
+            className={`w-15 h-15 rounded-full p-0.5 bg-gradient-to-tr from-cyan-400 via-indigo-500 to-purple-500 shadow-2xl shadow-indigo-500/40 ring-2 ring-white/80 dark:ring-slate-800 transition-transform duration-300 ${
+              !isOpen && !isDragging ? "animate-mascot-float" : ""
+            } group-hover:scale-105 active:scale-95`}
+          >
+            {isOpen ? (
+              <div className="w-full h-full rounded-full bg-slate-900/90 backdrop-blur-xs flex items-center justify-center text-white">
+                <X className="w-6 h-6 transition-transform group-hover:rotate-90 duration-200" />
+              </div>
+            ) : (
+              <div className="relative w-full h-full rounded-full overflow-hidden select-none">
+                <img
+                  src={animeAvatar}
+                  alt="AI Assistant Anime Mascot"
+                  draggable={false}
+                  className="w-full h-full object-cover rounded-full group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300 pointer-events-none select-none"
+                />
+
+                {/* Đèn tín hiệu trực tuyến Neon (Online Signal Ripple) */}
+                <div className="absolute bottom-0.5 right-0.5 w-3.5 h-3.5 flex items-center justify-center pointer-events-none">
+                  <span className="absolute w-full h-full rounded-full bg-emerald-400 opacity-75 animate-ping"></span>
+                  <span className="relative w-2.5 h-2.5 rounded-full bg-emerald-400 ring-2 ring-white dark:ring-slate-900"></span>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Huy hiệu di chuyển nhỏ khi hover */}
+          {!isOpen && (
+            <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-slate-900/80 text-white text-[9px] font-bold px-1.5 py-0.2 rounded-full backdrop-blur-xs pointer-events-none flex items-center gap-0.5 whitespace-nowrap shadow-xs">
+              <Move className="w-2.5 h-2.5" />
+              <span>Kéo thả</span>
+            </div>
+          )}
+        </div>
+      </div>
 
       {/* Chat Window Panel */}
       <div
