@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@variant dark class;
 
 @theme {
   /* ===== DESIGN TOKENS ===== */
@@ -141,6 +142,14 @@
   border: 1px solid rgb(255 255 255 / 0.3);
   box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
 }
+.dark .glass,
+@media (prefers-color-scheme: dark) {
+  .glass {
+    background-color: rgb(30 41 59 / 0.85);
+    border-color: rgb(255 255 255 / 0.08);
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.15);
+  }
+}
 
 @utility glass-dark {
   background-color: rgb(17 24 39 / 0.75);
@@ -196,21 +205,35 @@ body {
   background: var(--color-text-muted);
 }
 
-/* ===== Dark Mode Support (prefers-color-scheme) ===== */
+/* ===== Dark Mode Support ===== */
 
+/* Light mode (mặc định) */
+:root {
+  --color-bg: #f8fafc;
+  --color-surface: #ffffff;
+  --color-card: #ffffff;
+  --color-border: #e2e8f0;
+  --color-border-light: #f1f5f9;
+  --color-text-primary: #0f172a;
+  --color-text-secondary: #475569;
+  --color-text-muted: #94a3b8;
+}
+
+/* Dark mode (toggle thủ công từ ThemeContext) */
+.dark {
+  --color-bg: #0f172a;
+  --color-surface: #1e293b;
+  --color-card: #1e293b;
+  --color-border: #334155;
+  --color-border-light: #475569;
+  --color-text-primary: #f1f5f9;
+  --color-text-secondary: #cbd5e1;
+  --color-text-muted: #94a3b8;
+}
+
+/* Auto dark mode (fallback khi OS dark và chưa có toggle thủ công) */
 @media (prefers-color-scheme: dark) {
-  :root {
-    --color-bg: #0f172a;
-    --color-surface: #1e293b;
-    --color-card: #1e293b;
-    --color-border: #334155;
-    --color-border-light: #475569;
-    --color-text-primary: #f1f5f9;
-    --color-text-secondary: #cbd5e1;
-    --color-text-muted: #94a3b8;
-  }
-
-  .dark {
+  :root:not(.dark) {
     --color-bg: #0f172a;
     --color-surface: #1e293b;
     --color-card: #1e293b;
