@@ -2,48 +2,57 @@ import React from "react";
 import { assets, menuLinks } from "../assets/assets";
 import { Link } from "react-router-dom";
 import { useLanguage } from "../context/LanguageContext";
+import { ShieldCheck, Mail, Phone, MapPin } from "lucide-react";
 
 const Footer = () => {
   const { t } = useLanguage();
 
   return (
-    <footer className="bg-white dark:bg-gray-900 text-gray-500 dark:text-gray-400 pt-16 pb-6 mt-24 border-t border-gray-200 dark:border-gray-800">
-      <div className="container mx-auto px-6 md:px-16 lg:px-24 xl:px-32">
-        <div className="flex flex-wrap justify-between items-start gap-8 pb-8 border-b border-gray-200 dark:border-gray-800">
-          {/* Logo & Description */}
-          <div className="flex flex-col min-w-[200px]">
-            <Link to="/">
-              <img src={assets.blockchainLogo} alt="logo" className="h-8 md:h-9" />
+    <footer className="bg-white dark:bg-slate-900/90 text-slate-500 dark:text-slate-400 pt-16 pb-8 border-t border-slate-200/80 dark:border-slate-800/80 transition-colors">
+      <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 pb-12 border-b border-slate-200/80 dark:border-slate-800/80">
+          {/* Logo & Info (Span 2 cols on lg) */}
+          <div className="lg:col-span-2 space-y-4">
+            <Link to="/" className="flex items-center gap-3">
+              <img
+                src={assets.blockchainLogo}
+                alt="Logo"
+                className="h-9 object-contain"
+              />
+              <span className="font-extrabold text-xl tracking-tight gradient-text">
+                SmartContract
+              </span>
             </Link>
-            <p className="max-w-80 mt-4 text-sm leading-relaxed text-gray-600 dark:text-gray-400">
+
+            <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-400 max-w-sm">
               {t("footerDesc")}
             </p>
-            {/* Social Media */}
-            <div className="flex items-center gap-3 mt-6">
+
+            <div className="flex items-center gap-3 pt-2">
               <a
                 href="#"
-                className="w-9 h-9 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-600 dark:text-gray-300 hover:bg-blue-600 hover:text-white transition-all duration-200"
+                className="w-9 h-9 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center hover:bg-blue-600 hover:text-white dark:hover:bg-blue-600 transition-colors"
                 aria-label="Facebook"
               >
                 <img src={assets.facebook_logo} alt="Facebook" className="w-4 h-4" />
               </a>
               <a
                 href="#"
-                className="w-9 h-9 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-600 dark:text-gray-300 hover:bg-purple-600 hover:text-white transition-all duration-200"
+                className="w-9 h-9 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center hover:bg-pink-600 hover:text-white dark:hover:bg-pink-600 transition-colors"
                 aria-label="Instagram"
               >
                 <img src={assets.instagram_logo} alt="Instagram" className="w-4 h-4" />
               </a>
               <a
                 href="#"
-                className="w-9 h-9 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-600 dark:text-gray-300 hover:bg-blue-400 hover:text-white transition-all duration-200"
+                className="w-9 h-9 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center hover:bg-sky-500 hover:text-white dark:hover:bg-sky-500 transition-colors"
                 aria-label="Twitter"
               >
                 <img src={assets.twitter_logo} alt="Twitter" className="w-4 h-4" />
               </a>
               <a
                 href="#"
-                className="w-9 h-9 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-600 dark:text-gray-300 hover:bg-red-600 hover:text-white transition-all duration-200"
+                className="w-9 h-9 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center hover:bg-red-600 hover:text-white dark:hover:bg-red-600 transition-colors"
                 aria-label="Gmail"
               >
                 <img src={assets.gmail_logo} alt="Gmail" className="w-4 h-4" />
@@ -53,10 +62,10 @@ const Footer = () => {
 
           {/* Quick Links */}
           <div>
-            <h3 className="text-sm font-bold text-gray-800 dark:text-gray-200 uppercase tracking-wider mb-4">
+            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white mb-4">
               {t("footerQuickLinks")}
-            </h3>
-            <ul className="flex flex-col gap-2.5">
+            </h4>
+            <ul className="space-y-2.5 text-sm">
               {menuLinks.map((link, index) => {
                 let label = link.name;
                 if (link.path === "/") label = t("navHome");
@@ -65,7 +74,7 @@ const Footer = () => {
                   <li key={index}>
                     <Link
                       to={link.path}
-                      className="text-sm hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                      className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                     >
                       {label}
                     </Link>
@@ -74,10 +83,10 @@ const Footer = () => {
               })}
               <li>
                 <Link
-                  to="/"
-                  className="text-sm hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                  to="/dashboard"
+                  className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                 >
-                  {t("footerAboutUs")}
+                  Dashboard
                 </Link>
               </li>
             </ul>
@@ -85,39 +94,27 @@ const Footer = () => {
 
           {/* Support */}
           <div>
-            <h3 className="text-sm font-bold text-gray-800 dark:text-gray-200 uppercase tracking-wider mb-4">
+            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white mb-4">
               {t("footerSupport")}
-            </h3>
-            <ul className="flex flex-col gap-2.5">
+            </h4>
+            <ul className="space-y-2.5 text-sm">
               <li>
-                <a
-                  href="#"
-                  className="text-sm hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-                >
+                <a href="#" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
                   {t("footerFaq")}
                 </a>
               </li>
               <li>
-                <a
-                  href="#"
-                  className="text-sm hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-                >
+                <a href="#" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
                   {t("footerTerms")}
                 </a>
               </li>
               <li>
-                <a
-                  href="#"
-                  className="text-sm hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-                >
+                <a href="#" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
                   {t("footerPrivacy")}
                 </a>
               </li>
               <li>
-                <a
-                  href="#"
-                  className="text-sm hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-                >
+                <a href="#" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
                   {t("footerInsurance")}
                 </a>
               </li>
@@ -126,57 +123,41 @@ const Footer = () => {
 
           {/* Contact */}
           <div>
-            <h3 className="text-sm font-bold text-gray-800 dark:text-gray-200 uppercase tracking-wider mb-4">
+            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white mb-4">
               {t("footerContact")}
-            </h3>
-            <ul className="flex flex-col gap-2.5 text-sm">
-              <li>324 VMU, Nguyễn Bình, Hà Nội</li>
-              <li>0123 456 777</li>
-              <li>
+            </h4>
+            <ul className="space-y-3 text-sm">
+              <li className="flex items-start gap-2.5">
+                <MapPin className="w-4 h-4 text-blue-500 shrink-0 mt-0.5" />
+                <span>324 VMU, Nguyễn Bình, Hà Nội</span>
+              </li>
+              <li className="flex items-center gap-2.5">
+                <Phone className="w-4 h-4 text-blue-500 shrink-0" />
+                <span>0123 456 777</span>
+              </li>
+              <li className="flex items-center gap-2.5">
+                <Mail className="w-4 h-4 text-blue-500 shrink-0" />
                 <a
-                  href="mailto:info@example.com"
-                  className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                  href="mailto:contact@smartcontract.io"
+                  className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors truncate"
                 >
-                  info@example.com
+                  contact@smartcontract.io
                 </a>
               </li>
             </ul>
           </div>
         </div>
 
-        {/* Bottom Bar */}
-        <div className="flex flex-col md:flex-row gap-2 items-center justify-between pt-6 text-xs text-gray-400 dark:text-gray-500">
-          <p>
-            © {new Date().getFullYear()} Smart Contract. All rights reserved.
-          </p>
-          <ul className="flex items-center gap-4">
-            <li>
-              <a
-                href="#"
-                className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-              >
-                {t("footerPolicy")}
-              </a>
-            </li>
-            <li>·</li>
-            <li>
-              <a
-                href="#"
-                className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-              >
-                {t("footerTerms")}
-              </a>
-            </li>
-            <li>·</li>
-            <li>
-              <a
-                href="#"
-                className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-              >
-                {t("footerCookies")}
-              </a>
-            </li>
-          </ul>
+        {/* Bottom Credits */}
+        <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-400 dark:text-slate-500">
+          <p>© {new Date().getFullYear()} Smart Contract Platform. All rights reserved.</p>
+          <div className="flex items-center gap-4">
+            <a href="#" className="hover:underline">{t("footerPolicy")}</a>
+            <span>•</span>
+            <a href="#" className="hover:underline">{t("footerTerms")}</a>
+            <span>•</span>
+            <a href="#" className="hover:underline">{t("footerCookies")}</a>
+          </div>
         </div>
       </div>
     </footer>

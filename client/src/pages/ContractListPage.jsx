@@ -10,6 +10,15 @@ import ContractListHeader from "../components/contractList/ContractListHeader";
 import ContractFilters from "../components/contractList/ContractFilters";
 import ContractTable from "../components/contractList/ContractTable";
 import { exportContractToExcel } from "../utils/exportExcel";
+import {
+  Filter,
+  Calendar,
+  RotateCcw,
+  Info,
+  ChevronLeft,
+  ChevronRight,
+  AlertCircle
+} from "lucide-react";
 
 const ContractListPage = () => {
   const { walletAddress } = useWeb3();
@@ -43,11 +52,11 @@ const ContractListPage = () => {
       try {
         setLoading(true);
         const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
-        
+
         let params = new URLSearchParams();
         params.append("page", pagination.page);
         params.append("limit", 10);
-        
+
         if (roleFilter !== "all") params.append("role", roleFilter);
         if (statusFilter !== "all") params.append("status", statusFilter);
         if (startDate) params.append("startDate", startDate);
@@ -64,7 +73,6 @@ const ContractListPage = () => {
           setFilteredContracts(response.data.data);
           setPagination(response.data.pagination);
         } else {
-          // Fallback api cũ
           const sortedData = response.data.sort(
             (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
           );
@@ -80,7 +88,6 @@ const ContractListPage = () => {
     fetchContracts();
   }, [walletAddress, pagination.page, roleFilter, statusFilter, startDate, endDate]);
 
-  // Reset trang về 1 khi thay đổi bộ lọc
   useEffect(() => {
     setPagination((p) => {
       if (p.page !== 1) {
@@ -90,13 +97,11 @@ const ContractListPage = () => {
     });
   }, [roleFilter, statusFilter, startDate, endDate, walletAddress]);
 
-  // --- CÁC HÀM XỬ LÝ SỰ KIỆN ---
   const handleShowQR = (address) => {
     setSelectedContractAddress(address);
     setShowQRModal(true);
   };
 
-  // ĐÂY LÀ HÀM BỊ THIẾU ĐÃ ĐƯỢC THÊM LẠI
   const handleCloseQR = () => {
     setShowQRModal(false);
     setSelectedContractAddress(null);
@@ -126,140 +131,147 @@ const ContractListPage = () => {
   };
 
   return (
-    <div className="p-2 relative flex flex-col xl:flex-row gap-6 items-start w-full">
-      <div className="w-full xl:flex-1 min-w-0">
-        <ContractListHeader
-          onCreate={() => navigate("/dashboard/create")}
-          onExport={handleExportExcel}
-        />
+    <div className="space-y-6 animate-fade-in">
+      <ContractListHeader
+        onCreate={() => navigate("/dashboard/create")}
+        onExport={handleExportExcel}
+      />
 
-        {!walletAddress && (
-          <div className="bg-blue-50 border border-blue-200 text-blue-800 px-4 py-3 rounded-xl mb-6 shadow-sm flex items-start gap-3">
-            <div>
-              <p className="font-bold text-blue-900">
-                {t("listGuestWarning")}
-              </p>
-              <p className="text-sm mt-1">
-                {t("listGuestSub")}
-              </p>
+      {!walletAddress && (
+        <div className="bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900/50 text-blue-800 dark:text-blue-200 px-4 py-3.5 rounded-2xl shadow-xs flex items-start gap-3">
+          <AlertCircle className="w-5 h-5 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
+          <div>
+            <p className="font-bold text-sm text-blue-900 dark:text-blue-100">
+              {t("listGuestWarning")}
+            </p>
+            <p className="text-xs text-blue-700 dark:text-blue-300 mt-0.5">
+              {t("listGuestSub")}
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* KHU VỰC BỘ LỌC NÂNG CAO */}
+      <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl shadow-sm border border-slate-200/80 dark:border-slate-800">
+        <div className="flex items-center gap-2 mb-4">
+          <Filter className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+          <h3 className="font-bold text-sm text-slate-800 dark:text-slate-200 uppercase tracking-wider">
+            {t("listFilterTitle")}
+          </h3>
+        </div>
+
+        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+          <div className="w-full lg:w-auto">
+            <ContractFilters
+              currentFilter={roleFilter}
+              onFilterChange={(role) => setSearchParams({ role })}
+            />
+          </div>
+
+          <div className="flex flex-wrap items-center gap-3 text-xs sm:text-sm w-full lg:w-auto p-3.5 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200/60 dark:border-slate-700/60">
+            {/* Status select */}
+            <div className="flex items-center gap-2">
+              <span className="text-slate-500 dark:text-slate-400 font-semibold">{t("listFilterStatus")}</span>
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="border border-slate-200 dark:border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-800 dark:text-slate-200 outline-none focus:border-blue-500 bg-white dark:bg-slate-900 cursor-pointer"
+              >
+                <option value="all">{t("listFilterAll")}</option>
+                <option value="0">{t("listFilterStatus0")}</option>
+                <option value="1">{t("listFilterStatus1")}</option>
+                <option value="2">{t("listFilterStatus2")}</option>
+                <option value="3">{t("listFilterStatus3")}</option>
+                <option value="4">{t("listFilterStatus4")}</option>
+                <option value="5">{t("listFilterStatus5")}</option>
+              </select>
             </div>
-          </div>
-        )}
 
-        {/* --- KHU VỰC BỘ LỌC NÂNG CAO --- */}
-        <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 mb-6">
-          <div className="flex items-center gap-2 mb-4">
-            <h3 className="font-bold text-gray-800">
-              {t("listFilterTitle")}
-            </h3>
-          </div>
-
-          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
-            <div className="w-full lg:w-auto">
-              <ContractFilters
-                currentFilter={roleFilter}
-                onFilterChange={(role) => setSearchParams({ role })}
+            {/* Date range */}
+            <div className="flex items-center gap-1.5">
+              <span className="text-slate-500 dark:text-slate-400 font-semibold">{t("listFilterFrom")}</span>
+              <input
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                className="border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1.5 text-xs text-slate-800 dark:text-slate-200 outline-none focus:border-blue-500 bg-white dark:bg-slate-900"
               />
             </div>
 
-            <div className="flex flex-wrap items-center gap-4 text-sm w-full lg:w-auto p-4 bg-gray-50 rounded-xl">
-              <div className="flex items-center gap-2">
-                <span className="text-gray-500 font-medium">{t("listFilterStatus")}</span>
-                <select
-                  value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value)}
-                  className="border border-gray-200 rounded-lg px-3 py-2 text-gray-700 outline-none focus:border-blue-500 bg-white"
-                >
-                  <option value="all">{t("listFilterAll")}</option>
-                  <option value="0">{t("listFilterStatus0")}</option>
-                  <option value="1">{t("listFilterStatus1")}</option>
-                  <option value="2">{t("listFilterStatus2")}</option>
-                  <option value="3">{t("listFilterStatus3")}</option>
-                  <option value="4">{t("listFilterStatus4")}</option>
-                  <option value="5">{t("listFilterStatus5")}</option>
-                </select>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <span className="text-gray-500 font-medium">{t("listFilterFrom")}</span>
-                <input
-                  type="date"
-                  value={startDate}
-                  onChange={(e) => setStartDate(e.target.value)}
-                  className="border border-gray-200 rounded-lg px-3 py-1.5 text-gray-700 outline-none focus:border-blue-500 bg-white"
-                />
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-gray-500 font-medium">{t("listFilterTo")}</span>
-                <input
-                  type="date"
-                  value={endDate}
-                  onChange={(e) => setEndDate(e.target.value)}
-                  className="border border-gray-200 rounded-lg px-3 py-1.5 text-gray-700 outline-none focus:border-blue-500 bg-white"
-                />
-              </div>
-
-              {(startDate || endDate || statusFilter !== "all") && (
-                <button
-                  onClick={() => {
-                    setStartDate("");
-                    setEndDate("");
-                    setStatusFilter("all");
-                  }}
-                  className="text-red-500 hover:bg-red-50 px-3 py-2 rounded-lg transition-colors font-bold"
-                >
-                  <i className="uil uil-times-circle"></i> {t("listFilterClear")}
-                </button>
-              )}
+            <div className="flex items-center gap-1.5">
+              <span className="text-slate-500 dark:text-slate-400 font-semibold">{t("listFilterTo")}</span>
+              <input
+                type="date"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                className="border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1.5 text-xs text-slate-800 dark:text-slate-200 outline-none focus:border-blue-500 bg-white dark:bg-slate-900"
+              />
             </div>
+
+            {(startDate || endDate || statusFilter !== "all") && (
+              <button
+                onClick={() => {
+                  setStartDate("");
+                  setEndDate("");
+                  setStatusFilter("all");
+                }}
+                className="inline-flex items-center gap-1 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 px-2.5 py-1.5 rounded-lg transition-colors font-bold text-xs"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+                <span>{t("listFilterClear")}</span>
+              </button>
+            )}
           </div>
         </div>
+      </div>
 
-        <ContractTable
-          contracts={filteredContracts}
-          loading={loading}
-          walletAddress={walletAddress}
-          onShowQR={handleShowQR}
-          onViewDetails={(addr) => navigate(`/dashboard/contract/${addr}`)}
-        />
+      <ContractTable
+        contracts={filteredContracts}
+        loading={loading}
+        walletAddress={walletAddress}
+        onShowQR={handleShowQR}
+        onViewDetails={(addr) => navigate(`/dashboard/contract/${addr}`)}
+      />
 
-        {!loading && (
-          <p className="text-xs text-gray-400 mt-4 ml-2 font-medium">
-            <i className="uil uil-info-circle"></i> {t("listShowing")}{" "}
-            {filteredContracts.length} / {pagination.total || contracts.length}{" "}
-            {t("listContractsByCriteria")}
-          </p>
-        )}
-
-        {/* Điều khiển Phân trang */}
-        {pagination.totalPages > 1 && (
-          <div className="mt-6 flex items-center justify-between">
-            <span className="text-sm text-gray-500 font-medium">
-              {t("listPage")} {pagination.page} / {pagination.totalPages}
+      {!loading && (
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-2">
+          <p className="text-xs text-slate-500 dark:text-slate-400 font-medium flex items-center gap-1.5">
+            <Info className="w-4 h-4 text-slate-400" />
+            <span>
+              {t("listShowing")} {filteredContracts.length} / {pagination.total || contracts.length}{" "}
+              {t("listContractsByCriteria")}
             </span>
-            <div className="flex gap-2">
+          </p>
+
+          {pagination.totalPages > 1 && (
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-slate-500 dark:text-slate-400 font-semibold mr-2">
+                {t("listPage")} {pagination.page} / {pagination.totalPages}
+              </span>
               <button
                 disabled={pagination.page <= 1}
                 onClick={() =>
                   setPagination((p) => ({ ...p, page: p.page - 1 }))
                 }
-                className="px-4 py-2 text-sm font-medium border border-gray-200 bg-white rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
+                className="p-2 text-xs font-semibold border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                aria-label="Previous page"
               >
-                {t("listPrev")}
+                <ChevronLeft className="w-4 h-4" />
               </button>
               <button
                 disabled={pagination.page >= pagination.totalPages}
                 onClick={() =>
                   setPagination((p) => ({ ...p, page: p.page + 1 }))
                 }
-                className="cursor-pointer px-4 py-2 text-sm font-medium border border-gray-200 bg-white rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
+                className="p-2 text-xs font-semibold border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                aria-label="Next page"
               >
-                {t("listNext")}
+                <ChevronRight className="w-4 h-4" />
               </button>
             </div>
-          </div>
-        )}
-      </div>
+          )}
+        </div>
+      )}
 
       <QRModal
         show={showQRModal}

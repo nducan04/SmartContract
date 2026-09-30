@@ -1,64 +1,64 @@
 import React from "react";
 
 /**
- * Reusable Card component.
- *
- * Usage:
- *   <Card variant="elevated" padding="md">
- *     <CardHeader>...</CardHeader>
- *     <CardBody>...</CardBody>
- *     <CardFooter>...</CardFooter>
- *   </Card>
- *
- * Or simple: <Card>...</Card>
+ * Modern Card component with dark mode support, glassmorphism, and subtle border glow.
  */
 const Card = ({
   children,
   variant = "elevated",
   padding = "md",
-  bordered = false,
+  bordered = true,
   hover = false,
   className = "",
   onClick,
+  ...rest
 }) => {
   const variantClasses = {
-    elevated: "bg-white border border-gray-100 shadow-sm",
-    flat: "bg-white",
-    outline: "bg-white border border-gray-200",
-    ghost: "bg-transparent",
+    elevated:
+      "bg-white dark:bg-slate-900 shadow-sm dark:shadow-none border border-slate-200/80 dark:border-slate-800/80",
+    glass:
+      "backdrop-blur-xl bg-white/80 dark:bg-slate-900/80 border border-slate-200/80 dark:border-slate-800/80 shadow-card",
+    flat:
+      "bg-slate-50 dark:bg-slate-900/60 border border-slate-200/60 dark:border-slate-800/60",
+    outline:
+      "bg-transparent border border-slate-200 dark:border-slate-800",
+    gradient:
+      "bg-gradient-to-br from-white to-slate-50 dark:from-slate-900 dark:to-slate-950 border border-slate-200/80 dark:border-slate-800/80 shadow-sm",
   };
 
   const paddingClasses = {
     none: "p-0",
-    sm: "p-4",
-    md: "p-6",
-    lg: "p-8",
+    xs: "p-3",
+    sm: "p-4 sm:p-5",
+    md: "p-5 sm:p-6",
+    lg: "p-6 sm:p-8",
   };
 
   const baseClass = variantClasses[variant] || variantClasses.elevated;
   const padClass = paddingClasses[padding] || paddingClasses.md;
-  const borderClass = bordered ? "border border-gray-200" : "";
   const hoverClass = hover
-    ? "transition-all duration-300 hover:shadow-lg hover:-translate-y-1 hover:border-blue-200"
+    ? "transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-xl hover:border-blue-400/50 dark:hover:border-blue-500/40 cursor-pointer"
     : "transition-all duration-200";
 
   return (
     <div
       className={`
-        rounded-2xl ${baseClass} ${padClass} ${borderClass}
+        rounded-2xl relative overflow-hidden
+        ${baseClass}
+        ${padClass}
         ${hoverClass}
         ${className}
       `}
       onClick={onClick}
+      {...rest}
     >
       {children}
     </div>
   );
 };
 
-/* Sub-components for structured cards */
 export const CardHeader = ({ children, className = "" }) => (
-  <div className={`mb-4 ${className}`}>{children}</div>
+  <div className={`mb-4 flex items-center justify-between gap-4 ${className}`}>{children}</div>
 );
 
 export const CardBody = ({ children, className = "" }) => (
@@ -66,7 +66,7 @@ export const CardBody = ({ children, className = "" }) => (
 );
 
 export const CardFooter = ({ children, className = "" }) => (
-  <div className={`mt-4 pt-4 border-t border-gray-100 ${className}`}>{children}</div>
+  <div className={`mt-4 pt-4 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between ${className}`}>{children}</div>
 );
 
 export default Card;

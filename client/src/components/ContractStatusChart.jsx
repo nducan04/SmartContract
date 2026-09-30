@@ -8,16 +8,16 @@ import {
   Legend,
 } from "recharts";
 import { useLanguage } from "../context/LanguageContext";
+import { PieChart as PieChartIcon } from "lucide-react";
 
-const ContractStatusChart = ({ contracts }) => {
+const ContractStatusChart = ({ contracts = [] }) => {
   const { t } = useLanguage();
 
-  // 1. Xử lý dữ liệu
   const data = [
-    { name: t("chartNew"), value: 0, color: "#A78BFA" },
-    { name: t("chartProcessing"), value: 0, color: "#FBBF24" },
-    { name: t("chartCompleted"), value: 0, color: "#8B5CF6" },
-    { name: t("chartCancelled"), value: 0, color: "#F87171" },
+    { name: t("chartNew") || "Mới tạo", value: 0, color: "#3B82F6" },
+    { name: t("chartProcessing") || "Đang xử lý", value: 0, color: "#F59E0B" },
+    { name: t("chartCompleted") || "Hoàn thành", value: 0, color: "#10B981" },
+    { name: t("chartCancelled") || "Đã hủy", value: 0, color: "#F43F5E" },
   ];
 
   contracts.forEach((c) => {
@@ -30,7 +30,6 @@ const ContractStatusChart = ({ contracts }) => {
   const activeData = data.filter((item) => item.value > 0);
   const totalContracts = contracts.length;
 
-  // === HÀM VẼ SỐ % TRÊN BIỂU ĐỒ ===
   const RADIAN = Math.PI / 180;
   const renderCustomizedLabel = ({
     cx,
@@ -44,8 +43,7 @@ const ContractStatusChart = ({ contracts }) => {
     const x = cx + radius * Math.cos(-midAngle * RADIAN);
     const y = cy + radius * Math.sin(-midAngle * RADIAN);
 
-    // Chỉ hiện nếu tỷ lệ > 5% để đỡ bị chồng chéo
-    if (percent < 0.05) return null;
+    if (percent < 0.08) return null;
 
     return (
       <text
@@ -54,7 +52,7 @@ const ContractStatusChart = ({ contracts }) => {
         fill="white"
         textAnchor="middle"
         dominantBaseline="central"
-        className="text-xs font-bold shadow-sm"
+        className="text-[11px] font-bold"
       >
         {`${(percent * 100).toFixed(0)}%`}
       </text>
@@ -63,68 +61,75 @@ const ContractStatusChart = ({ contracts }) => {
 
   if (contracts.length === 0) {
     return (
-      <div className="h-full flex flex-col items-center justify-center text-gray-400 bg-white rounded-3xl p-6 border border-gray-100 shadow-sm min-h-[300px]">
-        <i className="uil uil-chart-pie text-4xl mb-2 opacity-50"></i>
-        <p className="text-sm">{t("chartNoData")}</p>
+      <div className="h-full flex flex-col items-center justify-center text-slate-400 bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-sm min-h-[350px]">
+        <PieChartIcon className="w-10 h-10 mb-2 opacity-40 text-blue-500" />
+        <p className="text-xs font-semibold">{t("chartNoData") || "Chưa có dữ liệu thống kê"}</p>
       </div>
     );
   }
 
   return (
-    <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 h-full flex flex-col min-h-[350px]">
-      <h3 className="text-lg font-bold text-gray-800 mb-4">
-        {t("chartTitle")}
+    <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl shadow-sm border border-slate-200/80 dark:border-slate-800 h-full flex flex-col min-h-[380px]">
+      <h3 className="text-base font-bold text-slate-900 dark:text-white mb-2 tracking-tight">
+        {t("chartTitle") || "Tỷ lệ trạng thái hợp đồng"}
       </h3>
+      <p className="text-xs text-slate-400 dark:text-slate-500 mb-4">
+        Phân bố theo các giai đoạn thực hiện
+      </p>
 
-      <div className="flex-1 w-full relative">
+      <div className="flex-1 w-full relative min-h-[250px]">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
             <Pie
               data={activeData}
               cx="50%"
               cy="50%"
-              innerRadius={80}
-              outerRadius={110}
-              paddingAngle={5}
+              innerRadius={70}
+              outerRadius={100}
+              paddingAngle={4}
               dataKey="value"
               cornerRadius={6}
-              labelLine={false} // Tắt đường kẻ nối
-              label={renderCustomizedLabel} // Sử dụng hàm vẽ % tự chế
+              labelLine={false}
+              label={renderCustomizedLabel}
             >
               {activeData.map((entry, index) => (
                 <Cell key={`cell-${index}`} fill={entry.color} stroke="none" />
               ))}
             </Pie>
 
-            {/* Center Label (Tổng số) */}
             <text x="50%" y="50%" textAnchor="middle" dominantBaseline="middle">
-              <tspan x="50%" dy="-20" fontSize="14" fill="#9CA3AF">
-                {t("chartTotal")}
+              <tspan x="50%" dy="-16" fontSize="11" fill="#94A3B8" fontWeight="600">
+                {t("chartTotal") || "TỔNG SỐ"}
               </tspan>
               <tspan
                 x="50%"
-                dy="28"
-                fontSize="32"
-                fontWeight="bold"
-                fill="#1F2937"
+                dy="26"
+                fontSize="28"
+                fontWeight="800"
+                fill="currentColor"
+                className="text-slate-900 dark:text-white"
               >
                 {totalContracts}
               </tspan>
             </text>
 
             <Tooltip
-              formatter={(value) => [`${value} ${t("chartCount")}`, "Count"]}
+              formatter={(value) => [`${value} hợp đồng`, "Số lượng"]}
               contentStyle={{
-                borderRadius: "12px",
-                border: "none",
-                boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                borderRadius: "16px",
+                border: "1px solid rgba(226, 232, 240, 0.8)",
+                boxShadow: "0 10px 25px rgba(0,0,0,0.1)",
+                backgroundColor: "rgba(255, 255, 255, 0.95)",
+                fontSize: "12px",
+                fontWeight: "600"
               }}
             />
             <Legend
               verticalAlign="bottom"
               height={36}
               iconType="circle"
-              iconSize={10}
+              iconSize={8}
+              wrapperStyle={{ fontSize: "12px", fontWeight: "500" }}
             />
           </PieChart>
         </ResponsiveContainer>

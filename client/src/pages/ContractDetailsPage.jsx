@@ -8,6 +8,24 @@ import Swal from "sweetalert2";
 import { agreementABI } from "../constants";
 import CheckpointMap from "../components/CheckpointMap";
 import { useLanguage } from "../context/LanguageContext";
+import {
+  Printer,
+  MapPin,
+  Clock,
+  Trash2,
+  Navigation,
+  FileText,
+  CheckCircle2,
+  AlertTriangle,
+  Search,
+  UploadCloud,
+  ShieldCheck,
+  ExternalLink,
+  Coins,
+  Building,
+  UserCheck,
+  Sparkles
+} from "lucide-react";
 
 const CHECKPOINT_PRESETS = [
   { name: "Cảng Hải Phòng", lat: 20.8651, lng: 106.6838 },
@@ -28,7 +46,6 @@ const ContractDetailsPage = () => {
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
 
-  // STATE MỚI: Quản lý file minh chứng được chọn ở từng bước
   const [proofFiles, setProofFiles] = useState({});
   const [selectedCheckpoint, setSelectedCheckpoint] = useState("");
   const [trackingNote, setTrackingNote] = useState("");
@@ -46,13 +63,14 @@ const ContractDetailsPage = () => {
     t("listFilterStatus4"),
     t("listFilterStatus5"),
   ];
+
   const stateColors = [
-    "bg-blue-100 text-blue-800",
-    "bg-purple-100 text-purple-800",
-    "bg-yellow-100 text-yellow-800",
-    "bg-green-100 text-green-800",
-    "bg-gray-100 text-gray-800",
-    "bg-red-100 text-red-800",
+    "bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700",
+    "bg-purple-50 text-purple-700 dark:bg-purple-950/40 dark:text-purple-300 border border-purple-200 dark:border-purple-800/60",
+    "bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300 border border-amber-200 dark:border-amber-800/60",
+    "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60",
+    "bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300 border border-blue-200 dark:border-blue-800/60",
+    "bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300 border border-rose-200 dark:border-rose-800/60",
   ];
 
   const formatDate = (timestamp) => {
@@ -92,7 +110,6 @@ const ContractDetailsPage = () => {
         ? getAgreementContract(id)
         : null;
       if (!contractToRead) {
-        // NGƯỜI DÙNG KHÔNG CÓ VÍ -> DÙNG PUBLIC PROVIDER
         const publicProvider = new ethers.JsonRpcProvider(
           "https://ethereum-sepolia-rpc.publicnode.com",
         );
@@ -100,45 +117,41 @@ const ContractDetailsPage = () => {
       }
 
       const data = await contractToRead.getAgreementDetails();
-      const realState = Number(data[0]);
+      const currentBlock = await contractToRead.runner.provider.getBlock(
+        "latest",
+      );
+      const currentTime = currentBlock.timestamp;
+      const isLate =
+        Number(data[0]) === 3 && currentTime > Number(data[4]);
 
-      // --- LOGIC MỚI: Kéo dữ liệu ảnh minh chứng từ MongoDB ---
-      const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
-      let dbProofs = {};
-      let dbTracking = [];
-      try {
-        // Tìm hợp đồng hiện tại trong DB để lấy object proofs
-        const response = await axios.get(
-          `${API_URL}/api/contracts/track/${id}`,
-        );
-        const dbContract = response.data;
-        if (dbContract && dbContract.proofs) {
-          dbProofs = dbContract.proofs;
-        }
-        if (dbContract && dbContract.trackingHistory) {
-          dbTracking = dbContract.trackingHistory;
-        }
-      } catch (dbErr) {
-        console.warn("Chưa tải được proofs từ DB");
-      }
-
-      setDetails({
-        state: realState,
+      const contractInfo = {
+        state: Number(data[0]),
         client: data[1],
         provider: data[2],
         receiver: data[3],
         amount: ethers.formatEther(data[4]),
-        terms: data[5],
-        termsHash: data[6],
-        deadline: data[7],
-        penalty: ethers.formatEther(data[8]),
-        isLate: data[9],
-        proofs: dbProofs, // Lưu proofs vào state
-        trackingHistory: dbTracking, // Thêm tracking history
-      });
-      syncToBackend(realState);
+        penalty: ethers.formatEther(data[5]),
+        deadline: data[6],
+        termsHash: data[7],
+        terms: data[8],
+        isLate,
+      };
+
+      const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+      try {
+        const backendRes = await axios.get(`${API_URL}/api/contracts/${id}`);
+        if (backendRes.data) {
+          contractInfo.trackingHistory = backendRes.data.trackingHistory || [];
+          contractInfo.proofs = backendRes.data.proofs || {};
+          contractInfo.createdAt = backendRes.data.createdAt;
+        }
+      } catch (err) {
+        console.warn("Chưa lấy được tracking DB:", err);
+      }
+
+      setDetails(contractInfo);
     } catch (error) {
-      console.error("Lỗi tải hợp đồng:", error);
+      console.error("Lỗi tải chi tiết:", error);
     } finally {
       setLoading(false);
     }
@@ -146,102 +159,108 @@ const ContractDetailsPage = () => {
 
   useEffect(() => {
     fetchDetails();
-  }, [id, walletAddress, getAgreementContract]);
+  }, [id, walletAddress]);
+
+  const handleDownloadPDF = () => {
+    const element = document.getElementById("printable-contract");
+    if (!element) return;
+    const opt = {
+      margin: 10,
+      filename: `HopDong_${id.slice(-6)}.pdf`,
+      image: { type: "jpeg", quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true },
+      jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+    };
+    if (window.html2pdf) {
+      window.html2pdf().set(opt).from(element).save();
+    } else {
+      window.print();
+    }
+  };
 
   const handleMapClick = (latlng) => {
     setManualLatLng(latlng);
-    setCustomLocationName(`Tọa độ trên bản đồ`);
     setSelectedCheckpoint("");
+    setCustomLocationName(
+      `Điểm ghim [${latlng.lat.toFixed(4)}, ${latlng.lng.toFixed(4)}]`,
+    );
   };
 
   const handleGetCurrentLocation = () => {
     if (!navigator.geolocation) {
-      toast.error("Trình duyệt của bạn không hỗ trợ định vị GPS.");
+      toast.error("Trình duyệt không hỗ trợ định vị GPS!");
       return;
     }
-    toast.info("Đang lấy vị trí...");
+    setActionLoading(true);
     navigator.geolocation.getCurrentPosition(
-      (position) => {
-        setManualLatLng({
-          lat: position.coords.latitude,
-          lng: position.coords.longitude,
-        });
-        setCustomLocationName("Vị trí hiện tại (GPS)");
+      (pos) => {
+        const lat = pos.coords.latitude;
+        const lng = pos.coords.longitude;
+        setManualLatLng({ lat, lng });
         setSelectedCheckpoint("");
+        setCustomLocationName(`Vị trí GPS [${lat.toFixed(4)}, ${lng.toFixed(4)}]`);
+        setActionLoading(false);
+        toast.success("Đã lấy vị trí GPS thành công!");
       },
-      (error) => {
-        toast.error(
-          "Không thể lấy vị trí. Vui lòng cho phép quyền truy cập vị trí.",
-        );
+      (err) => {
+        console.error(err);
+        toast.error("Không thể lấy vị trí: " + err.message);
+        setActionLoading(false);
       },
     );
   };
 
   const handleSearchLocation = async () => {
-    if (!searchQuery.trim()) {
-      toast.error("Vui lòng nhập địa danh cần tìm!");
-      return;
-    }
+    if (!searchQuery.trim()) return;
     setIsSearching(true);
     try {
-      const response = await axios.get(
-        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
-          searchQuery,
-        )}&limit=1`,
+      const res = await axios.get(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}`,
       );
-      if (response.data && response.data.length > 0) {
-        const place = response.data[0];
-        setManualLatLng({
-          lat: parseFloat(place.lat),
-          lng: parseFloat(place.lon),
-        });
-        setCustomLocationName(place.display_name);
+      if (res.data && res.data.length > 0) {
+        const first = res.data[0];
+        const lat = parseFloat(first.lat);
+        const lng = parseFloat(first.lon);
+        setManualLatLng({ lat, lng });
         setSelectedCheckpoint("");
-        toast.success("Đã tìm thấy vị trí trên bản đồ!");
+        setCustomLocationName(first.display_name.split(",")[0]);
+        toast.success(`Tìm thấy: ${first.display_name.split(",")[0]}`);
       } else {
         toast.error("Không tìm thấy địa điểm này!");
       }
-    } catch (error) {
-      toast.error("Lỗi khi tìm kiếm địa điểm.");
+    } catch (e) {
+      toast.error("Lỗi khi tìm kiếm địa chỉ!");
     } finally {
       setIsSearching(false);
     }
   };
 
-  const handleDeleteCheckpoint = async (realIndex) => {
-    const result = await Swal.fire({
-      title: "Xóa điểm hành trình?",
-      text: "Bạn có chắc chắn muốn xóa điểm định vị này không?",
+  const handleDeleteCheckpoint = async (index) => {
+    Swal.fire({
+      title: "Xác nhận xóa?",
+      text: "Bạn có chắc chắn muốn xóa điểm dừng này khỏi lịch trình?",
       icon: "warning",
       showCancelButton: true,
       confirmButtonColor: "#d33",
       cancelButtonColor: "#3085d6",
-      confirmButtonText: "Đồng ý xóa",
+      confirmButtonText: "Xóa",
       cancelButtonText: "Hủy",
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+          await axios.delete(`${API_URL}/api/contracts/${id}/checkpoint/${index}`);
+          toast.success("Đã xóa trạm dừng!");
+          fetchDetails();
+        } catch (e) {
+          toast.error("Lỗi khi xóa!");
+        }
+      }
     });
-
-    if (!result.isConfirmed) return;
-
-    setActionLoading(true);
-    try {
-      const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
-      await axios.put(`${API_URL}/api/contracts/delete-tracking`, {
-        contractAddress: id,
-        index: realIndex,
-      });
-      toast.success("Đã xóa vị trí thành công!");
-      fetchDetails();
-    } catch (err) {
-      console.error(err);
-      toast.error("Lỗi khi xóa vị trí!");
-    } finally {
-      setActionLoading(false);
-    }
   };
 
   const handleAddCheckpoint = async () => {
     let finalLat, finalLng, finalName;
-
     if (manualLatLng) {
       finalLat = manualLatLng.lat;
       finalLng = manualLatLng.lng;
@@ -252,9 +271,7 @@ const ContractDetailsPage = () => {
       finalLng = preset.lng;
       finalName = preset.name;
     } else {
-      toast.error(
-        "Vui lòng chọn trạm điểm từ danh sách hoặc click trên bản đồ!",
-      );
+      toast.error("Vui lòng chọn trạm điểm từ danh sách hoặc click trên bản đồ!");
       return;
     }
 
@@ -263,10 +280,7 @@ const ContractDetailsPage = () => {
       return;
     }
 
-    // Nối nội dung cho tương thích nếu DB cũ chưa có trường note
-    const payloadInfo = trackingNote
-      ? `${finalName} - Ghi chú: ${trackingNote}`
-      : finalName;
+    const payloadInfo = `${finalName} - Ghi chú: ${trackingNote}`;
 
     setActionLoading(true);
     try {
@@ -280,12 +294,10 @@ const ContractDetailsPage = () => {
       });
       toast.success("Cập nhật vị trí thành công!");
 
-      // Reset form
       setSelectedCheckpoint("");
       setTrackingNote("");
       setManualLatLng(null);
       setCustomLocationName("");
-
       fetchDetails();
     } catch (err) {
       console.error(err);
@@ -295,7 +307,6 @@ const ContractDetailsPage = () => {
     }
   };
 
-  // --- HÀM MỚI: Xử lý Upload Ảnh Minh Chứng lên IPFS & Lưu vào DB ---
   const handleUploadProof = async (stepKey) => {
     const file = proofFiles[stepKey];
     if (!file) {
@@ -304,7 +315,6 @@ const ContractDetailsPage = () => {
     }
     setActionLoading(true);
     try {
-      // 1. Tải lên Pinata (IPFS)
       const url = `https://api.pinata.cloud/pinning/pinFileToIPFS`;
       const formData = new FormData();
       formData.append("file", file);
@@ -317,7 +327,6 @@ const ContractDetailsPage = () => {
       });
       const ipfsHash = res.data.IpfsHash;
 
-      // 2. Lưu Hash vào Backend (MongoDB)
       const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
       await axios.put(`${API_URL}/api/contracts/upload-proof`, {
         contractAddress: id,
@@ -325,8 +334,7 @@ const ContractDetailsPage = () => {
         ipfsHash: ipfsHash,
       });
 
-      toast.success("Tải minh chứng thành công!");
-      // Xóa file đã chọn trong state và load lại data
+      toast.success("Tải minh chứng lên IPFS thành công!");
       setProofFiles((prev) => ({ ...prev, [stepKey]: null }));
       fetchDetails();
     } catch (err) {
@@ -337,48 +345,20 @@ const ContractDetailsPage = () => {
     }
   };
 
-  // ... (CÁC HÀM XỬ LÝ GIAO DỊCH BLOCKCHAIN CỦA BẠN GIỮ NGUYÊN BÊN DƯỚI) ...
   const handleAccept = async () => {
     try {
       setActionLoading(true);
       const contract = getAgreementContract(id);
-
-      let gasEstimate;
-      try {
-        gasEstimate = await contract.acceptAgreement.estimateGas();
-      } catch (gasError) {
-        console.error("Lỗi estimate gas:", gasError);
-        if (
-          gasError.message &&
-          gasError.message.includes("insufficient funds")
-        ) {
-          toast.error(
-            "Số dư của bạn không đủ để trả phí mạng lưới (Gas fee). Vui lòng nạp thêm Sepolia ETH!",
-          );
-          throw new Error(
-            "Số dư của bạn không đủ để trả phí mạng lưới (Gas fee). Vui lòng nạp thêm Sepolia ETH!",
-          );
-        }
-        toast.error(
-          "Không thể dự tính phí màng lưới. Giao dịch có thể sẽ thất bại.",
-        );
-        throw new Error(
-          "Không thể dự tính phí màng lưới. Giao dịch có thể sẽ thất bại.",
-        );
-      }
-
+      const gasEstimate = await contract.acceptAgreement.estimateGas();
       const tx = await contract.acceptAgreement({
         gasLimit: (gasEstimate * 12n) / 10n,
       });
       await tx.wait();
-
       await syncToBackend(1, walletAddress);
       toast.success("Đã chấp nhận hợp đồng thành công!");
       fetchDetails();
     } catch (error) {
-      toast.error(
-        "Lỗi: " + (error.reason || error.message || "Giao dịch thất bại"),
-      );
+      toast.error("Lỗi: " + (error.reason || error.message || "Giao dịch thất bại"));
     } finally {
       setActionLoading(false);
     }
@@ -391,36 +371,18 @@ const ContractDetailsPage = () => {
       let tx;
       let statusNumber;
 
-      let gasEstimate;
-      try {
-        if (newStatusText === "InProgress") {
-          gasEstimate = await contract.updateStatusInProgress.estimateGas();
-        } else if (newStatusText === "Completed") {
-          gasEstimate = await contract.updateStatusCompleted.estimateGas();
-        }
-      } catch (gasError) {
-        console.error("Lỗi estimate gas:", gasError);
-        if (
-          gasError.message &&
-          gasError.message.includes("insufficient funds")
-        ) {
-          throw new Error(
-            "Số dư của bạn không đủ để trả phí mạng lưới (Gas fee). Vui lòng nạp thêm Sepolia ETH!",
-          );
-        }
-        throw new Error(
-          "Không thể dự tính phí màng lưới. Giao dịch có thể sẽ thất bại.",
-        );
-      }
-
-      const gasLimit = (gasEstimate * 12n) / 10n;
-
       if (newStatusText === "InProgress") {
-        tx = await contract.updateStatusInProgress({ gasLimit });
+        const gasEstimate = await contract.updateStatusInProgress.estimateGas();
+        tx = await contract.updateStatusInProgress({
+          gasLimit: (gasEstimate * 12n) / 10n,
+        });
         statusNumber = 2;
       }
       if (newStatusText === "Completed") {
-        tx = await contract.updateStatusCompleted({ gasLimit });
+        const gasEstimate = await contract.updateStatusCompleted.estimateGas();
+        tx = await contract.updateStatusCompleted({
+          gasLimit: (gasEstimate * 12n) / 10n,
+        });
         statusNumber = 3;
       }
       await tx.wait();
@@ -448,184 +410,128 @@ const ContractDetailsPage = () => {
     try {
       setActionLoading(true);
       const contract = getAgreementContract(id);
-
-      let gasEstimate;
-      try {
-        gasEstimate = await contract.confirmAndPay.estimateGas();
-      } catch (gasError) {
-        console.error("Lỗi estimate gas:", gasError);
-        if (
-          gasError.message &&
-          gasError.message.includes("insufficient funds")
-        ) {
-          throw new Error(
-            "Số dư của bạn không đủ để trả phí mạng lưới (Gas fee). Vui lòng nạp thêm Sepolia ETH!",
-          );
-        }
-        throw new Error(
-          "Không thể dự tính phí màng lưới. Giao dịch có thể sẽ thất bại.",
-        );
-      }
-
-      const tx = await contract.confirmAndPay({
+      const gasEstimate = await contract.confirmAgreement.estimateGas();
+      const tx = await contract.confirmAgreement({
         gasLimit: (gasEstimate * 12n) / 10n,
       });
       await tx.wait();
       await syncToBackend(4);
       Swal.fire({
-        title: "Hoàn tất thanh toán!",
-        text: "Đã xác nhận và thanh toán thành công cho bên vận chuyển.",
+        title: "Hoàn tất hợp đồng!",
+        text: "Hệ thống đã tự động giải ngân cho người vận chuyển.",
         icon: "success",
         confirmButtonColor: "#3085d6",
       });
       fetchDetails();
     } catch (error) {
-      Swal.fire({
-        title: "Giao dịch thất bại",
-        text: "Lỗi: " + (error.reason || error.message || "Không xác định"),
-        icon: "error",
-        confirmButtonColor: "#d33",
-      });
+      toast.error("Lỗi: " + (error.reason || error.message));
     } finally {
       setActionLoading(false);
     }
   };
 
   const handleCancel = async () => {
-    // 1. Xác nhận trước khi hủy
-    const result = await Swal.fire({
-      title: "Xác nhận hủy hợp đồng",
-      text: "Bạn có chắc chắn muốn hủy hợp đồng này? Toàn bộ tiền ký quỹ sẽ được hoàn lại về ví của bạn.",
+    Swal.fire({
+      title: "Hủy hợp đồng?",
+      text: "Bạn có chắc chắn muốn hủy hợp đồng và rút lại số tiền ký quỹ?",
       icon: "warning",
       showCancelButton: true,
       confirmButtonColor: "#d33",
       cancelButtonColor: "#3085d6",
       confirmButtonText: "Đồng ý hủy",
-      cancelButtonText: "Đóng",
-    });
-
-    if (!result.isConfirmed) return;
-
-    try {
-      setActionLoading(true);
-      const contract = getAgreementContract(id);
-
-      // 2. Estimate Gas để chặn lỗi nếu không đủ điều kiện hủy
-      let gasEstimate;
-      try {
-        gasEstimate = await contract.cancelAgreement.estimateGas();
-      } catch (gasError) {
-        console.error("Lỗi estimate gas hủy:", gasError);
-        throw new Error(
-          "Không thể hủy hợp đồng lúc này. Hãy đảm bảo bạn là người tạo và hợp đồng chưa có người nhận việc.",
-        );
+      cancelButtonText: "Quay lại",
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          setActionLoading(true);
+          const contract = getAgreementContract(id);
+          const gasEstimate = await contract.cancelAgreement.estimateGas();
+          const tx = await contract.cancelAgreement({
+            gasLimit: (gasEstimate * 12n) / 10n,
+          });
+          await tx.wait();
+          await syncToBackend(5);
+          Swal.fire("Đã hủy!", "Hợp đồng đã được hủy thành công.", "success");
+          fetchDetails();
+        } catch (error) {
+          toast.error("Lỗi: " + (error.reason || error.message));
+        } finally {
+          setActionLoading(false);
+        }
       }
-
-      // 3. Gọi hàm Hủy trên Blockchain
-      const tx = await contract.cancelAgreement({
-        gasLimit: (gasEstimate * 12n) / 10n,
-      });
-
-      Swal.fire({
-        title: "Đang xử lý",
-        text: "Đang xử lý hoàn tiền trên Blockchain, vui lòng đợi...",
-        icon: "info",
-        allowOutsideClick: false,
-        showConfirmButton: false,
-        didOpen: () => {
-          Swal.showLoading();
-        },
-      });
-
-      await tx.wait();
-
-      // 4. Đồng bộ Trạng thái 5 (Đã hủy) về Database
-      await syncToBackend(5);
-
-      Swal.fire({
-        title: "Đã hủy hợp đồng!",
-        text: "Đã hủy hợp đồng thành công và hoàn tiền về ví!",
-        icon: "success",
-        confirmButtonColor: "#3085d6",
-      });
-
-      fetchDetails(); // Tải lại giao diện
-    } catch (error) {
-      Swal.fire({
-        title: "Giao dịch thất bại",
-        text:
-          "Lỗi: " + (error.reason || error.message || "Giao dịch hủy thất bại"),
-        icon: "error",
-        confirmButtonColor: "#d33",
-      });
-    } finally {
-      setActionLoading(false);
-    }
+    });
   };
 
-  const handleDownloadPDF = () => {
-    window.print();
-  };
-
-  // --- HÀM RENDER KHUNG UPLOAD ---
-  const renderProofBox = (stepKey, title, description, authorizedWallet) => {
-    const currentProof = details.proofs && details.proofs[stepKey];
-    // Chỉ người được cấp quyền (VD: client, provider, receiver) mới hiện form upload
-    const canUpload =
-      walletAddress?.toLowerCase() === authorizedWallet?.toLowerCase();
+  const renderProofBox = (stepKey, stepTitle, documentName, allowedAddress) => {
+    const isOwnerOfStep =
+      walletAddress &&
+      allowedAddress &&
+      walletAddress.toLowerCase() === allowedAddress.toLowerCase();
+    const existingProof = details?.proofs?.[stepKey];
 
     return (
-      <div
-        key={stepKey}
-        className="border border-gray-200 bg-gray-50 rounded-xl p-4 flex flex-col justify-between hover:shadow-md transition-shadow"
-      >
-        <div className="mb-3">
-          <h4 className="font-bold text-sm text-gray-800">{title}</h4>
-          <p className="text-xs text-gray-500">{description}</p>
+      <div className="bg-slate-50 dark:bg-slate-800/60 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 flex flex-col justify-between">
+        <div>
+          <span className="text-xs font-bold text-blue-600 dark:text-blue-400 block uppercase mb-1">
+            {stepTitle}
+          </span>
+          <p className="text-xs font-semibold text-slate-800 dark:text-slate-200">
+            {documentName}
+          </p>
         </div>
 
-        {currentProof ? (
-          <a
-            href={`https://ipfs.io/ipfs/${currentProof}`}
-            target="_blank"
-            rel="noreferrer"
-            className="flex items-center justify-center gap-2 w-full py-2 bg-green-50 text-green-700 font-bold text-xs rounded-lg border border-green-200 hover:bg-green-100 transition-colors"
-          >
-            <i className="uil uil-check-circle text-lg"></i> Đã tải lên (Xem
-            chứng từ)
-          </a>
-        ) : canUpload ? (
-          <div className="flex flex-col gap-2">
-            <input
-              type="file"
-              onChange={(e) =>
-                setProofFiles({ ...proofFiles, [stepKey]: e.target.files[0] })
-              }
-              className="block w-full text-xs text-gray-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer"
-            />
-            <button
-              onClick={() => handleUploadProof(stepKey)}
-              disabled={actionLoading || !proofFiles[stepKey]}
-              className="w-full bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-blue-700 disabled:opacity-50 transition-colors cursor-pointer"
+        <div className="mt-3">
+          {existingProof ? (
+            <a
+              href={`https://ipfs.io/ipfs/${existingProof}`}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-3 py-1.5 rounded-xl border border-emerald-200/60 dark:border-emerald-800/60 hover:underline"
             >
-              Tải minh chứng lên IPFS
-            </button>
-          </div>
-        ) : (
-          <div className="w-full py-2 bg-gray-100 text-gray-400 font-bold text-xs rounded-lg text-center border border-gray-200">
-            Chưa có chứng từ
-          </div>
-        )}
+              <CheckCircle2 className="w-3.5 h-3.5" />
+              <span>Xem minh chứng IPFS</span>
+              <ExternalLink className="w-3 h-3 ml-0.5" />
+            </a>
+          ) : isOwnerOfStep ? (
+            <div className="space-y-2 mt-2">
+              <input
+                type="file"
+                onChange={(e) =>
+                  setProofFiles({ ...proofFiles, [stepKey]: e.target.files[0] })
+                }
+                className="block w-full text-[11px] text-slate-500 file:mr-2 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-[11px] file:font-bold file:bg-blue-50 dark:file:bg-blue-950/50 file:text-blue-600 dark:file:text-blue-400 hover:file:bg-blue-100 cursor-pointer"
+              />
+              <button
+                onClick={() => handleUploadProof(stepKey)}
+                disabled={actionLoading || !proofFiles[stepKey]}
+                className="w-full inline-flex items-center justify-center gap-1.5 bg-blue-600 text-white px-3 py-1.5 rounded-xl text-xs font-bold hover:bg-blue-700 disabled:opacity-50 transition-colors cursor-pointer shadow-xs active:scale-95"
+              >
+                <UploadCloud className="w-3.5 h-3.5" />
+                <span>Tải minh chứng lên IPFS</span>
+              </button>
+            </div>
+          ) : (
+            <div className="py-2 px-3 bg-slate-100 dark:bg-slate-800 text-slate-400 text-xs font-medium rounded-xl text-center">
+              Chưa có chứng từ
+            </div>
+          )}
+        </div>
       </div>
     );
   };
 
   if (loading)
-    return <div className="p-8 text-center text-gray-500">Đang tải...</div>;
+    return (
+      <div className="flex flex-col items-center justify-center py-24 gap-3">
+        <div className="animate-spin rounded-full h-10 w-10 border-2 border-blue-600 border-t-transparent"></div>
+        <p className="text-xs font-semibold text-slate-400">Đang đọc trạng thái từ Blockchain...</p>
+      </div>
+    );
+
   if (!details)
     return (
-      <div className="p-8 text-center text-red-500">
-        Không tìm thấy hợp đồng!
+      <div className="py-20 text-center text-rose-500 font-bold bg-white dark:bg-slate-900 rounded-3xl border border-rose-200">
+        Không tìm thấy hợp đồng trên mạng lưới!
       </div>
     );
 
@@ -640,594 +546,351 @@ const ContractDetailsPage = () => {
   const parsedTerms = parseTerms(details.terms);
 
   return (
-    <div className="p-4 md:p-6 max-w-5xl mx-auto relative print:p-0 print:m-0 print:max-w-none">
-      {/* HEADER & NÚT IN PDF NẰM NGOÀI BẢN IN */}
-      <div className="flex flex-wrap justify-between items-center mb-6 print:hidden gap-4">
+    <div className="space-y-6 max-w-5xl mx-auto animate-fade-in pb-16 print:p-0 print:m-0 print:max-w-none">
+      {/* Top Header Bar */}
+      <div className="flex flex-wrap justify-between items-center print:hidden gap-4 pb-2 border-b border-slate-200/80 dark:border-slate-800">
         <div className="flex items-center gap-3">
           <span
-            className={`px-4 py-2 rounded-full font-bold text-sm ${stateColors[details.state]}`}
+            className={`px-3.5 py-1.5 rounded-full font-bold text-xs ${stateColors[details.state]}`}
           >
             {stateLabels[details.state]}
           </span>
           {details.isLate && (
-            <span className="text-xs font-bold text-red-600 bg-red-50 px-2 py-1 rounded">
-              ⚠ Trễ hạn
+            <span className="inline-flex items-center gap-1 text-xs font-bold text-rose-600 bg-rose-50 dark:bg-rose-950/40 px-2.5 py-1 rounded-full border border-rose-200 dark:border-rose-900/40">
+              <AlertTriangle className="w-3.5 h-3.5" />
+              <span>Trễ hạn cam kết</span>
             </span>
           )}
         </div>
+
         <button
           onClick={handleDownloadPDF}
-          className="bg-blue-500 text-white px-5 py-2.5 rounded-xl text-sm font-bold flex 
-          items-center gap-2 hover:bg-gray-600 transition-all shadow-lg transform active:scale-95 cursor-pointer"
+          className="inline-flex items-center gap-2 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200/80 dark:border-slate-700/80 px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold hover:bg-slate-50 dark:hover:bg-slate-700 transition-all shadow-xs cursor-pointer active:scale-95"
         >
-          <i className="uil uil-print text-lg"></i> {t("detailPrint")}
+          <Printer className="w-4 h-4 text-blue-500" />
+          <span>{t("detailPrint")}</span>
         </button>
       </div>
 
       {/* VÙNG IN PDF - NỘI DUNG HỢP ĐỒNG */}
       <div
         id="printable-contract"
-        className="bg-white p-8 md:p-12 rounded-2xl shadow-sm border border-gray-200 print:shadow-none print:border-none print:p-0 text-gray-800"
+        className="bg-white dark:bg-slate-900 p-8 sm:p-12 rounded-3xl shadow-sm border border-slate-200/80 dark:border-slate-800 print:shadow-none print:border-none print:p-0 text-slate-800 dark:text-slate-200"
       >
-        {/* ... (TOÀN BỘ PHẦN RENDER BẢN IN QUỐC HIỆU VÀ ĐIỀU KHOẢN GIỮ NGUYÊN) ... */}
         <div className="text-center mb-8">
           {parsedTerms ? (
             <>
-              <h2 className="text-lg font-bold uppercase">
+              <h2 className="text-base sm:text-lg font-bold uppercase tracking-wider text-slate-900 dark:text-white">
                 {t("detailRepublic")}
               </h2>
-              <p className="font-bold underline text-md mt-1">
+              <p className="font-bold underline text-sm mt-1 text-slate-600 dark:text-slate-400">
                 {t("detailMotto")}
               </p>
-              <h1 className="text-2xl md:text-3xl font-bold mt-8 mb-2 uppercase">
+              <h1 className="text-2xl sm:text-3xl font-black mt-8 mb-2 uppercase gradient-text">
                 {t("detailContractTitle")}
               </h1>
-              <p className="italic text-sm text-gray-500">
+              <p className="font-mono text-xs text-slate-400 break-all">
                 {t("detailId")} {id}
               </p>
             </>
           ) : (
-            <div className="border-b-2 border-gray-800 pb-4">
-              <h2 className="text-2xl font-bold uppercase tracking-wide">
+            <div className="border-b border-slate-200 dark:border-slate-800 pb-4">
+              <h2 className="text-xl sm:text-2xl font-black uppercase tracking-wide text-slate-900 dark:text-white">
                 Chứng Nhận Hợp Đồng Blockchain
               </h2>
-              <p className="text-sm text-gray-500 mt-2">{t("detailId")} {id}</p>
+              <p className="font-mono text-xs text-slate-400 mt-2">{t("detailId")} {id}</p>
             </div>
           )}
         </div>
 
         {parsedTerms ? (
-          <div className="space-y-6 text-sm md:text-base">
-            <p className="italic">
+          <div className="space-y-6 text-sm">
+            <p className="italic text-slate-600 dark:text-slate-400">
               {t("detailToday")} {formatDate(details.createdAt || Date.now() / 1000)}
               {t("detailWeInclude")}
             </p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-6">
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-5 bg-slate-50 dark:bg-slate-800/40 rounded-2xl border border-slate-200/60 dark:border-slate-700/60">
               <div>
-                <h3 className="font-bold text-lg uppercase mb-3 border-b border-gray-300 pb-1 text-blue-800">
-                  {t("detailPartyA")}
+                <h3 className="font-bold text-sm uppercase mb-3 text-blue-600 dark:text-blue-400 border-b border-slate-200 dark:border-slate-700 pb-1.5 flex items-center gap-1.5">
+                  <Building className="w-4 h-4" />
+                  <span>{t("detailPartyA")}</span>
                 </h3>
-                <ul className="space-y-2">
-                  <li>
-                    <strong>{t("detailName")}</strong>{" "}
-                    {parsedTerms.partyA_name ||
-                      "..................................................."}
-                  </li>
-                  <li>
-                    <strong>{t("detailAddress")}</strong>{" "}
-                    {parsedTerms.partyA_address ||
-                      "..................................................."}
-                  </li>
-                  <li>
-                    <strong>{t("detailTax")}</strong>{" "}
-                    {parsedTerms.partyA_mst ||
-                      "..................................................."}
-                  </li>
-                  <li>
-                    <strong>{t("detailRep")}</strong>{" "}
-                    {parsedTerms.partyA_rep ||
-                      "..................................................."}
-                  </li>
-                  <li className="break-all mt-2 pt-2 border-t border-dashed">
-                    <strong>{t("detailWallet")}</strong>
+                <ul className="space-y-1.5 text-xs">
+                  <li><strong>{t("detailName")}:</strong> {parsedTerms.partyA_name || "---"}</li>
+                  <li><strong>{t("detailAddress")}:</strong> {parsedTerms.partyA_address || "---"}</li>
+                  <li><strong>{t("detailTax")}:</strong> {parsedTerms.partyA_mst || "---"}</li>
+                  <li><strong>{t("detailRep")}:</strong> {parsedTerms.partyA_rep || "---"}</li>
+                  <li className="break-all pt-2 border-t border-dashed border-slate-200 dark:border-slate-700">
+                    <strong>{t("detailWallet")}:</strong>
                     <br />
-                    <span className="font-mono text-xs text-gray-500">
-                      {details.client}
-                    </span>
+                    <span className="font-mono text-[11px] text-slate-500">{details.client}</span>
                   </li>
                 </ul>
               </div>
+
               <div>
-                <h3 className="font-bold text-lg uppercase mb-3 border-b border-gray-300 pb-1 text-blue-800">
-                  {t("detailPartyB")}
+                <h3 className="font-bold text-sm uppercase mb-3 text-purple-600 dark:text-purple-400 border-b border-slate-200 dark:border-slate-700 pb-1.5 flex items-center gap-1.5">
+                  <UserCheck className="w-4 h-4" />
+                  <span>{t("detailPartyB")}</span>
                 </h3>
-                <ul className="space-y-2">
-                  <li>
-                    <strong>{t("detailName")}</strong>{" "}
-                    {parsedTerms.partyB_name ||
-                      "..................................................."}
-                  </li>
-                  <li>
-                    <strong>{t("detailAddress")}</strong>{" "}
-                    {parsedTerms.partyB_address ||
-                      "..................................................."}
-                  </li>
-                  <li>
-                    <strong>{t("detailTax")}</strong>{" "}
-                    {parsedTerms.partyB_mst ||
-                      "..................................................."}
-                  </li>
-                  <li>
-                    <strong>{t("detailRep")}</strong>{" "}
-                    {parsedTerms.partyB_rep ||
-                      "..................................................."}
-                  </li>
-                  <li className="break-all mt-2 pt-2 border-t border-dashed">
-                    <strong>{t("detailWallet")}</strong>
+                <ul className="space-y-1.5 text-xs">
+                  <li><strong>{t("detailName")}:</strong> {parsedTerms.partyB_name || "---"}</li>
+                  <li><strong>{t("detailAddress")}:</strong> {parsedTerms.partyB_address || "---"}</li>
+                  <li><strong>{t("detailTax")}:</strong> {parsedTerms.partyB_mst || "---"}</li>
+                  <li><strong>{t("detailRep")}:</strong> {parsedTerms.partyB_rep || "---"}</li>
+                  <li className="break-all pt-2 border-t border-dashed border-slate-200 dark:border-slate-700">
+                    <strong>{t("detailWallet")}:</strong>
                     <br />
-                    <span className="font-mono text-xs text-gray-500">
-                      {details.receiver}
-                    </span>
+                    <span className="font-mono text-[11px] text-slate-500">{details.receiver}</span>
                   </li>
                 </ul>
               </div>
             </div>
 
-            <p className="font-bold mt-6 mb-4">
-              {t("detailAgreement")}
-            </p>
-            <div className="space-y-5 text-justify leading-relaxed">
-              <div>
-                <h4 className="font-bold underline">
-                  Điều 1: Tên hàng, số lượng, chất lượng
-                </h4>
-                <p className="whitespace-pre-wrap mt-1">
-                  {parsedTerms.art1_items}
-                </p>
+            <div className="space-y-4 leading-relaxed text-xs sm:text-sm">
+              <div className="p-4 bg-slate-50 dark:bg-slate-800/30 rounded-xl">
+                <h4 className="font-bold text-slate-900 dark:text-white">Điều 1: Tên hàng, số lượng, chất lượng</h4>
+                <p className="mt-1 whitespace-pre-wrap text-slate-700 dark:text-slate-300">{parsedTerms.art1_items}</p>
               </div>
-              <div>
-                <h4 className="font-bold underline">
-                  Điều 2: Quy cách đóng gói
-                </h4>
-                <p className="whitespace-pre-wrap mt-1">
-                  {parsedTerms.art2_packaging}
-                </p>
+
+              <div className="p-4 bg-slate-50 dark:bg-slate-800/30 rounded-xl">
+                <h4 className="font-bold text-slate-900 dark:text-white">Điều 2: Quy cách đóng gói</h4>
+                <p className="mt-1 whitespace-pre-wrap text-slate-700 dark:text-slate-300">{parsedTerms.art2_packaging}</p>
               </div>
-              <div>
-                <h4 className="font-bold underline">Điều 3: Giá cả hàng hóa</h4>
-                <p className="whitespace-pre-wrap mt-1">
-                  {parsedTerms.art3_price}
-                </p>
+
+              <div className="p-4 bg-slate-50 dark:bg-slate-800/30 rounded-xl">
+                <h4 className="font-bold text-slate-900 dark:text-white">Điều 3: Giá cả hàng hóa</h4>
+                <p className="mt-1 whitespace-pre-wrap text-slate-700 dark:text-slate-300">{parsedTerms.art3_price}</p>
               </div>
-              <div>
-                <h4 className="font-bold underline">
-                  Điều 4: Thời gian và Địa điểm giao hàng
-                </h4>
-                <p className="whitespace-pre-wrap mt-1">
-                  {parsedTerms.art4_delivery}
-                </p>
-                <p className="mt-2 font-bold text-red-600 bg-red-50 inline-block px-3 py-1 rounded print:border print:border-red-200">
-                  » Hạn chót cam kết ghi trên Blockchain:{" "}
-                  {formatDate(details.deadline)}
-                </p>
-              </div>
-              <div>
-                <h4 className="font-bold underline">
-                  Điều 5: Phương thức thanh toán
-                </h4>
-                <p className="whitespace-pre-wrap mt-1">
-                  {parsedTerms.art5_payment}
-                </p>
-                <div className="bg-gray-50 p-4 rounded-lg mt-3 border border-gray-200 print:border-gray-400">
-                  <p>
-                    🔹{" "}
-                    <strong>
-                      Giá trị thanh toán tự động qua Smart Contract:
-                    </strong>{" "}
-                    <span className="text-blue-700 font-bold text-lg">
-                      {details.amount} ETH
-                    </span>
-                  </p>
-                  <p>
-                    🔹 <strong>Phạt vi phạm (Khấu trừ nếu quá hạn):</strong>{" "}
-                    <span className="text-red-600 font-bold">
-                      {details.penalty} ETH
-                    </span>
-                  </p>
+
+              <div className="p-4 bg-slate-50 dark:bg-slate-800/30 rounded-xl">
+                <h4 className="font-bold text-slate-900 dark:text-white">Điều 4: Thời gian và Địa điểm giao hàng</h4>
+                <p className="mt-1 whitespace-pre-wrap text-slate-700 dark:text-slate-300">{parsedTerms.art4_delivery}</p>
+                <div className="mt-2 text-rose-600 dark:text-rose-400 font-semibold text-xs bg-rose-50 dark:bg-rose-950/30 px-3 py-1.5 rounded-lg inline-block border border-rose-200 dark:border-rose-900/40">
+                  Hạn chót cam kết trên Blockchain: {formatDate(details.deadline)}
                 </div>
               </div>
-              <div>
-                <h4 className="font-bold underline">
-                  Điều 6: Trách nhiệm mỗi bên
-                </h4>
+
+              <div className="p-4 bg-slate-50 dark:bg-slate-800/30 rounded-xl">
+                <h4 className="font-bold text-slate-900 dark:text-white">Điều 5: Phương thức thanh toán & Escrow</h4>
+                <p className="mt-1 whitespace-pre-wrap text-slate-700 dark:text-slate-300">{parsedTerms.art5_payment}</p>
+                <div className="mt-3 flex flex-wrap gap-4 text-xs font-bold">
+                  <span className="text-blue-600 dark:text-blue-400">
+                    Ký quỹ Escrow: {details.amount} ETH
+                  </span>
+                  <span className="text-rose-600 dark:text-rose-400">
+                    Phạt trễ hạn: {details.penalty} ETH
+                  </span>
+                </div>
+              </div>
+
+              <div className="p-4 bg-slate-50 dark:bg-slate-800/30 rounded-xl">
+                <h4 className="font-bold text-slate-900 dark:text-white">Điều 6: Trách nhiệm mỗi bên</h4>
                 <p className="mt-1 font-semibold">1. Trách nhiệm Bên A:</p>
-                <p className="whitespace-pre-wrap mb-2">
-                  {parsedTerms.art6_respA}
-                </p>
+                <p className="whitespace-pre-wrap mb-2 text-slate-700 dark:text-slate-300">{parsedTerms.art6_respA}</p>
                 <p className="font-semibold">2. Trách nhiệm Bên B:</p>
-                <p className="whitespace-pre-wrap">{parsedTerms.art6_respB}</p>
+                <p className="whitespace-pre-wrap text-slate-700 dark:text-slate-300">{parsedTerms.art6_respB}</p>
               </div>
-              <div>
-                <h4 className="font-bold underline">
-                  Điều 7: Điều khoản chung
-                </h4>
-                <p className="whitespace-pre-wrap mt-1">
-                  {parsedTerms.art7_general}
-                </p>
+
+              <div className="p-4 bg-slate-50 dark:bg-slate-800/30 rounded-xl">
+                <h4 className="font-bold text-slate-900 dark:text-white">Điều 7: Điều khoản chung</h4>
+                <p className="whitespace-pre-wrap mt-1 text-slate-700 dark:text-slate-300">{parsedTerms.art7_general}</p>
               </div>
-              <div className="pt-4 mt-4 border-t border-gray-200 print:border-gray-400">
-                <h4 className="font-bold mb-1">
-                  Hồ sơ gốc đính kèm (Bản scan có chữ ký & dấu đỏ)
-                </h4>
+
+              <div className="pt-3 border-t border-slate-200 dark:border-slate-800">
+                <p className="font-bold text-xs mb-1">Hồ sơ gốc đính kèm trên IPFS:</p>
                 <a
                   href={`https://ipfs.io/ipfs/${details.termsHash}`}
                   target="_blank"
                   rel="noreferrer"
-                  className="break-all text-blue-600 hover:underline"
+                  className="font-mono text-xs text-blue-600 dark:text-blue-400 hover:underline break-all inline-flex items-center gap-1"
                 >
-                  https://ipfs.io/ipfs/{details.termsHash}
+                  <span>https://ipfs.io/ipfs/{details.termsHash}</span>
+                  <ExternalLink className="w-3.5 h-3.5" />
                 </a>
-              </div>
-            </div>
-
-            <div className="mt-12 grid grid-cols-2 text-center pb-12">
-              <div>
-                <p className="font-bold uppercase">Đại diện Bên A</p>
-                <p className="italic text-xs text-gray-500 mb-8">
-                  (Đã xác thực chữ ký điện tử)
-                </p>
-                <p className="font-mono text-xs font-bold text-blue-800 bg-blue-50 inline-block px-2 py-1 rounded break-all">
-                  {details.client}
-                </p>
-              </div>
-              <div>
-                <p className="font-bold uppercase">Đại diện Bên B</p>
-                <p className="italic text-xs text-gray-500 mb-8">
-                  (Đã xác thực chữ ký điện tử)
-                </p>
-                <p className="font-mono text-xs font-bold text-blue-800 bg-blue-50 inline-block px-2 py-1 rounded break-all">
-                  {details.receiver}
-                </p>
               </div>
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-            <div className="md:col-span-2 bg-gray-50 p-4 rounded-xl border border-gray-200 print:border print:border-gray-300">
-              <h3 className="text-xs font-bold text-gray-500 uppercase mb-2">
-                Tóm tắt nội dung dịch vụ
-              </h3>
-              <p className="text-gray-900 font-medium">{details.terms}</p>
-            </div>
-            <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 print:border print:border-gray-300">
-              <h3 className="text-xs font-bold text-blue-500 uppercase mb-1">
-                Giá trị ký quỹ / Thanh toán
-              </h3>
-              <p className="text-2xl font-bold text-blue-700">
-                {details.amount} ETH
-              </p>
-            </div>
-            <div
-              className={`${isOverdue ? "bg-red-50 border-red-200" : "bg-orange-50 border-orange-100"} p-4 rounded-xl border print:border print:border-gray-300`}
-            >
-              <h3
-                className={`text-xs font-bold uppercase mb-1 ${isOverdue ? "text-red-500" : "text-orange-600"}`}
-              >
-                Thời hạn cam kết
-              </h3>
-              <p
-                className={`text-lg font-mono font-bold ${isOverdue ? "text-red-700" : "text-gray-800"}`}
-              >
-                {formatDate(details.deadline)}
-              </p>
-            </div>
-            <div className="bg-gray-50 p-4 rounded-xl border border-gray-200 print:border print:border-gray-300">
-              <h3 className="text-xs font-bold text-gray-500 uppercase mb-1">
-                Quy định phạt vi phạm
-              </h3>
-              <p className="text-lg font-mono text-gray-800 font-bold">
-                -{details.penalty} ETH
-              </p>
-            </div>
-            <div className="bg-gray-50 p-4 rounded-xl border border-gray-200 print:border print:border-gray-300">
-              <h3 className="text-xs font-bold text-gray-500 uppercase mb-1">
-                Tài liệu đính kèm (Bản gốc)
-              </h3>
-              <p className="text-xs text-blue-600 font-mono break-all mt-1">
-                https://ipfs.io/ipfs/{details.termsHash}
-              </p>
-            </div>
-            <div className="md:col-span-2 space-y-4 mt-4">
-              <div className="flex justify-between items-center border-b pb-2">
-                <span className="text-gray-600 font-bold text-sm">
-                  Bên Giao (Client):
-                </span>
-                <span className="font-mono text-sm text-gray-800">
-                  {details.client}
-                </span>
-              </div>
-              <div className="flex justify-between items-center border-b pb-2">
-                <span className="text-gray-600 font-bold text-sm">
-                  Bên Nhận (Receiver):
-                </span>
-                <span className="font-mono text-sm text-gray-800">
-                  {details.receiver}
-                </span>
-              </div>
-            </div>
+          <div className="space-y-4">
+            <p className="text-sm font-semibold">{details.terms}</p>
           </div>
         )}
-        <div className="mt-8 text-center text-xs text-gray-400 italic">
-          <p>
-            Hợp đồng này được khởi tạo và bảo vệ bằng mật mã học trên
-            Blockchain.
-          </p>
-        </div>
       </div>
 
       {/* VÙNG THEO DÕI VỊ TRÍ TRÊN BẢN ĐỒ */}
-      <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 mt-6 print:hidden">
-        <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2 mb-4 border-b pb-2">
-          <i className="uil uil-map-marker-alt text-blue-500"></i> Lịch trình
-          vận chuyển
-        </h3>
+      <div className="bg-white dark:bg-slate-900 p-6 sm:p-8 rounded-3xl shadow-sm border border-slate-200/80 dark:border-slate-800 print:hidden">
+        <div className="flex items-center gap-2 mb-6 pb-3 border-b border-slate-100 dark:border-slate-800">
+          <MapPin className="w-5 h-5 text-blue-500" />
+          <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
+            Lịch trình vận chuyển & Checkpoint Map
+          </h3>
+        </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-          {/* CỘT TRÁI: FORM CẬP NHẬT & TIMELINE (40% - col-span-2) */}
+          {/* CỘT TRÁI: FORM CẬP NHẬT & TIMELINE */}
           <div className="lg:col-span-2 flex flex-col gap-6">
-            {/* Form Cập Nhật (chỉ hiện cho vận chuyển khi đang thực hiện) */}
             {details.state === 2 && isProvider && (
-              <div className="bg-blue-50/50 p-4 rounded-xl border border-blue-100">
-                <h4 className="font-bold text-blue-800 mb-3 text-sm flex items-center gap-2">
-                  <i className="uil uil-edit"></i> Cập nhật hành trình
+              <div className="bg-blue-50/50 dark:bg-blue-950/30 p-4 rounded-2xl border border-blue-100 dark:border-blue-900/50 space-y-4">
+                <h4 className="font-bold text-blue-700 dark:text-blue-400 text-xs uppercase tracking-wider flex items-center gap-1.5">
+                  <Navigation className="w-3.5 h-3.5" />
+                  <span>Cập nhật hành trình</span>
                 </h4>
 
-                <div className="space-y-5">
-                  <div>
-                    <label className="block text-xs font-semibold text-gray-700 mb-1">
-                      1. Nội dung / Ghi chú{" "}
-                      <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="VD: Đã bốc hàng xong, đang di chuyển..."
-                      className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                      value={trackingNote}
-                      onChange={(e) => setTrackingNote(e.target.value)}
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-semibold text-gray-700 mb-1">
-                      2. Vị trí <span className="text-red-500">*</span>
-                    </label>
-
-                    {/* Tùy chọn 1: Chọn từ danh sách */}
-                    <select
-                      value={selectedCheckpoint}
-                      onChange={(e) => {
-                        setSelectedCheckpoint(e.target.value);
-                        setManualLatLng(null); // Bỏ manual nếu chọn preset
-                      }}
-                      className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 outline-none focus:border-blue-500 bg-white mb-6"
-                    >
-                      <option value="">-- Chọn điểm có sẵn --</option>
-                      {CHECKPOINT_PRESETS.map((preset, idx) => (
-                        <option key={idx} value={idx}>
-                          {preset.name}
-                        </option>
-                      ))}
-                    </select>
-
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className="text-xs text-gray-400 font-medium">
-                        HOẶC TÌM KIẾM TỰ DO
-                      </span>
-                    </div>
-
-                    {/* Tùy chọn 2 & 3: Lấy GPS hoặc Click map */}
-                    <div className="flex gap-2">
-                      <button
-                        onClick={handleGetCurrentLocation}
-                        disabled={actionLoading}
-                        className="flex-none bg-blue-50 border border-blue-200 text-blue-700 text-xs font-bold px-3 py-2 rounded-lg hover:bg-blue-100 flex items-center justify-center gap-1 transition-colors cursor-pointer"
-                        title="Lấy GPS hiện tại"
-                      >
-                        <i className="uil uil-location-point"></i> GPS
-                      </button>
-                      <div className="flex-1 flex gap-1">
-                        <input
-                          type="text"
-                          placeholder="VD: Bắc Kinh, TQ..."
-                          className="w-full text-xs border border-gray-300 rounded-lg px-2 py-1 outline-none focus:border-blue-500"
-                          value={searchQuery}
-                          onChange={(e) => setSearchQuery(e.target.value)}
-                          onKeyDown={(e) =>
-                            e.key === "Enter" && handleSearchLocation()
-                          }
-                        />
-                        <button
-                          onClick={handleSearchLocation}
-                          disabled={isSearching}
-                          className="bg-gray-100 border border-gray-300 text-gray-700 px-3 py-1 rounded-lg text-xs font-bold hover:bg-gray-200 cursor-pointer"
-                        >
-                          {isSearching ? "..." : "Tìm"}
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Hiển thị tọa độ nếu là Manual */}
-                  {manualLatLng && (
-                    <div className="bg-yellow-50 text-yellow-800 text-xs p-2 rounded border border-yellow-200">
-                      <strong>📍 Vị trí chọn:</strong> {customLocationName}
-                      <span
-                        className="ml-2 text-red-500 cursor-pointer hover:underline"
-                        onClick={() => setManualLatLng(null)}
-                      >
-                        {" "}
-                        (Hủy)
-                      </span>
-                    </div>
-                  )}
-
-                  <button
-                    onClick={handleAddCheckpoint}
-                    disabled={actionLoading}
-                    className="w-full bg-blue-600 text-white px-4 py-2 mt-2 rounded-lg text-sm font-bold hover:bg-blue-700 disabled:opacity-50 transition-colors flex justify-center items-center gap-2 shadow-sm cursor-pointer"
-                  >
-                    {actionLoading ? (
-                      "Đang xử lý..."
-                    ) : (
-                      <>
-                        <i className="uil uil-navigator"></i> Gửi Cập Nhật Hành
-                        Trình
-                      </>
-                    )}
-                  </button>
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase mb-1">
+                    Ghi chú hành trình <span className="text-rose-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="VD: Đã bốc hàng, xe đang rời cảng..."
+                    className="w-full text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 outline-none focus:border-blue-500 bg-white dark:bg-slate-900"
+                    value={trackingNote}
+                    onChange={(e) => setTrackingNote(e.target.value)}
+                  />
                 </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase mb-1">
+                    Chọn trạm có sẵn
+                  </label>
+                  <select
+                    value={selectedCheckpoint}
+                    onChange={(e) => {
+                      setSelectedCheckpoint(e.target.value);
+                      setManualLatLng(null);
+                    }}
+                    className="w-full text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 outline-none focus:border-blue-500 bg-white dark:bg-slate-900 mb-2 cursor-pointer"
+                  >
+                    <option value="">-- Chọn trạm mẫu --</option>
+                    {CHECKPOINT_PRESETS.map((preset, idx) => (
+                      <option key={idx} value={idx}>
+                        {preset.name}
+                      </option>
+                    ))}
+                  </select>
+
+                  <div className="flex gap-2">
+                    <button
+                      onClick={handleGetCurrentLocation}
+                      disabled={actionLoading}
+                      className="px-3 py-1.5 bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-900/50 rounded-xl text-xs font-bold hover:bg-blue-100 transition-colors"
+                    >
+                      GPS
+                    </button>
+                    <div className="flex-1 flex gap-1">
+                      <input
+                        type="text"
+                        placeholder="Tìm địa điểm..."
+                        className="w-full text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-2.5 py-1 outline-none focus:border-blue-500 bg-white dark:bg-slate-900"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        onKeyDown={(e) => e.key === "Enter" && handleSearchLocation()}
+                      />
+                      <button
+                        onClick={handleSearchLocation}
+                        disabled={isSearching}
+                        className="px-2.5 py-1 bg-slate-100 dark:bg-slate-800 text-xs font-bold rounded-xl hover:bg-slate-200 transition-colors"
+                      >
+                        {isSearching ? "..." : "Tìm"}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <button
+                  onClick={handleAddCheckpoint}
+                  disabled={actionLoading}
+                  className="w-full py-2.5 bg-blue-600 text-white rounded-xl text-xs font-bold hover:bg-blue-700 transition-colors shadow-xs active:scale-95 cursor-pointer"
+                >
+                  {actionLoading ? "Đang xử lý..." : "Gửi cập nhật hành trình"}
+                </button>
               </div>
             )}
 
-            {/* Trục Thời Gian (Timeline) */}
-            <div className="bg-white p-4 rounded-xl border border-gray-200 flex-1">
-              <h4 className="font-bold text-gray-800 mb-4 text-sm flex items-center gap-2">
-                <i className="uil uil-history"></i> Lịch sử cập nhật
+            {/* Timeline */}
+            <div className="bg-slate-50 dark:bg-slate-800/40 p-4 rounded-2xl border border-slate-200/60 dark:border-slate-700/60 flex-1">
+              <h4 className="font-bold text-xs uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-3 flex items-center gap-1.5">
+                <Clock className="w-3.5 h-3.5" />
+                <span>Lịch sử di chuyển</span>
               </h4>
 
-              <div className="space-y-0 pl-2">
-                {!details.trackingHistory ||
-                details.trackingHistory.length === 0 ? (
-                  <p className="text-xs text-gray-500 italic mb-4">
-                    Chưa có dữ liệu hành trình.
-                  </p>
+              <div className="space-y-3">
+                {!details.trackingHistory || details.trackingHistory.length === 0 ? (
+                  <p className="text-xs text-slate-400 italic">Chưa có dữ liệu hành trình.</p>
                 ) : (
-                  details.trackingHistory
-                    .slice()
-                    .reverse()
-                    .map((point, index) => {
-                      const dt = new Date(point.timestamp);
-                      const isLatest = index === 0;
-                      const realIndex =
-                        details.trackingHistory.length - 1 - index;
-                      return (
+                  details.trackingHistory.slice().reverse().map((point, index) => {
+                    const dt = new Date(point.timestamp);
+                    const isLatest = index === 0;
+                    const realIndex = details.trackingHistory.length - 1 - index;
+                    return (
+                      <div key={index} className="relative pl-5 border-l-2 border-slate-200 dark:border-slate-700 pb-3 last:border-0 last:pb-0">
                         <div
-                          key={index}
-                          className="relative pl-6 border-l-2 border-gray-200 pb-6 last:border-0 last:pb-2"
-                        >
-                          <div
-                            className={`absolute w-3 h-3 rounded-full -left-[7px] top-1 ${isLatest ? "bg-blue-500 border-2 border-blue-200 shadow-[0_0_0_3px_rgba(59,130,246,0.2)]" : "bg-gray-300"}`}
-                          ></div>
-                          <div className="flex justify-between items-start gap-3">
-                            <div className="flex-1">
-                              <p
-                                className={`text-sm font-bold ${isLatest ? "text-gray-900" : "text-gray-700"}`}
-                              >
-                                {point.locationName.split(" - Ghi chú:")[0]}
-                              </p>
-                              {point.locationName.includes(" - Ghi chú:") && (
-                                <p className="text-sm text-gray-600 italic bg-gray-50 p-2 rounded mt-1 border border-gray-100">
-                                  "{point.locationName.split(" - Ghi chú: ")[1]}
-                                  "
-                                </p>
-                              )}
-                              <p className="text-xs text-gray-400 mt-1 flex items-center gap-1">
-                                <i className="uil uil-clock"></i>{" "}
-                                {dt.toLocaleTimeString("vi-VN")} -{" "}
-                                {dt.toLocaleDateString("vi-VN")}
-                              </p>
-                            </div>
-
-                            {details.state === 2 && isProvider && (
-                              <button
-                                onClick={() =>
-                                  handleDeleteCheckpoint(realIndex)
-                                }
-                                disabled={actionLoading}
-                                className="text-red-400 hover:text-red-700 hover:bg-red-50 px-2 py-1 rounded transition-colors cursor-pointer"
-                                title="Xóa điểm này"
-                              >
-                                <i className="uil uil-trash-alt text-lg"></i>
-                              </button>
-                            )}
+                          className={`absolute w-2.5 h-2.5 rounded-full -left-[6px] top-1 ${
+                            isLatest ? "bg-blue-500 ring-4 ring-blue-500/20" : "bg-slate-300 dark:bg-slate-600"
+                          }`}
+                        ></div>
+                        <div className="flex items-start justify-between gap-2">
+                          <div>
+                            <p className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                              {point.locationName.split(" - Ghi chú:")[0]}
+                            </p>
+                            <p className="text-[11px] text-slate-400 mt-0.5">
+                              {dt.toLocaleTimeString("vi-VN")} - {dt.toLocaleDateString("vi-VN")}
+                            </p>
                           </div>
+
+                          {details.state === 2 && isProvider && (
+                            <button
+                              onClick={() => handleDeleteCheckpoint(realIndex)}
+                              className="text-slate-400 hover:text-rose-500 p-1"
+                              title="Xóa điểm này"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          )}
                         </div>
-                      );
-                    })
+                      </div>
+                    );
+                  })
                 )}
               </div>
             </div>
           </div>
 
-          {/* CỘT PHẢI: BẢN ĐỒ (60% - col-span-3) */}
+          {/* CỘT PHẢI: BẢN ĐỒ */}
           <div className="lg:col-span-3">
-            <div className="text-xs text-gray-500 mb-2 italic flex justify-between">
-              <span>Trực quan hóa lộ trình trên bản đồ</span>
-              {details.state === 2 && isProvider && (
-                <span className="text-blue-500 font-medium">
-                  <i className="uil uil-mouse-alt"></i> Click vào bản đồ để thả
-                  ghim cập nhật
-                </span>
-              )}
-            </div>
             <CheckpointMap
               trackingHistory={details.trackingHistory}
-              onMapClick={
-                details.state === 2 && isProvider ? handleMapClick : undefined
-              }
+              onMapClick={details.state === 2 && isProvider ? handleMapClick : undefined}
               manualMarker={manualLatLng}
             />
           </div>
         </div>
       </div>
 
-      {/* --- KHU VỰC UPLOAD MINH CHỨNG PHÁP LÝ CHỈ HIỆN TRÊN MÀN HÌNH WEB --- */}
-      <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 mt-6 print:hidden">
-        <h3 className="text-lg font-bold text-gray-800 mb-4 border-b pb-2 flex items-center gap-2">
-          Hồ sơ & Minh chứng pháp lý từng giai đoạn
+      {/* KHU VỰC MINH CHỨNG PHÁP LÝ */}
+      <div className="bg-white dark:bg-slate-900 p-6 sm:p-8 rounded-3xl shadow-sm border border-slate-200/80 dark:border-slate-800 print:hidden">
+        <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white mb-5 pb-3 border-b border-slate-100 dark:border-slate-800 flex items-center gap-2">
+          <ShieldCheck className="w-5 h-5 text-emerald-500" />
+          <span>Hồ sơ & Minh chứng pháp lý từng giai đoạn</span>
         </h3>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {renderProofBox(
-            "step0",
-            "1. Khởi tạo hợp đồng",
-            "Bản gốc có chữ ký 2 bên",
-            details.client,
-          )}
-          {renderProofBox(
-            "step1",
-            "2. Xác nhận nhận việc",
-            "Lệnh điều động xe / Lệnh xuất kho",
-            details.provider,
-          )}
-          {renderProofBox(
-            "step2",
-            "3. Đang vận chuyển",
-            "Vận đơn / Hình ảnh bốc xếp hàng",
-            details.provider,
-          )}
-          {renderProofBox(
-            "step3",
-            "4. Bàn giao hoàn thành",
-            "Biên bản bàn giao tại kho đích",
-            details.receiver,
-          )}
-          {renderProofBox(
-            "step4",
-            "5. Thanh toán",
-            "Hóa đơn VAT / Ủy nhiệm chi NH",
-            details.receiver,
-          )}
+          {renderProofBox("step0", "1. Khởi tạo hợp đồng", "Bản gốc có chữ ký 2 bên", details.client)}
+          {renderProofBox("step1", "2. Xác nhận nhận việc", "Lệnh điều động xe / Lệnh xuất kho", details.provider)}
+          {renderProofBox("step2", "3. Đang vận chuyển", "Vận đơn / Hình ảnh bốc xếp hàng", details.provider)}
+          {renderProofBox("step3", "4. Bàn giao hoàn thành", "Biên bản bàn giao tại kho đích", details.receiver)}
+          {renderProofBox("step4", "5. Thanh toán", "Hóa đơn VAT / Ủy nhiệm chi NH", details.receiver)}
         </div>
       </div>
 
-      {/* KHU VỰC NÚT HÀNH ĐỘNG GIAO DỊCH BLOCKCHAIN */}
-      <div className="flex flex-wrap justify-end gap-4 mt-6 print:hidden">
+      {/* NÚT HÀNH ĐỘNG GIAO DỊCH BLOCKCHAIN */}
+      <div className="flex flex-wrap justify-end gap-3 print:hidden pt-2">
         {!walletAddress ? (
-          <div className="w-full mt-2 p-4 bg-yellow-50 text-yellow-700 text-center rounded-xl border border-yellow-200 font-medium">
-            <i className="uil uil-wallet text-xl mr-2 align-middle"></i>
-            Bạn đang ở chế độ Khách (Chỉ xem). Vui lòng kết nối ví Web3 để tương
-            tác.
+          <div className="w-full p-4 bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-300 text-center rounded-2xl border border-amber-200 dark:border-amber-900/50 text-xs sm:text-sm font-semibold">
+            Bạn đang ở chế độ xem khách. Vui lòng kết nối ví Web3 để ký duyệt hoặc xác nhận thanh toán.
           </div>
         ) : (
           <>
@@ -1237,67 +900,62 @@ const ContractDetailsPage = () => {
                 <button
                   onClick={handleAccept}
                   disabled={actionLoading}
-                  className="px-6 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 shadow-lg cursor-pointer"
+                  className="px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl font-bold shadow-md hover:shadow-lg transition-all active:scale-95 cursor-pointer text-sm"
                 >
-                  {actionLoading
-                    ? "Đang xử lý..."
-                    : "Nhận vận chuyển đơn hàng này"}
+                  {actionLoading ? "Đang xử lý..." : "Nhận vận chuyển đơn hàng này"}
                 </button>
               )}
+
             {details.state === 1 && isProvider && (
               <button
                 onClick={() => handleUpdateStatus("InProgress")}
                 disabled={actionLoading}
-                className="px-6 py-3 bg-yellow-500 text-white rounded-xl font-bold hover:bg-yellow-600 shadow-lg cursor-pointer"
+                className="px-6 py-3 bg-amber-500 hover:bg-amber-600 text-white rounded-xl font-bold shadow-md hover:shadow-lg transition-all active:scale-95 cursor-pointer text-sm"
               >
-                {actionLoading
-                  ? "Đang xử lý..."
-                  : "Cập nhật: Bắt đầu giao hàng"}
+                {actionLoading ? "Đang xử lý..." : "Cập nhật: Bắt đầu giao hàng"}
               </button>
             )}
+
             {details.state === 2 && isProvider && (
               <button
                 onClick={() => handleUpdateStatus("Completed")}
                 disabled={actionLoading}
-                className="px-6 py-3 bg-green-500 text-white rounded-xl font-bold hover:bg-green-600 shadow-lg cursor-pointer"
+                className="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold shadow-md hover:shadow-lg transition-all active:scale-95 cursor-pointer text-sm"
               >
-                {actionLoading
-                  ? "Đang xử lý..."
-                  : "Cập nhật: Đã giao thành công"}
+                {actionLoading ? "Đang xử lý..." : "Cập nhật: Đã giao thành công"}
               </button>
             )}
+
             {details.state === 3 && isReceiver && (
-              <div className="flex flex-col items-end gap-2 w-full md:w-auto">
+              <div className="flex flex-col items-end gap-2 w-full sm:w-auto">
                 {isOverdue && (
-                  <span className="text-red-600 font-bold text-sm bg-red-50 px-3 py-1 rounded-lg border border-red-100">
-                    ⚠ Đơn hàng quá hạn. Hệ thống sẽ tự động trừ tiền phạt.
+                  <span className="text-rose-600 font-bold text-xs bg-rose-50 dark:bg-rose-950/40 px-3 py-1 rounded-lg border border-rose-200 dark:border-rose-900/40">
+                    ⚠ Đơn hàng quá hạn. Hệ thống sẽ tự động trừ tiền phạt {details.penalty} ETH.
                   </span>
                 )}
                 <button
                   onClick={handleConfirm}
                   disabled={actionLoading}
-                  className="px-6 py-3 bg-purple-600 text-white rounded-xl font-bold hover:bg-purple-700 shadow-lg w-full md:w-auto cursor-pointer"
+                  className="px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white rounded-xl font-bold shadow-md hover:shadow-lg transition-all active:scale-95 cursor-pointer text-sm w-full sm:w-auto"
                 >
                   {actionLoading
                     ? "Đang xử lý..."
                     : isOverdue
                       ? `Xác nhận & Phạt (${details.penalty} ETH)`
-                      : "Xác nhận & Thanh toán cho Vận chuyển"}
+                      : "Xác nhận & Thanh toán tự động"}
                 </button>
               </div>
             )}
 
-            {/* NÚT HỦY HỢP ĐỒNG */}
-            {details.state === 0 &&
-              currentWallet === details.client?.toLowerCase() && (
-                <button
-                  onClick={handleCancel}
-                  disabled={actionLoading}
-                  className="px-6 py-3 bg-red-50 text-red-600 border border-red-200 rounded-xl font-bold hover:bg-red-100 transition-colors cursor-pointer"
-                >
-                  {actionLoading ? "Đang xử lý..." : "Hủy hợp đồng"}
-                </button>
-              )}
+            {details.state === 0 && currentWallet === details.client?.toLowerCase() && (
+              <button
+                onClick={handleCancel}
+                disabled={actionLoading}
+                className="px-6 py-3 bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-900/50 rounded-xl font-bold hover:bg-rose-100 transition-colors cursor-pointer text-sm"
+              >
+                {actionLoading ? "Đang xử lý..." : "Hủy hợp đồng & Hoàn tiền"}
+              </button>
+            )}
           </>
         )}
       </div>

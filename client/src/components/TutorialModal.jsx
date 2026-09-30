@@ -1,11 +1,20 @@
 import React, { useState, useEffect } from "react";
 import { useLanguage } from "../context/LanguageContext";
+import {
+  Wallet,
+  ShieldCheck,
+  Flame,
+  FileText,
+  Rocket,
+  X,
+  ChevronLeft,
+  ChevronRight
+} from "lucide-react";
 
 const TutorialModal = ({ isOpen, onClose }) => {
   const [currentStep, setCurrentStep] = useState(0);
   const { t } = useLanguage();
 
-  // Auto-show modal once if never seen before
   useEffect(() => {
     if (!isOpen) return;
     const hasSeen = localStorage.getItem("hasSeenTutorial");
@@ -18,39 +27,39 @@ const TutorialModal = ({ isOpen, onClose }) => {
 
   const steps = [
     {
-      title: t("tutStep1Title"),
-      content: t("tutStep1Content"),
-      icon: "uil-wallet",
-      color: "text-orange-500",
-      bg: "bg-orange-50",
+      title: t("tutStep1Title") || "Kết nối Ví Web3",
+      content: t("tutStep1Content") || "Sử dụng MetaMask, Trust Wallet hoặc OKX Wallet để đăng nhập an toàn.",
+      icon: Wallet,
+      color: "text-amber-500",
+      bg: "bg-amber-50 dark:bg-amber-950/40",
     },
     {
-      title: t("tutStep2Title"),
-      content: t("tutStep2Content"),
-      icon: "uil-shield-check",
-      color: "text-green-500",
-      bg: "bg-green-50",
+      title: t("tutStep2Title") || "Ký quỹ An toàn",
+      content: t("tutStep2Content") || "Tiền của bạn được khóa trong Smart Contract phi tập trung cho tới khi đơn hàng giao thành công.",
+      icon: ShieldCheck,
+      color: "text-emerald-500",
+      bg: "bg-emerald-50 dark:bg-emerald-950/40",
     },
     {
-      title: t("tutStep3Title"),
-      content: t("tutStep3Content"),
-      icon: "uil-fire",
-      color: "text-red-500",
-      bg: "bg-red-50",
+      title: t("tutStep3Title") || "Tự động Phạt vi phạm",
+      content: t("tutStep3Content") || "Nếu người vận chuyển giao hàng trễ hạn đã cam kết, hợp đồng tự động khấu trừ tiền phạt.",
+      icon: Flame,
+      color: "text-rose-500",
+      bg: "bg-rose-50 dark:bg-rose-950/40",
     },
     {
-      title: t("tutStep4Title"),
-      content: t("tutStep4Content"),
-      icon: "uil-file-contract-dollar",
+      title: t("tutStep4Title") || "Lưu trữ Bằng chứng IPFS",
+      content: t("tutStep4Content") || "Hợp đồng scan và ảnh giao nhận được lưu vĩnh viễn trên mạng lưu trữ phân tán IPFS.",
+      icon: FileText,
       color: "text-blue-500",
-      bg: "bg-blue-50",
+      bg: "bg-blue-50 dark:bg-blue-950/40",
     },
     {
-      title: t("tutStep5Title"),
-      content: t("tutStep5Content"),
-      icon: "uil-rocket",
+      title: t("tutStep5Title") || "Sẵn sàng Bắt đầu!",
+      content: t("tutStep5Content") || "Tạo ngay hợp đồng đầu tiên để trải nghiệm công nghệ Escrow hiện đại nhất.",
+      icon: Rocket,
       color: "text-purple-500",
-      bg: "bg-purple-50",
+      bg: "bg-purple-50 dark:bg-purple-950/40",
     },
   ];
 
@@ -68,66 +77,71 @@ const TutorialModal = ({ isOpen, onClose }) => {
     }
   };
 
+  const StepIcon = steps[currentStep].icon;
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-fade-in">
-      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden relative animate-slide-up">
-        {/* Nút Đóng */}
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 backdrop-blur-sm p-4 animate-fade-in">
+      <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden relative animate-scale-in border border-slate-200/80 dark:border-slate-800">
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 bg-gray-50 hover:bg-gray-100 rounded-full w-8 h-8 flex items-center justify-center transition-colors cursor-pointer"
+          className="absolute top-5 right-5 p-1.5 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
         >
-          <i className="uil uil-times text-xl"></i>
+          <X className="w-5 h-5" />
         </button>
 
         <div className="p-8">
-          {/* Icon & Title */}
           <div className="text-center mb-6">
             <div
-              className={`w-20 h-20 mx-auto rounded-full flex items-center justify-center mb-4 ${steps[currentStep].bg} ${steps[currentStep].color}`}
+              className={`w-20 h-20 mx-auto rounded-3xl flex items-center justify-center mb-4 transition-all duration-300 ${steps[currentStep].bg} ${steps[currentStep].color}`}
             >
-              <i className={`uil ${steps[currentStep].icon} text-4xl`}></i>
+              <StepIcon className="w-10 h-10" />
             </div>
-            <h2 className="text-2xl font-bold text-gray-800">
+            <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
               {steps[currentStep].title}
             </h2>
           </div>
 
-          {/* Nội dung */}
-          <div className="min-h-[100px] text-gray-600 text-center leading-relaxed mb-8 whitespace-pre-line">
+          <div className="min-h-[90px] text-slate-600 dark:text-slate-300 text-center text-sm leading-relaxed mb-6 whitespace-pre-line">
             {steps[currentStep].content}
           </div>
 
-          {/* Dấu chấm điều hướng (Dots indicator) */}
-          <div className="flex justify-center gap-2 mb-8">
+          {/* Dots Indicator */}
+          <div className="flex justify-center items-center gap-2 mb-8">
             {steps.map((_, index) => (
-              <div
+              <button
                 key={index}
+                onClick={() => setCurrentStep(index)}
                 className={`h-2 rounded-full transition-all duration-300 ${
-                  index === currentStep ? "w-8 bg-blue-600" : "w-2 bg-gray-200"
+                  index === currentStep
+                    ? "w-8 bg-blue-600 dark:bg-blue-400"
+                    : "w-2 bg-slate-200 dark:bg-slate-700"
                 }`}
-              ></div>
+                aria-label={`Go to step ${index + 1}`}
+              />
             ))}
           </div>
 
-          {/* Nút hành động */}
-          <div className="flex items-center gap-4">
+          {/* Controls */}
+          <div className="flex items-center justify-between gap-3">
             <button
               onClick={handlePrev}
               disabled={currentStep === 0}
-              className={`flex-1 py-3 px-4 rounded-xl font-bold transition-all
-                ${
-                  currentStep === 0
-                    ? "bg-gray-50 text-gray-300 cursor-not-allowed"
-                    : "bg-gray-100 text-gray-600 hover:bg-gray-200 cursor-pointer"
-                }`}
+              className={`px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-xs sm:text-sm font-semibold transition-all flex items-center gap-1 ${
+                currentStep === 0
+                  ? "opacity-30 cursor-not-allowed text-slate-400"
+                  : "text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer"
+              }`}
             >
-              {t("tutPrev")}
+              <ChevronLeft className="w-4 h-4" />
+              <span>Quay lại</span>
             </button>
+
             <button
               onClick={handleNext}
-              className="flex-1 py-3 px-4 rounded-xl font-bold bg-blue-600 text-white hover:bg-blue-700 hover:shadow-lg transition-all cursor-pointer"
+              className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-xs sm:text-sm shadow-md shadow-blue-500/20 hover:shadow-lg transition-all active:scale-95 cursor-pointer flex items-center gap-1.5"
             >
-              {currentStep === steps.length - 1 ? t("tutFinish") : t("tutNext")}
+              <span>{currentStep === steps.length - 1 ? "Hoàn tất" : "Tiếp theo"}</span>
+              <ChevronRight className="w-4 h-4" />
             </button>
           </div>
         </div>

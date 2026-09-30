@@ -4,8 +4,20 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { ethers } from "ethers";
 import AddressDisplay from "../components/AddressDisplay";
-import QRModal from "../components/QRModal"; // Bổ sung import QRModal
+import QRModal from "../components/QRModal";
 import Swal from "sweetalert2";
+import {
+  ShieldCheck,
+  FileText,
+  Coins,
+  Truck,
+  QrCode,
+  ArrowRight,
+  ChevronLeft,
+  ChevronRight,
+  Lock,
+  Sparkles
+} from "lucide-react";
 
 // HÀM GIẢI MÃ JSON
 const parseTerms = (termsString) => {
@@ -23,27 +35,25 @@ const parseTerms = (termsString) => {
 // HÀM HIỂN THỊ TRẠNG THÁI CHUẨN ĐẸP
 const getStatusBadge = (status) => {
   const map = [
-    { text: "Mới tạo", color: "bg-gray-100 text-gray-600" },
-    { text: "Đã chấp nhận", color: "bg-purple-100 text-purple-700" },
-    { text: "Đang thực hiện", color: "bg-yellow-100 text-yellow-700" },
-    { text: "Đã hoàn thành", color: "bg-green-100 text-green-700" },
-    { text: "Đã thanh toán", color: "bg-blue-100 text-blue-700" },
-    { text: "Đã hủy", color: "bg-red-100 text-red-700" },
+    { text: "Mới tạo", color: "bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700" },
+    { text: "Đã chấp nhận", color: "bg-purple-50 text-purple-700 border-purple-200/50 dark:bg-purple-950/40 dark:text-purple-300 dark:border-purple-800/40" },
+    { text: "Đang thực hiện", color: "bg-amber-50 text-amber-700 border-amber-200/50 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800/40" },
+    { text: "Đã hoàn thành", color: "bg-emerald-50 text-emerald-700 border-emerald-200/50 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800/40" },
+    { text: "Đã thanh toán", color: "bg-blue-50 text-blue-700 border-blue-200/50 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-800/40" },
+    { text: "Đã hủy", color: "bg-rose-50 text-rose-700 border-rose-200/50 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800/40" },
   ];
   const s = map[status] || map[0];
   return (
     <span
-      className={`px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5 whitespace-nowrap ${s.color}`}
+      className={`px-2.5 py-0.5 rounded-full text-xs font-semibold border flex items-center gap-1.5 whitespace-nowrap w-max ${s.color}`}
     >
-      <div
-        className={`w-1.5 h-1.5 rounded-full ${s.color.split(" ")[1].replace("text", "bg")}`}
-      ></div>
+      <span className="w-1.5 h-1.5 rounded-full bg-current opacity-70"></span>
       {s.text}
     </span>
   );
 };
 
-// COMPONENT DÒNG THÔNG MINH CHO ADMIN (Đã thêm prop onShowQR và onViewDetails)
+// COMPONENT DÒNG THÔNG MINH CHO ADMIN
 const AdminContractRow = ({ c, onShowQR, onViewDetails }) => {
   const [terms, setTerms] = useState(c.terms || "");
   const [isSyncing, setIsSyncing] = useState(false);
@@ -82,22 +92,22 @@ const AdminContractRow = ({ c, onShowQR, onViewDetails }) => {
   const receiverName = parsedTerms ? parsedTerms.partyB_name : null;
 
   return (
-    <tr className="hover:bg-gray-50/80 transition-colors border-b border-gray-100">
+    <tr className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition-colors border-b border-slate-100 dark:border-slate-800/80">
       <td className="p-4 align-top whitespace-nowrap">
         <AddressDisplay address={c.contractAddress} />
       </td>
-      <td className="p-4 align-top min-w-[300px]">
-        <p className="text-sm font-semibold text-gray-800 whitespace-normal break-words leading-relaxed line-clamp-2">
+      <td className="p-4 align-top min-w-[280px]">
+        <p className="text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-200 line-clamp-2">
           {displayTitle}
         </p>
       </td>
       <td className="p-4 align-top">
         {clientName ? (
           <div>
-            <p className="text-sm font-bold text-gray-800 whitespace-normal break-words leading-relaxed line-clamp-2">
+            <p className="text-xs font-bold text-slate-800 dark:text-slate-200 line-clamp-1">
               {clientName}
             </p>
-            <div className="text-xs text-gray-400 mt-1">
+            <div className="text-[11px] text-slate-400 mt-0.5">
               <AddressDisplay address={c.client} />
             </div>
           </div>
@@ -108,10 +118,10 @@ const AdminContractRow = ({ c, onShowQR, onViewDetails }) => {
       <td className="p-4 align-top">
         {receiverName ? (
           <div>
-            <p className="text-sm font-bold text-gray-800 whitespace-normal break-words leading-relaxed line-clamp-2">
+            <p className="text-xs font-bold text-slate-800 dark:text-slate-200 line-clamp-1">
               {receiverName}
             </p>
-            <div className="text-xs text-gray-400 mt-1">
+            <div className="text-[11px] text-slate-400 mt-0.5">
               <AddressDisplay address={c.receiver} />
             </div>
           </div>
@@ -124,31 +134,31 @@ const AdminContractRow = ({ c, onShowQR, onViewDetails }) => {
         c.provider !== "0x0000000000000000000000000000000000000000" ? (
           <AddressDisplay address={c.provider} />
         ) : (
-          <span className="text-xs font-medium text-gray-400 bg-gray-100 px-2 py-1 rounded">
+          <span className="text-[11px] font-medium text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md">
             Chưa nhận
           </span>
         )}
       </td>
       <td className="p-4 align-top">{getStatusBadge(c.status)}</td>
-      <td className="p-4 align-top text-sm text-gray-500 font-medium">
+      <td className="p-4 align-top text-xs text-slate-500 font-medium whitespace-nowrap">
         {new Date(c.createdAt).toLocaleDateString("vi-VN")}
       </td>
 
-      {/* CỘT HÀNH ĐỘNG MỚI */}
-      <td className="p-4 align-top text-center">
-        <div className="flex items-center justify-center gap-2">
+      <td className="p-4 align-top text-right">
+        <div className="flex items-center justify-end gap-1.5">
           <button
             onClick={() => onShowQR(c.contractAddress)}
-            className="p-2 text-gray-400 hover:text-blue-600 bg-gray-100 hover:bg-blue-100 rounded-lg transition-colors cursor-pointer"
+            className="p-1.5 text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 bg-slate-100 dark:bg-slate-800 rounded-lg transition-colors cursor-pointer"
             title="Hiện mã QR"
           >
-            <i className="uil uil-qrcode-scan text-lg"></i>
+            <QrCode className="w-3.5 h-3.5" />
           </button>
           <button
             onClick={() => onViewDetails(c.contractAddress)}
-            className="px-3 py-1.5 bg-blue-50 text-blue-600 font-bold text-xs hover:bg-blue-600 hover:text-white rounded-lg transition-colors cursor-pointer whitespace-nowrap"
+            className="inline-flex items-center gap-1 px-2.5 py-1 bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 font-bold text-xs hover:bg-blue-600 hover:text-white dark:hover:bg-blue-600 dark:hover:text-white rounded-lg transition-all cursor-pointer whitespace-nowrap"
           >
-            Chi tiết
+            <span>Chi tiết</span>
+            <ArrowRight className="w-3 h-3" />
           </button>
         </div>
       </td>
@@ -169,7 +179,6 @@ const AdminPage = () => {
     total: 0,
   });
 
-  // STATE CHO QR MODAL
   const [showQRModal, setShowQRModal] = useState(false);
   const [selectedContractAddress, setSelectedContractAddress] = useState(null);
 
@@ -227,7 +236,6 @@ const AdminPage = () => {
     fetchAllData();
   }, [walletAddress, navigate, pagination.page]);
 
-  // HÀM MỞ / ĐÓNG QR
   const handleShowQR = (address) => {
     setSelectedContractAddress(address);
     setShowQRModal(true);
@@ -240,13 +248,13 @@ const AdminPage = () => {
 
   if (!walletAddress) {
     return (
-      <div className="flex flex-col justify-center items-center h-screen bg-gray-50">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-6"></div>
-        <h2 className="text-xl font-bold text-gray-700">
+      <div className="flex flex-col justify-center items-center py-32">
+        <div className="animate-spin rounded-full h-10 w-10 border-2 border-blue-600 border-t-transparent mb-4"></div>
+        <h2 className="text-lg font-bold text-slate-800 dark:text-slate-200">
           Đang xác thực quyền Admin...
         </h2>
-        <p className="text-gray-500 mt-2">
-          Hệ thống đang kết nối an toàn với ví MetaMask của bạn.
+        <p className="text-xs text-slate-500 mt-1">
+          Hệ thống đang kết nối an toàn với ví Web3 của bạn.
         </p>
       </div>
     );
@@ -254,85 +262,108 @@ const AdminPage = () => {
 
   if (!isAuth || loading) {
     return (
-      <div className="flex justify-center items-center h-screen bg-gray-50">
-        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600"></div>
+      <div className="flex justify-center items-center py-32">
+        <div className="animate-spin rounded-full h-10 w-10 border-2 border-blue-600 border-t-transparent"></div>
       </div>
     );
   }
 
   return (
-    <div className="p-4 md:p-8 bg-gray-50 w-full overflow-hidden">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div className="bg-white p-6 rounded-2xl shadow-sm border-l-4 border-blue-500 relative overflow-hidden">
-          <i className="uil uil-file-contract absolute -right-4 -bottom-4 text-8xl text-blue-50 opacity-50"></i>
-          <p className="text-gray-500 text-xs font-bold uppercase relative z-10">
-            Tổng số hợp đồng
-          </p>
-          <p className="text-4xl font-bold text-gray-800 mt-2 relative z-10">
-            {pagination.total || allContracts.length}
-          </p>
-        </div>
-        <div className="bg-white p-6 rounded-2xl shadow-sm border-l-4 border-green-500 relative overflow-hidden">
-          <i className="uil uil-ethereum absolute -right-4 -bottom-4 text-8xl text-green-50 opacity-50"></i>
-          <p className="text-gray-500 text-xs font-bold uppercase relative z-10">
-            Tổng giá trị lưu chuyển
-          </p>
-          <p className="text-4xl font-bold text-gray-800 mt-2 relative z-10">
-            {allContracts
-              .reduce((sum, c) => sum + parseFloat(c.amount || 0), 0)
-              .toFixed(4)}{" "}
-            <span className="text-lg text-gray-400">ETH</span>
-          </p>
-        </div>
-        <div className="bg-white p-6 rounded-2xl shadow-sm border-l-4 border-purple-500 relative overflow-hidden">
-          <i className="uil uil-truck absolute -right-4 -bottom-4 text-8xl text-purple-50 opacity-50"></i>
-          <p className="text-gray-500 text-xs font-bold uppercase relative z-10">
-            Đang vận hành
-          </p>
-          <p className="text-4xl font-bold text-gray-800 mt-2 relative z-10">
-            {allContracts.filter((c) => c.status > 0 && c.status < 3).length}
+    <div className="space-y-6 animate-fade-in">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-2 border-b border-slate-200/80 dark:border-slate-800">
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+            <span className="p-1 rounded-md bg-rose-100 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400">
+              <ShieldCheck className="w-3.5 h-3.5" />
+            </span>
+            <span className="text-xs font-bold uppercase tracking-wider text-rose-500">
+              Khu vực Quản trị viên
+            </span>
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+            Quản trị hệ thống Smart Contract
+          </h1>
+          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
+            Theo dõi tất cả hợp đồng, số dư ký quỹ và nhật ký giao dịch toàn sàn
           </p>
         </div>
       </div>
 
-      {/* BẢNG DỮ LIỆU TOÀN CỤC */}
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-200 max-w-full">
-        <div className="p-5 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center rounded-t-2xl">
-          <h2 className="font-bold text-gray-700">Tất cả giao dịch</h2>
+      {/* STATS BENTO CARDS */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl shadow-sm border border-slate-200/80 dark:border-slate-800 relative overflow-hidden">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold uppercase text-slate-400 tracking-wider">
+              Tổng số hợp đồng
+            </span>
+            <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+              <FileText className="w-5 h-5" />
+            </div>
+          </div>
+          <p className="text-3xl font-extrabold text-slate-900 dark:text-white mt-3">
+            {pagination.total || allContracts.length}
+          </p>
+          <span className="text-[11px] text-slate-400 mt-1 block">Toàn bộ hợp đồng trên hệ thống</span>
         </div>
 
-        {/* Đảm bảo w-full và overflow-x-auto để cuộn ngang trên mobile */}
-        <div className="overflow-x-auto w-full pb-4 scrollbar-thin scrollbar-thumb-gray-300">
-          <table className="w-full text-left border-collapse table-auto min-w-[1750px]">
-            <thead className="bg-gray-800 text-white text-xs uppercase tracking-wider">
+        <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl shadow-sm border border-slate-200/80 dark:border-slate-800 relative overflow-hidden">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold uppercase text-slate-400 tracking-wider">
+              Tổng giá trị lưu chuyển
+            </span>
+            <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+              <Coins className="w-5 h-5" />
+            </div>
+          </div>
+          <p className="text-3xl font-extrabold text-slate-900 dark:text-white mt-3">
+            {allContracts
+              .reduce((sum, c) => sum + parseFloat(c.amount || 0), 0)
+              .toFixed(4)}{" "}
+            <span className="text-sm font-bold text-blue-600 dark:text-blue-400">ETH</span>
+          </p>
+          <span className="text-[11px] text-slate-400 mt-1 block">Khối lượng ký quỹ Escrow</span>
+        </div>
+
+        <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl shadow-sm border border-slate-200/80 dark:border-slate-800 relative overflow-hidden">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold uppercase text-slate-400 tracking-wider">
+              Đang vận hành
+            </span>
+            <div className="w-10 h-10 rounded-xl bg-purple-50 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400 flex items-center justify-center">
+              <Truck className="w-5 h-5" />
+            </div>
+          </div>
+          <p className="text-3xl font-extrabold text-slate-900 dark:text-white mt-3">
+            {allContracts.filter((c) => c.status > 0 && c.status < 3).length}
+          </p>
+          <span className="text-[11px] text-slate-400 mt-1 block">Hợp đồng đang được thực hiện</span>
+        </div>
+      </div>
+
+      {/* BẢNG DỮ LIỆU TOÀN CỤC */}
+      <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-slate-200/80 dark:border-slate-800 overflow-hidden">
+        <div className="p-5 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30 flex justify-between items-center">
+          <h2 className="font-bold text-sm text-slate-800 dark:text-slate-200 uppercase tracking-wider">
+            Tất cả hợp đồng trên hệ thống
+          </h2>
+        </div>
+
+        <div className="overflow-x-auto w-full">
+          <table className="w-full text-left border-collapse table-auto min-w-[1200px]">
+            <thead className="bg-slate-800 dark:bg-slate-950 text-white text-[11px] uppercase tracking-wider font-bold">
               <tr>
-                <th className="p-4 min-w-[180px] whitespace-nowrap">
-                  ID Blockchain
-                </th>
-                <th className="p-4 min-w-[300px] whitespace-nowrap">
-                  Nội dung / Tên hàng
-                </th>
-                <th className="p-4 min-w-[250px] whitespace-nowrap">
-                  Người tạo (Bên A)
-                </th>
-                <th className="p-4 min-w-[250px] whitespace-nowrap">
-                  Người nhận (Bên B)
-                </th>
-                <th className="p-4 min-w-[180px] whitespace-nowrap">
-                  Vận chuyển
-                </th>
-                <th className="p-4 min-w-[150px] whitespace-nowrap">
-                  Trạng thái
-                </th>
-                <th className="p-4 min-w-[120px] whitespace-nowrap">
-                  Ngày tạo
-                </th>
-                <th className="p-4 min-w-[130px] text-center whitespace-nowrap">
-                  Hành động
-                </th>
+                <th className="p-4 whitespace-nowrap">ID Blockchain</th>
+                <th className="p-4 whitespace-nowrap">Nội dung / Tên hàng</th>
+                <th className="p-4 whitespace-nowrap">Bên A (Giao)</th>
+                <th className="p-4 whitespace-nowrap">Bên B (Nhận)</th>
+                <th className="p-4 whitespace-nowrap">Vận chuyển</th>
+                <th className="p-4 whitespace-nowrap">Trạng thái</th>
+                <th className="p-4 whitespace-nowrap">Ngày tạo</th>
+                <th className="p-4 text-right whitespace-nowrap">Hành động</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
               {allContracts.length > 0 ? (
                 allContracts.map((c) => (
                   <AdminContractRow
@@ -346,7 +377,7 @@ const AdminPage = () => {
                 ))
               ) : (
                 <tr>
-                  <td colSpan="8" className="p-10 text-center text-gray-400">
+                  <td colSpan="8" className="p-12 text-center text-slate-400 text-sm">
                     Chưa có dữ liệu hợp đồng nào.
                   </td>
                 </tr>
@@ -357,8 +388,8 @@ const AdminPage = () => {
 
         {/* Phân trang */}
         {pagination.totalPages > 1 && (
-          <div className="p-4 border-t border-gray-100 flex items-center justify-between bg-gray-50/50 rounded-b-2xl">
-            <span className="text-sm text-gray-500 font-medium">
+          <div className="p-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-800/30">
+            <span className="text-xs text-slate-500 dark:text-slate-400 font-semibold">
               Trang {pagination.page} / {pagination.totalPages}
             </span>
             <div className="flex gap-2">
@@ -367,25 +398,24 @@ const AdminPage = () => {
                 onClick={() =>
                   setPagination((p) => ({ ...p, page: p.page - 1 }))
                 }
-                className="px-4 py-2 text-sm font-medium border border-gray-200 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                className="p-2 text-xs font-semibold border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
               >
-                Trước
+                <ChevronLeft className="w-4 h-4" />
               </button>
               <button
                 disabled={pagination.page >= pagination.totalPages}
                 onClick={() =>
                   setPagination((p) => ({ ...p, page: p.page + 1 }))
                 }
-                className="px-4 py-2 text-sm font-medium border border-gray-200 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                className="p-2 text-xs font-semibold border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
               >
-                Tiếp
+                <ChevronRight className="w-4 h-4" />
               </button>
             </div>
           </div>
         )}
       </div>
 
-      {/* Tích hợp Popup QR */}
       <QRModal
         show={showQRModal}
         onClose={handleCloseQR}

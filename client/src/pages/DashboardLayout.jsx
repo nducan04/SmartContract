@@ -1,54 +1,65 @@
 import React, { useState } from "react";
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import { useTheme } from "../context/ThemeContext";
+import { Menu, Sun, Moon } from "lucide-react";
 
 const DashboardLayout = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { theme, toggleTheme } = useTheme();
+  const location = useLocation();
+
+  const getPageTitle = () => {
+    const path = location.pathname;
+    if (path === "/dashboard") return "Tổng quan";
+    if (path.includes("/contracts")) return "Danh sách hợp đồng";
+    if (path.includes("/create")) return "Tạo hợp đồng mới";
+    if (path.includes("/marketplace")) return "Thị trường mẫu hợp đồng";
+    if (path.includes("/contract/")) return "Chi tiết hợp đồng";
+    if (path.includes("/admin")) return "Quản trị viên";
+    return "Dashboard";
+  };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 print:bg-white">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-200 print:bg-white">
       <Sidebar
         isMobileOpen={isMobileMenuOpen}
         closeMobileMenu={() => setIsMobileMenuOpen(false)}
       />
 
-      {/* SỬA Ở ĐÂY: Có md:ml-72 để né Sidebar trên màn hình máy tính, và print:ml-0 để xóa lề khi in PDF */}
       <div className="flex-1 flex flex-col min-h-screen transition-all duration-300 md:ml-72 relative print:ml-0 print:h-auto print:block print:overflow-visible">
-        {/* Header Mobile (Sẽ bị ẩn đi khi in bằng print:hidden) */}
-        <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 h-16 flex items-center justify-between px-4 md:hidden sticky top-0 z-30 print:hidden">
+        {/* Header Mobile */}
+        <header className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-slate-200/80 dark:border-slate-800/80 h-16 flex items-center justify-between px-4 sm:px-6 md:hidden sticky top-0 z-30 print:hidden">
           <div className="flex items-center gap-3">
             <button
               onClick={() => setIsMobileMenuOpen(true)}
-              className="p-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+              className="p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              aria-label="Open sidebar menu"
             >
-              <i className="uil uil-bars text-2xl"></i>
+              <Menu className="w-5 h-5" />
             </button>
-            <span className="font-bold text-gray-700 dark:text-white">Dashboard</span>
+            <span className="font-bold text-base text-slate-800 dark:text-white">
+              {getPageTitle()}
+            </span>
           </div>
-          <div className="flex items-center gap-3">
-            {/* Dark mode toggle for mobile */}
+
+          <div className="flex items-center gap-2">
             <button
               onClick={toggleTheme}
-              className={`p-2 rounded-full transition-all duration-200 cursor-pointer ${
-                theme === "dark"
-                  ? "bg-gray-800 text-yellow-400 hover:bg-gray-700"
-                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-              }`}
+              className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-yellow-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all"
               title={theme === "dark" ? "Chuyển sang giao diện sáng" : "Chuyển sang giao diện tối"}
             >
               {theme === "dark" ? (
-                <i className="uil uil-sun text-lg"></i>
+                <Sun className="w-4 h-4" />
               ) : (
-                <i className="uil uil-moon text-lg"></i>
+                <Moon className="w-4 h-4" />
               )}
             </button>
           </div>
         </header>
 
         {/* Main Content Area */}
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-x-hidden print:overflow-visible print:p-0">
+        <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto overflow-x-hidden print:overflow-visible print:p-0">
           <Outlet />
         </main>
       </div>
