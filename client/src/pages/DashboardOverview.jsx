@@ -48,6 +48,7 @@ const DashboardOverview = () => {
     waitingConfirm: 0,
     completed: 0,
     totalContracts: 0,
+    statusDistribution: null,
   });
   const [recentList, setRecentList] = useState([]);
   const [allContracts, setAllContracts] = useState([]);
@@ -65,6 +66,7 @@ const DashboardOverview = () => {
           waitingConfirm: 0,
           completed: 0,
           totalContracts: 0,
+          statusDistribution: null,
         });
         return;
       }
@@ -85,6 +87,7 @@ const DashboardOverview = () => {
           waitingConfirm: data.waitingConfirm || 0,
           completed: data.completed || 0,
           totalContracts: data.totalContracts || 0,
+          statusDistribution: data.statusDistribution || null,
         });
 
         setRecentList(data.recentList || []);
@@ -400,7 +403,11 @@ const DashboardOverview = () => {
             {/* Cột phải: BIỂU ĐỒ TRÒN THỐNG KÊ */}
             <div className="lg:col-span-1">
               <div className="sticky top-24">
-                <ContractStatusChart contracts={allContracts} />
+                <ContractStatusChart
+                  contracts={allContracts}
+                  statusDistribution={stats.statusDistribution}
+                  totalContracts={stats.totalContracts}
+                />
               </div>
             </div>
           </div>

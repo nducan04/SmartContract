@@ -273,6 +273,32 @@ export const getStats = async (req, res) => {
       .sort({ createdAt: -1 })
       .limit(2);
 
+    // Tính toán phân bố trạng thái cho biểu đồ thống kê
+    const statusAgg = await Contract.aggregate([
+      {
+        $match: {
+          $or: [
+            { client: lowerWallet },
+            { provider: lowerWallet },
+            { receiver: lowerWallet },
+          ],
+        },
+      },
+      {
+        $group: {
+          _id: "$status",
+          count: { $sum: 1 },
+        },
+      },
+    ]);
+
+    const statusDistribution = { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+    statusAgg.forEach((item) => {
+      if (item._id !== null && item._id !== undefined) {
+        statusDistribution[item._id] = item.count;
+      }
+    });
+
     res.status(200).json({
       client: clientCount,
       provider: providerCount,
@@ -280,6 +306,7 @@ export const getStats = async (req, res) => {
       waitingConfirm: waitingConfirmCount,
       completed: completedCount,
       totalContracts: totalContracts,
+      statusDistribution: statusDistribution,
       recentList: recentContracts,
     });
   } catch (error) {
