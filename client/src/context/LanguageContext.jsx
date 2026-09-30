@@ -232,6 +232,10 @@ export const translations = {
     detailSignProvider: "ĐƠN VỊ VẬN CHUYỂN",
     detailSignNote: "(Ký & Ghi rõ họ tên / Ký số Blockchain)",
     // Marketplace Page
+    marketBadge: "Sàn hợp đồng công khai",
+    marketTitle: "Thị trường đơn hàng & Hợp đồng",
+    marketSubtitle: "Nhận việc vận chuyển hoặc kiểm tra các thỏa thuận mua bán mở trên toàn hệ thống",
+    marketLoading: "Đang tải sàn hợp đồng...",
     marketFilterNewest: "Mới nhất",
     marketFilterHighPrice: "Giá cao nhất",
     marketEmpty: "Hiện tại chưa có đơn hàng nào.",
@@ -485,6 +489,10 @@ export const translations = {
     detailSignProvider: "CARRIER",
     detailSignNote: "(Sign & Full Name / Blockchain Digital Signature)",
     // Marketplace Page
+    marketBadge: "Public Marketplace",
+    marketTitle: "Order & Contract Marketplace",
+    marketSubtitle: "Take shipping jobs or explore open trade agreements across the network",
+    marketLoading: "Loading marketplace contracts...",
     marketFilterNewest: "Newest",
     marketFilterHighPrice: "Highest Price",
     marketEmpty: "There are currently no orders.",

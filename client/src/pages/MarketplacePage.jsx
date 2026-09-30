@@ -128,13 +128,13 @@ const ContractRow = ({ contract, walletAddress, navigate }) => {
         </span>
       </td>
 
-      <td className="px-5 py-4 align-middle text-right">
+      <td className="px-5 py-4 align-middle text-right pr-6 sm:pr-8">
         {isClient ? (
-          <span className="text-xs font-semibold text-slate-400 bg-slate-100 dark:bg-slate-800 px-3 py-1.5 rounded-xl cursor-not-allowed">
+          <span className="inline-block whitespace-nowrap text-xs font-semibold text-slate-400 bg-slate-100 dark:bg-slate-800 px-3 py-1.5 rounded-xl cursor-not-allowed">
             {t("marketYourContract")}
           </span>
         ) : isReceiver ? (
-          <span className="text-xs font-semibold text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-950/40 px-3 py-1.5 rounded-xl border border-purple-200/50 dark:border-purple-800/50">
+          <span className="inline-block whitespace-nowrap text-xs font-semibold text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-950/40 px-3 py-1.5 rounded-xl border border-purple-200/50 dark:border-purple-800/50">
             {t("marketYouAreReceiver")}
           </span>
         ) : (
@@ -209,14 +209,14 @@ const MarketplacePage = () => {
               <ShoppingBag className="w-3.5 h-3.5" />
             </span>
             <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
-              Sàn hợp đồng công khai
+              {t("marketBadge")}
             </span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
-            Thị trường đơn hàng & Hợp đồng
+            {t("marketTitle")}
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
-            Nhận việc vận chuyển hoặc kiểm tra các thỏa thuận mua bán mở trên toàn hệ thống
+            {t("marketSubtitle")}
           </p>
         </div>
 
@@ -252,7 +252,7 @@ const MarketplacePage = () => {
         {loading ? (
           <div className="text-center py-24 flex flex-col items-center justify-center gap-3">
             <div className="animate-spin rounded-full h-8 w-8 border-2 border-blue-600 border-t-transparent"></div>
-            <p className="text-xs font-semibold text-slate-400">Đang tải sàn hợp đồng...</p>
+            <p className="text-xs font-semibold text-slate-400">{t("marketLoading")}</p>
           </div>
         ) : contracts.length === 0 ? (
           <div className="text-center py-20 text-slate-400">
@@ -261,14 +261,14 @@ const MarketplacePage = () => {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse table-fixed min-w-[950px]">
+            <table className="w-full text-left border-collapse table-fixed min-w-[1050px]">
               <thead>
                 <tr className="bg-slate-50/80 dark:bg-slate-800/60 border-b border-slate-200/80 dark:border-slate-800 text-[11px] uppercase text-slate-500 dark:text-slate-400 font-bold tracking-wider">
-                  <th className="px-5 py-4 w-[34%]">{t("marketOrderContent")}</th>
-                  <th className="px-5 py-4 w-[22%]">{t("marketPartyA")}</th>
-                  <th className="px-5 py-4 w-[22%]">{t("marketPartyB")}</th>
-                  <th className="px-5 py-4 w-[11%]">{t("marketDeposit")}</th>
-                  <th className="px-5 py-4 w-[11%] text-right">{t("marketAction")}</th>
+                  <th className="px-5 py-4 w-[30%]">{t("marketOrderContent")}</th>
+                  <th className="px-5 py-4 w-[20%]">{t("marketPartyA")}</th>
+                  <th className="px-5 py-4 w-[20%]">{t("marketPartyB")}</th>
+                  <th className="px-5 py-4 w-[12%]">{t("marketDeposit")}</th>
+                  <th className="px-5 py-4 w-[18%] text-right pr-6 sm:pr-8">{t("marketAction")}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">

@@ -171,11 +171,27 @@ const Navbar = () => {
           {/* Nút Đổi Ngôn Ngữ */}
           <button
             onClick={toggleLanguage}
-            className="flex items-center gap-1 px-2.5 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700/80 text-xs font-bold text-slate-700 dark:text-slate-200 hover:border-blue-300 transition-all active:scale-95 shadow-xs"
+            className="flex items-center p-0.5 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700/80 text-xs font-bold hover:border-blue-400/60 dark:hover:border-blue-500/60 transition-all active:scale-95 shadow-xs cursor-pointer"
             title={language === "vi" ? "Switch to English" : "Chuyển sang Tiếng Việt"}
           >
-            <span>{language === "vi" ? "🇻🇳" : "🇬🇧"}</span>
-            <span>{language === "vi" ? "VI" : "EN"}</span>
+            <span
+              className={`px-2 py-0.5 rounded-full transition-all duration-200 ${
+                language === "vi"
+                  ? "bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-xs font-extrabold"
+                  : "text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 font-medium"
+              }`}
+            >
+              Vi
+            </span>
+            <span
+              className={`px-2 py-0.5 rounded-full transition-all duration-200 ${
+                language === "en"
+                  ? "bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-xs font-extrabold"
+                  : "text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 font-medium"
+              }`}
+            >
+              EN
+            </span>
           </button>
 
           {/* Nút Chế độ tối */}

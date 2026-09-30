@@ -12,6 +12,7 @@ import {
   Bot,
   User
 } from "lucide-react";
+import animeAvatar from "../assets/anime-ai-avatar.jpg";
 
 const AIChatWidget = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -102,17 +103,22 @@ const AIChatWidget = () => {
       {/* Floating Trigger Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className={`fixed bottom-6 right-6 z-40 w-14 h-14 rounded-2xl bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white shadow-xl shadow-blue-500/30 hover:shadow-2xl hover:shadow-blue-500/40 hover:scale-105 active:scale-95 transition-all duration-300 flex items-center justify-center cursor-pointer group ${
-          isOpen ? "rotate-90" : ""
-        }`}
+        className={`fixed bottom-6 right-6 z-40 w-14 h-14 rounded-full bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white shadow-xl shadow-indigo-500/30 hover:shadow-2xl hover:shadow-indigo-500/50 hover:scale-110 active:scale-95 transition-all duration-300 flex items-center justify-center cursor-pointer group p-0.5 ring-4 ring-indigo-400/30 dark:ring-indigo-600/40`}
         aria-label="Toggle AI Assistant"
+        title="Trợ lý AI"
       >
         {isOpen ? (
-          <X className="w-6 h-6 transition-transform" />
+          <div className="w-full h-full rounded-full bg-slate-900/80 backdrop-blur-xs flex items-center justify-center text-white">
+            <X className="w-6 h-6 transition-transform group-hover:rotate-90 duration-200" />
+          </div>
         ) : (
-          <div className="relative">
-            <Sparkles className="w-6 h-6 group-hover:rotate-12 transition-transform" />
-            <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-emerald-400 rounded-full ring-2 ring-white dark:ring-slate-900 animate-pulse"></span>
+          <div className="relative w-full h-full rounded-full overflow-hidden">
+            <img
+              src={animeAvatar}
+              alt="AI Assistant Anime"
+              className="w-full h-full object-cover rounded-full group-hover:scale-110 transition-transform duration-300"
+            />
+            <span className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-400 rounded-full ring-2 ring-white dark:ring-slate-900 animate-pulse"></span>
           </div>
         )}
       </button>
@@ -132,14 +138,21 @@ const AIChatWidget = () => {
         {/* Header */}
         <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 px-5 py-4 flex items-center justify-between shrink-0 shadow-md">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-md text-white flex items-center justify-center shrink-0">
-              <Bot className="w-5 h-5" />
+            <div className="w-10 h-10 rounded-full overflow-hidden ring-2 ring-white/50 shadow-sm shrink-0 bg-white/20">
+              <img
+                src={animeAvatar}
+                alt="AI Assistant"
+                className="w-full h-full object-cover"
+              />
             </div>
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="text-white font-bold text-sm sm:text-base leading-tight">
                   {t("chatTitle") || "Trợ lý AI Smart Contract"}
                 </h3>
+                <span className="text-[10px] bg-white/20 backdrop-blur-md text-white font-semibold px-2 py-0.5 rounded-full border border-white/20">
+                  Online
+                </span>
               </div>
               <p className="text-white/80 text-[11px] mt-0.5">
                 {t("chatSubtitle") || "Hỗ trợ 24/7 kiến thức Blockchain & Hợp đồng"}
@@ -179,8 +192,12 @@ const AIChatWidget = () => {
               }`}
             >
               {msg.role === "assistant" && (
-                <div className="w-7 h-7 rounded-lg bg-blue-100 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0 mr-2.5 mt-0.5">
-                  <Bot className="w-4 h-4" />
+                <div className="w-7 h-7 rounded-full overflow-hidden ring-1 ring-blue-300 dark:ring-blue-600 shrink-0 mr-2.5 mt-0.5 shadow-xs">
+                  <img
+                    src={animeAvatar}
+                    alt="AI Assistant"
+                    className="w-full h-full object-cover"
+                  />
                 </div>
               )}
 
@@ -198,14 +215,20 @@ const AIChatWidget = () => {
 
           {isLoading && (
             <div className="flex items-start justify-start">
-              <div className="w-7 h-7 rounded-lg bg-blue-100 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0 mr-2.5 mt-0.5">
-                <Bot className="w-4 h-4" />
+              <div className="w-7 h-7 rounded-full overflow-hidden ring-1 ring-blue-300 dark:ring-blue-600 shrink-0 mr-2.5 mt-0.5 shadow-xs">
+                <img
+                  src={animeAvatar}
+                  alt="AI Assistant"
+                  className="w-full h-full object-cover"
+                />
               </div>
               <div className="bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 px-4 py-2.5 rounded-2xl rounded-tl-xs text-xs flex items-center gap-2 border border-slate-200/60 dark:border-slate-700/60">
                 <span className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce"></span>
                 <span className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce delay-100"></span>
                 <span className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce delay-200"></span>
-                <span className="text-[11px] text-slate-400 ml-1">AI đang suy nghĩ...</span>
+                <span className="text-[11px] text-slate-400 ml-1">
+                  {t("chatThinking") || "AI đang suy nghĩ..."}
+                </span>
               </div>
             </div>
           )}
