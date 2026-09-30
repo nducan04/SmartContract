@@ -184,7 +184,7 @@ const CreateContractPage = () => {
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* THÔNG TIN BLOCKCHAIN (Người nhận, Tiền, Hạn chót) */}
         <div className="bg-white p-6 rounded-2xl shadow-sm border border-blue-100">
-          <h2 className="text-lg font-bold text-black-800 mb-4 border-b border-blue-50 pb-2">
+          <h2 className="text-lg font-bold text-gray-800 mb-4 border-b border-blue-50 pb-2">
             {t("createSec1")}
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">

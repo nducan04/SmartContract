@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { assets, menuLinks } from "../assets/assets";
 import { useWeb3 } from "../context/Web3Context";
 import { useLanguage } from "../context/LanguageContext";
+import { useTheme } from "../context/ThemeContext";
 import Blockies from "./Blockies";
 import AddressDisplay from "./AddressDisplay";
 import ConnectWalletModal from "./ConnectWalletModal";
@@ -13,6 +14,7 @@ const Navbar = () => {
   const { walletAddress, walletBalance, connectWallet, disconnectWallet } =
     useWeb3();
   const { language, toggleLanguage, t } = useLanguage();
+  const { theme, toggleTheme } = useTheme();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
@@ -188,6 +190,23 @@ const Navbar = () => {
             </div>
           </div>
 
+          {/* Nút Chế độ tối */}
+          <button
+            onClick={toggleTheme}
+            className={`p-2 rounded-full transition-all duration-200 cursor-pointer ${
+              theme === "dark"
+                ? "bg-gray-800 text-gray-200 hover:bg-gray-700"
+                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+            }`}
+            title={theme === "dark" ? "Chuyển sang giao diện sáng" : "Chuyển sang giao diện tối"}
+          >
+            {theme === "dark" ? (
+              <i className="uil uil-sun text-lg"></i>
+            ) : (
+              <i className="uil uil-moon text-lg"></i>
+            )}
+          </button>
+
           {walletAddress ? (
             // ĐÃ KẾT NỐI: HIỂN THỊ AVATAR BLOCKIES
             <div className="relative" ref={dropdownRef}>
@@ -305,7 +324,7 @@ const Navbar = () => {
             // === CHƯA KẾT NỐI ===
             <button
               onClick={() => setIsWalletModalOpen(true)}
-              className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-full font-medium shadow-lg shadow-blue-200 transition-all transform hover:-translate-y-0.5 cursor-pointer"
+              className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-5 py-2.5 rounded-full font-medium shadow-lg shadow-blue-200 transition-all transform hover:-translate-y-0.5 cursor-pointer focus-visible:ring-2 focus-visible:ring-blue-500/50 focus-visible:ring-offset-2"
             >
               <img
                 src={assets.walletIcon}

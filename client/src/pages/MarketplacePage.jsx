@@ -71,7 +71,7 @@ const ContractRow = ({ contract, walletAddress, navigate }) => {
     <tr className="hover:bg-blue-50/50 transition-colors border-b border-gray-100">
       {/* SỬA LẠI: Cho phép text tự xuống dòng (break-words, whitespace-normal) */}
       <td className="px-4 py-5 align-top">
-        <p className="text-sm font-bold text-gray-800 mb-2 whitespace-normal break-words leading-relaxed">
+        <p className="text-sm font-bold text-gray-800 whitespace-normal break-words leading-relaxed">
           {displayTitle}
         </p>
         <div className="flex items-center gap-2 mt-2">
@@ -86,8 +86,7 @@ const ContractRow = ({ contract, walletAddress, navigate }) => {
         {clientName ? (
           <div>
             <p
-              className="text-sm font-bold text-gray-800 whitespace-normal 
-            wrap-break-word leading-relaxed"
+              className="text-sm font-bold text-gray-800 whitespace-normal break-words leading-relaxed"
             >
               {clientName}
             </p>
@@ -104,8 +103,7 @@ const ContractRow = ({ contract, walletAddress, navigate }) => {
         {receiverName ? (
           <div>
             <p
-              className="text-sm font-bold text-gray-800 whitespace-normal 
-            wrap-break-word leading-relaxed"
+              className="text-sm font-bold text-gray-800 whitespace-normal break-words leading-relaxed"
             >
               {receiverName}
             </p>

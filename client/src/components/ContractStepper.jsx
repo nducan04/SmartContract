@@ -14,7 +14,7 @@ const ContractStepper = ({ currentStatus }) => {
   // Xử lý nếu hủy
   if (currentStatus === 5) {
     return (
-      <div className="w-full bg-red-50 border border-red-200 text-red-700 py-3 px-4 rounded-lg flex items-center justify-center font-bold text-sm">
+      <div className="w-full bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/30 text-red-700 dark:text-red-400 py-3 px-4 rounded-lg flex items-center justify-center font-bold text-sm transition-colors">
         <i className="uil uil-times-circle text-lg mr-2"></i>
         {t("statusCancelled")}
       </div>
@@ -38,14 +38,13 @@ const ContractStepper = ({ currentStatus }) => {
               {/* 1. NODE TRÒN */}
               <div className="relative flex flex-col items-center group">
                 <div
-                  className={`w-8 h-8 rounded-full flex items-center justify-center border-2 transition-all duration-500 z-10
-                    ${
-                      isCompleted
-                        ? "bg-blue-500 border-blue-500 text-white shadow-md shadow-blue-200"
-                        : "bg-white border-gray-200 text-gray-400"
-                    }
-                    ${isCurrent ? "ring-4 ring-blue-100 scale-125 shadow-lg animate-pulse" : ""}
-                  `}
+                  className={`w-8 h-8 rounded-full flex items-center justify-center border-2 transition-all duration-500 z-10 ${
+                    isCompleted
+                      ? "bg-blue-500 border-blue-500 text-white shadow-md shadow-blue-200"
+                      : "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 text-gray-400 dark:text-gray-500"
+                  } ${
+                    isCurrent ? "ring-4 ring-blue-100 scale-125 shadow-lg animate-pulse" : ""
+                  }`}
                 >
                   {isCompleted ? (
                     <i className="uil uil-check text-base font-bold"></i>
@@ -56,9 +55,9 @@ const ContractStepper = ({ currentStatus }) => {
 
                 {/* LABEL (Chữ bên dưới) */}
                 <div
-                  className={`absolute top-10 w-24 text-center text-[10px] uppercase font-bold tracking-wide transition-colors duration-300
-                  ${isCompleted ? "text-blue-500" : "text-gray-400"}
-                `}
+                  className={`absolute top-10 w-24 text-center text-[10px] uppercase font-bold tracking-wide transition-colors duration-300 ${
+                    isCompleted ? "text-blue-500" : "text-gray-400 dark:text-gray-500"
+                  }`}
                 >
                   {step.label}
                 </div>
@@ -67,12 +66,12 @@ const ContractStepper = ({ currentStatus }) => {
               {/* 2. ĐƯỜNG KẺ NỐI (Line Space) */}
               {/* Chỉ vẽ đường kẻ nếu không phải là bước cuối cùng */}
               {!isLastStep && (
-                <div className="flex-1 h-1 mx-2 rounded-full bg-gray-100 overflow-hidden">
+                <div className="flex-1 h-1 mx-2 rounded-full bg-gray-100 dark:bg-gray-700 overflow-hidden">
                   {/* Thanh màu chạy bên trong */}
                   <div
-                    className={`h-full bg-blue-400 transition-all duration-500 ease-out origin-left
-                      ${index < activeIndex ? "w-full" : "w-0"}
-                    `}
+                    className={`h-full bg-blue-400 transition-all duration-500 ease-out origin-left ${
+                      index < activeIndex ? "w-full" : "w-0"
+                    }`}
                   ></div>
                 </div>
               )}
