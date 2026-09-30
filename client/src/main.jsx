@@ -6,14 +6,17 @@ import "./index.css";
 
 import { Web3Provider } from "./context/Web3Context";
 import { LanguageProvider } from "./context/LanguageContext";
+import { ThemeProvider } from "./context/ThemeContext";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <BrowserRouter>
       <LanguageProvider>
-        <Web3Provider>
-          <App />
-        </Web3Provider>
+        <ThemeProvider>
+          <Web3Provider>
+            <App />
+          </Web3Provider>
+        </ThemeProvider>
       </LanguageProvider>
     </BrowserRouter>
   </React.StrictMode>

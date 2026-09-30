@@ -3,11 +3,13 @@ import { Link, NavLink, useLocation } from "react-router-dom";
 import { assets, ownerMenuLinks } from "./../assets/assets";
 import { useWeb3 } from "../context/Web3Context";
 import { useLanguage } from "../context/LanguageContext";
+import { useTheme } from "../context/ThemeContext";
 
 const Sidebar = ({ isMobileOpen, closeMobileMenu }) => {
   const location = useLocation();
   const { walletAddress } = useWeb3();
   const { language, toggleLanguage, t } = useLanguage();
+  const { theme, toggleTheme } = useTheme();
 
   // 1. Kiểm tra Admin y hệt Navbar cũ
   const ADMIN_WALLETS = import.meta.env.VITE_ADMIN_WALLETS
@@ -156,7 +158,7 @@ const Sidebar = ({ isMobileOpen, closeMobileMenu }) => {
           {/* Nút Đổi Ngôn Ngữ - Segmented Toggle Switch */}
           <div
             onClick={toggleLanguage}
-            className="flex items-center justify-between bg-gray-100 p-1.5 rounded-xl border border-gray-200/80 cursor-pointer select-none transition-all hover:border-blue-300 shadow-xs"
+            className="flex items-center justify-between bg-gray-100 dark:bg-gray-800 p-1.5 rounded-xl border border-gray-200/80 dark:border-gray-700/80 cursor-pointer select-none transition-all hover:border-blue-300 shadow-xs"
             title={language === "vi" ? "Switch to English" : "Chuyển sang Tiếng Việt"}
           >
             <div className="flex items-center gap-1.5 pl-1 text-gray-600 text-xs font-semibold">
@@ -188,7 +190,38 @@ const Sidebar = ({ isMobileOpen, closeMobileMenu }) => {
             </div>
           </div>
 
-          <div className="bg-gray-50 rounded-xl p-3 flex items-center gap-3">
+          {/* Dark Mode Toggle */}
+          <div className="flex items-center justify-between bg-gray-100 dark:bg-gray-800 p-1.5 rounded-xl border border-gray-200 dark:border-gray-700/80 cursor-pointer select-none transition-all hover:border-blue-300 shadow-xs">
+            <div className="flex items-center gap-1.5 pl-1 text-gray-600 dark:text-gray-300 text-xs font-semibold">
+              <i className={`uil ${theme === "dark" ? "uil-sun text-yellow-400" : "uil-moon"} text-lg`}></i>
+              <span>{theme === "dark" ? "Sáng" : "Tối"}</span>
+            </div>
+            <div
+              onClick={toggleTheme}
+              className="flex items-center text-xs font-bold bg-gray-200 dark:bg-gray-600 p-0.5 rounded-lg transition-all cursor-pointer"
+            >
+              <span
+                className={`px-2 py-0.5 rounded-md transition-all duration-200 ${
+                  theme === "light"
+                    ? "bg-white text-blue-600 shadow-xs"
+                    : "text-gray-400 hover:text-gray-600"
+                }`}
+              >
+                ☀️
+              </span>
+              <span
+                className={`px-2 py-0.5 rounded-md transition-all duration-200 ${
+                  theme === "dark"
+                    ? "bg-white text-blue-600 shadow-xs"
+                    : "text-gray-400 hover:text-gray-600"
+                }`}
+              >
+                🌙
+              </span>
+            </div>
+          </div>
+
+          <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-3 flex items-center gap-3">
             <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
               <i className="uil uil-user"></i>
             </div>

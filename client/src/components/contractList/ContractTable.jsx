@@ -67,7 +67,7 @@ const ContractRow = ({
 
       <td className="px-4 py-5 align-top">
         {/* Đã bỏ line-clamp và max-w, thêm break-words và whitespace-normal */}
-        <p className="text-sm font-semibold text-gray-800 whitespace-normal break-words leading-relaxed">
+        <p className="text-sm font-bold text-gray-800 whitespace-normal break-words leading-relaxed">
           {displayTitle}
         </p>
       </td>

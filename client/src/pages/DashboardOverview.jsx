@@ -8,6 +8,7 @@ import StatsCard from "../components/StatsCard";
 import ContractStepper from "../components/ContractStepper";
 import AddressDisplay from "../components/AddressDisplay";
 import ContractStatusChart from "../components/ContractStatusChart";
+import StatusPill from "../components/ui/StatusPill";
 
 // Hàm giải mã JSON (Phòng hờ cho các hợp đồng cũ đã tạo bằng form JSON)
 const parseTerms = (termsString) => {
@@ -108,10 +109,10 @@ const DashboardOverview = () => {
       {/* HEADER */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">
+          <h1 className="text-2xl font-bold text-gray-800 dark:text-white">
             {t("dashOverviewTitle")}
           </h1>
-          <p className="text-gray-500 text-sm mt-1">{t("dashOverviewSub")}</p>
+          <p className="text-gray-500 text-sm mt-1 dark:text-gray-300">{t("dashOverviewSub")}</p>
         </div>
         <Link
           to="/dashboard/create"
@@ -124,14 +125,14 @@ const DashboardOverview = () => {
 
       {/* XỬ LÝ GIAO DIỆN KHI CHƯA KẾT NỐI VÍ */}
       {!walletAddress ? (
-        <div className="text-center py-20 bg-white rounded-2xl shadow-sm border border-gray-200 animate-slide-up">
-          <div className="w-16 h-16 bg-blue-50 text-blue-500 rounded-full flex items-center justify-center mx-auto mb-4">
+        <div className="text-center py-20 bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 animate-slide-up transition-colors">
+          <div className="w-16 h-16 bg-blue-50 dark:bg-blue-950/20 text-blue-500 rounded-full flex items-center justify-center mx-auto mb-4">
             <i className="uil uil-wallet text-3xl"></i>
           </div>
-          <h3 className="text-lg font-bold text-gray-700">
+          <h3 className="text-lg font-bold text-gray-700 dark:text-gray-200">
             {t("dashNotConnected")}
           </h3>
-          <p className="text-gray-500 mt-2 px-4">{t("dashNotConnectedSub")}</p>
+          <p className="text-gray-500 dark:text-gray-300 mt-2 px-4">{t("dashNotConnectedSub")}</p>
         </div>
       ) : loading ? (
         <div className="h-64 flex items-center justify-center">
@@ -224,7 +225,7 @@ const DashboardOverview = () => {
           >
             {/* Cột trái: TIẾN ĐỘ GẦN ĐÂY */}
             <div className="lg:col-span-2 space-y-6">
-              <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+              <h3 className="text-lg font-bold text-gray-800 dark:text-white flex items-center gap-2">
                 {t("dashRecentTitle")}
               </h3>
 
@@ -250,7 +251,7 @@ const DashboardOverview = () => {
 
                   let roleBadge = {
                     text: t("roleMember"),
-                    color: "bg-gray-100 text-gray-600",
+                    color: "bg-gray-100 dark:bg-gray-700/50 text-gray-600 dark:text-gray-300",
                   };
                   let partnerLabel = t("labelPartner");
                   let partnerAddr = "";
@@ -258,21 +259,21 @@ const DashboardOverview = () => {
                   if (isClient) {
                     roleBadge = {
                       text: t("roleClient"),
-                      color: "bg-blue-100 text-blue-700",
+                      color: "bg-blue-100 dark:bg-blue-950/20 text-blue-700 dark:text-blue-300",
                     };
                     partnerAddr = contract.receiver;
                     partnerLabel = t("labelReceiverB");
                   } else if (isReceiver) {
                     roleBadge = {
                       text: t("roleReceiver"),
-                      color: "bg-purple-100 text-purple-700",
+                      color: "bg-purple-100 dark:bg-purple-950/20 text-purple-700 dark:text-purple-300",
                     };
                     partnerAddr = contract.client;
                     partnerLabel = t("labelClientA");
                   } else if (isProvider) {
                     roleBadge = {
                       text: t("roleProvider"),
-                      color: "bg-green-100 text-green-700",
+                      color: "bg-green-100 dark:bg-green-950/20 text-green-700 dark:text-green-300",
                     };
                     partnerAddr = contract.client;
                     partnerLabel = t("labelOwnerA");
@@ -281,7 +282,7 @@ const DashboardOverview = () => {
                   return (
                     <div
                       key={contract._id}
-                      className="bg-white/90 backdrop-blur-sm p-6 rounded-2xl shadow-sm border border-gray-100 hover:border-blue-200 transition-all duration-300 hover:shadow-lg group"
+                      className="bg-white dark:bg-gray-800 dark:border-gray-700 backdrop-blur-sm p-6 rounded-2xl shadow-sm border border-gray-100 hover:border-blue-200 transition-all duration-300 hover:shadow-lg group"
                     >
                       <div className="flex flex-col md:flex-row justify-between items-start gap-4 mb-5">
                         <div className="flex-1 min-w-0 w-full">
@@ -308,7 +309,7 @@ const DashboardOverview = () => {
                           </h4>
                           <div className="flex flex-col sm:flex-row flex-wrap items-start sm:items-center gap-x-4 gap-y-2 mt-2">
                             <div className="flex items-center gap-1.5 w-full sm:w-auto">
-                              <span className="text-xs font-bold text-gray-400 shrink-0">
+                              <span className="text-xs font-bold text-gray-400 dark:text-gray-400 shrink-0">
                                 {t("labelContract")}
                               </span>
                               <div className="truncate">
@@ -319,7 +320,7 @@ const DashboardOverview = () => {
                             </div>
                             {partnerAddr && (
                               <div className="flex items-center gap-1.5 w-full sm:w-auto">
-                                <span className="text-xs font-bold text-gray-400 shrink-0">
+                                <span className="text-xs font-bold text-gray-400 dark:text-gray-400 shrink-0">
                                   {partnerLabel}
                                 </span>
                                 <div className="truncate">
@@ -329,11 +330,11 @@ const DashboardOverview = () => {
                             )}
                           </div>
                         </div>
-                        <div className="bg-blue-50 px-4 py-2 mt-2 md:mt-0 rounded-xl border border-blue-100 text-center md:min-w-[100px] shrink-0 w-full md:w-auto flex flex-row md:flex-col items-center md:items-stretch justify-between md:justify-start">
+                        <div className="bg-blue-50 dark:bg-blue-950/20 px-4 py-2 mt-2 md:mt-0 rounded-xl border border-blue-100 dark:border-blue-900/20 text-center md:min-w-[100px] shrink-0 w-full md:w-auto flex flex-row md:flex-col items-center md:items-stretch justify-between md:justify-start">
                           <span className="block text-[10px] font-bold text-blue-400 uppercase tracking-wider">
                             {t("labelValue")}
                           </span>
-                          <span className="text-blue-700 font-black text-lg md:text-lg">
+                          <span className="text-blue-700 dark:text-blue-300 font-black text-lg md:text-lg">
                             {contract.amount}{" "}
                             <span className="text-sm">ETH</span>
                           </span>
@@ -346,10 +347,8 @@ const DashboardOverview = () => {
 
                       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 w-full">
                         <div className="flex items-center gap-2 w-full sm:w-auto">
-                          <span
-                            className={`w-2 h-2 shrink-0 rounded-full ${contract.status >= 4 ? "bg-green-500" : "bg-blue-500 animate-pulse"}`}
-                          ></span>
-                          <span className="text-xs font-bold text-gray-500 uppercase tracking-tighter truncate">
+                          <StatusPill status={contract.status >= 4 ? "completed" : contract.status === 0 ? "pending" : "active"} />
+                          <span className="text-xs font-medium text-gray-600 dark:text-gray-300">
                             {t("labelStatus")} {getStatusText(contract.status)}
                           </span>
                         </div>
@@ -369,8 +368,8 @@ const DashboardOverview = () => {
                   );
                 })
               ) : (
-                <div className="bg-white p-8 rounded-2xl text-center border border-dashed border-gray-300">
-                  <p className="text-gray-400">{t("dashNoRecent")}</p>
+                <div className="bg-white dark:bg-gray-800 p-8 rounded-2xl text-center border border-dashed border-gray-300 dark:border-gray-600 transition-colors">
+                  <p className="text-gray-400 dark:text-gray-500">{t("dashNoRecent")}</p>
                 </div>
               )}
             </div>
