@@ -69,14 +69,21 @@ const Sidebar = ({ isMobileOpen, closeMobileMenu }) => {
         {/* LOGO AREA */}
         <div className="h-20 flex items-center justify-between px-6 border-b border-slate-100 dark:border-slate-800/80 shrink-0">
           <Link to="/" className="flex items-center gap-3 group">
-            <img
-              src={assets.blockchainLogo}
-              alt="Logo"
-              className="h-9 group-hover:scale-105 transition-transform"
-            />
-            <span className="font-extrabold text-lg tracking-tight gradient-text">
-              SmartContract
-            </span>
+            <div className="w-10 h-10 rounded-2xl bg-blue-500/10 dark:bg-slate-800 border border-blue-500/20 shadow-xs flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+              <img
+                src={assets.iconLogo}
+                alt="Logo"
+                className="w-7 h-7 object-contain"
+              />
+            </div>
+            <div className="flex flex-col">
+              <span className="font-black text-lg tracking-tight text-slate-900 dark:text-white leading-tight">
+                Smart<span className="text-blue-600 dark:text-blue-400">Contract</span>
+              </span>
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none mt-0.5">
+                Dashboard
+              </span>
+            </div>
           </Link>
 
           <button
