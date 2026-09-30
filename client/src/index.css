@@ -53,6 +53,9 @@
   --animate-scale-in: scale-in 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   --animate-pulse-slow: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
   --animate-float: float 5s ease-in-out infinite;
+  --animate-mascot-float: mascot-float 4s ease-in-out infinite;
+  --animate-spin-slow: spin 12s linear infinite;
+  --animate-bubble-pop: bubble-pop 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 
   @keyframes fade-in {
     0% { opacity: 0; }
@@ -77,6 +80,29 @@
   @keyframes float {
     0%, 100% { transform: translateY(0px); }
     50% { transform: translateY(-8px); }
+  }
+
+  @keyframes mascot-float {
+    0%, 100% {
+      transform: translateY(0px) rotate(0deg);
+    }
+    35% {
+      transform: translateY(-9px) rotate(2.5deg);
+    }
+    70% {
+      transform: translateY(4px) rotate(-2deg);
+    }
+  }
+
+  @keyframes bubble-pop {
+    0% {
+      opacity: 0;
+      transform: scale(0.88) translateY(8px);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
   }
 }
 
