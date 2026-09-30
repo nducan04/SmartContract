@@ -1,6 +1,16 @@
 import React, { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { useWeb3 } from "../context/Web3Context";
+import {
+  X,
+  ChevronRight,
+  AlertCircle,
+  Info,
+  ExternalLink,
+  ShieldCheck,
+  Wallet,
+  Sparkles
+} from "lucide-react";
 
 const WALLETS = [
   {
@@ -35,7 +45,7 @@ const ConnectWalletModal = ({ isOpen, onClose }) => {
 
   const [connectingId, setConnectingId] = useState(null);
   const [errorMsg, setErrorMsg] = useState("");
-  const [infoMsg, setInfoMsg] = useState(""); // Thêm state cho thông báo tính năng mới
+  const [infoMsg, setInfoMsg] = useState("");
 
   useEffect(() => {
     if (isOpen) {
@@ -78,72 +88,51 @@ const ConnectWalletModal = ({ isOpen, onClose }) => {
 
   const handleFutureFeature = (featureName) => {
     setErrorMsg("");
-    setInfoMsg(`Tính năng ${featureName} đang được phát triển ở phiên bản sau!`);
+    setInfoMsg(`Tính năng ${featureName} đang được phát triển ở phiên bản kế tiếp!`);
   };
 
   const modalContent = (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm transition-all duration-300 px-4" onClick={onClose}>
+    <div
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/70 backdrop-blur-md transition-all duration-300 px-4"
+      onClick={onClose}
+    >
       <div
-        className="bg-white rounded-3xl w-full max-w-3xl overflow-hidden shadow-2xl flex flex-col md:flex-row transform transition-all duration-300 scale-100"
+        className="bg-white dark:bg-slate-900 rounded-3xl w-full max-w-3xl overflow-hidden shadow-2xl flex flex-col md:flex-row transform transition-all duration-300 scale-100 border border-slate-200/80 dark:border-slate-800"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* CỘT TRÁI: DANH SÁCH VÍ (Giao diện PancakeSwap) */}
-        <div className="w-full md:w-1/2 p-6 md:p-8 border-b md:border-b-0 md:border-r border-gray-100 bg-white flex flex-col">
+        {/* CỘT TRÁI: DANH SÁCH VÍ */}
+        <div className="w-full md:w-1/2 p-6 sm:p-8 border-b md:border-b-0 md:border-r border-slate-100 dark:border-slate-800 flex flex-col">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold text-gray-900">Connect Wallet</h2>
+            <div>
+              <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
+                Kết nối ví Web3
+              </h2>
+              <p className="text-xs text-slate-400 mt-0.5">Chọn ví bạn muốn liên kết với DApp</p>
+            </div>
             <button
               onClick={onClose}
-              className="md:hidden text-gray-500 hover:text-red-500 transition-colors cursor-pointer"
+              className="md:hidden p-1.5 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800"
             >
-              <i className="uil uil-multiply text-2xl"></i>
+              <X className="w-5 h-5" />
             </button>
           </div>
 
           <div className="flex-1 overflow-y-auto pr-1 pb-2">
-            {/* THÔNG BÁO LỖI / INFO */}
             {errorMsg && (
-              <div className="mb-4 p-3 bg-red-50 text-red-600 rounded-xl text-sm font-semibold border border-red-100 flex items-center gap-2 animate-fade-in">
-                <i className="uil uil-exclamation-octagon text-lg"></i>
-                {errorMsg}
+              <div className="mb-4 p-3 bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 rounded-xl text-xs font-semibold border border-rose-200 dark:border-rose-900/50 flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 shrink-0" />
+                <span>{errorMsg}</span>
               </div>
             )}
             {infoMsg && (
-              <div className="mb-4 p-3 bg-blue-50 text-blue-600 rounded-xl text-sm font-semibold border border-blue-100 flex items-center gap-2 animate-fade-in">
-                <i className="uil uil-info-circle text-lg"></i>
-                {infoMsg}
+              <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 rounded-xl text-xs font-semibold border border-blue-200 dark:border-blue-900/50 flex items-center gap-2">
+                <Info className="w-4 h-4 shrink-0" />
+                <span>{infoMsg}</span>
               </div>
             )}
 
-            {/* 1. SOCIAL LOGIN BUTTON */}
-            <button
-              onClick={() => handleFutureFeature("Social Login (Web3Auth)")}
-              className="w-full flex items-center justify-between p-3 sm:p-4 mb-5 bg-gray-50 border border-gray-200 rounded-2xl hover:border-blue-400 hover:bg-blue-50/50 transition-all cursor-pointer group"
-            >
-              <div className="flex -space-x-2">
-                <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center border border-gray-200 shadow-sm z-40 group-hover:-translate-y-1 transition-transform duration-300">
-                  <img src="https://cdn-icons-png.flaticon.com/512/2991/2991148.png" className="w-4 h-4" alt="Google" />
-                </div>
-                <div className="w-8 h-8 rounded-full bg-black flex items-center justify-center border border-gray-200 shadow-sm z-30 group-hover:-translate-y-1 transition-transform duration-300 delay-75">
-                  <i className="uil uil-twitter text-white text-sm"></i>
-                </div>
-                <div className="w-8 h-8 rounded-full bg-[#2AABEE] flex items-center justify-center border border-gray-200 shadow-sm z-20 group-hover:-translate-y-1 transition-transform duration-300 delay-100">
-                  <i className="uil uil-telegram text-white text-sm"></i>
-                </div>
-                <div className="w-8 h-8 rounded-full bg-[#5865F2] flex items-center justify-center border border-gray-200 shadow-sm z-10 group-hover:-translate-y-1 transition-transform duration-300 delay-150">
-                  <i className="uil uil-discord text-white text-sm"></i>
-                </div>
-              </div>
-              <div className="flex items-center gap-2 text-gray-700 font-bold text-sm">
-                Social Login <i className="uil uil-angle-right-b text-lg text-gray-400 group-hover:text-blue-500"></i>
-              </div>
-            </button>
-
-            <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-3">
-              Top Wallets
-            </p>
-
-            {/* 2. GRID 4 VÍ CHÍNH */}
-            <div className="grid grid-cols-2 gap-3 mb-5">
+            {/* GRID 4 VÍ CHÍNH */}
+            <div className="grid grid-cols-2 gap-3 mb-4">
               {WALLETS.map((wallet) => {
                 const isInstalled = installedWallets[wallet.id];
                 const isConnecting = connectingId === wallet.id;
@@ -153,14 +142,14 @@ const ConnectWalletModal = ({ isOpen, onClose }) => {
                     key={wallet.id}
                     onClick={() => handleWalletClick(wallet.id)}
                     disabled={connectingId !== null && !isConnecting}
-                    className={`flex flex-col items-center justify-center gap-3 p-4 bg-white border rounded-2xl transition-all group relative cursor-pointer
-                      ${connectingId !== null && !isConnecting ? 'opacity-50 cursor-not-allowed' : 'hover:border-blue-500 hover:shadow-md hover:bg-blue-50/30 border-gray-200'}
-                      ${isConnecting ? 'border-blue-500 ring-2 ring-blue-100 bg-blue-50/50' : ''}
+                    className={`flex flex-col items-center justify-center gap-2.5 p-4 bg-slate-50/60 dark:bg-slate-800/40 border rounded-2xl transition-all group relative cursor-pointer
+                      ${connectingId !== null && !isConnecting ? 'opacity-50 cursor-not-allowed' : 'hover:border-blue-500 hover:shadow-md hover:bg-white dark:hover:bg-slate-800 border-slate-200/80 dark:border-slate-700/80'}
+                      ${isConnecting ? 'border-blue-500 ring-2 ring-blue-500/20 bg-blue-50/50 dark:bg-blue-950/40' : ''}
                     `}
                   >
-                    <div className="w-12 h-12 flex items-center justify-center bg-gray-50 rounded-full group-hover:scale-110 transition-transform relative">
+                    <div className="w-12 h-12 flex items-center justify-center bg-white dark:bg-slate-900 rounded-2xl group-hover:scale-110 transition-transform shadow-xs relative">
                       {isConnecting ? (
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                        <div className="animate-spin rounded-full h-6 w-6 border-2 border-blue-600 border-t-transparent"></div>
                       ) : (
                         <img
                           src={wallet.icon}
@@ -170,13 +159,17 @@ const ConnectWalletModal = ({ isOpen, onClose }) => {
                         />
                       )}
                     </div>
-                    <span className="font-bold text-gray-800 text-sm whitespace-nowrap">
+                    <span className="font-bold text-slate-800 dark:text-slate-200 text-xs sm:text-sm whitespace-nowrap">
                       {isConnecting ? "Đang kết nối..." : wallet.name}
                     </span>
 
                     {!isConnecting && (
-                      <div className={`absolute top-2 right-2 px-2 py-0.5 rounded-full text-[10px] font-bold ${isInstalled ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
-                        {isInstalled ? "Kết nối" : "Cài đặt"}
+                      <div className={`absolute top-2 right-2 px-1.5 py-0.5 rounded-full text-[9px] font-bold ${
+                        isInstalled
+                          ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-400 border border-emerald-200/50'
+                          : 'bg-slate-200/70 text-slate-600 dark:bg-slate-700 dark:text-slate-400'
+                      }`}>
+                        {isInstalled ? "Sẵn sàng" : "Cài đặt"}
                       </div>
                     )}
                   </button>
@@ -184,59 +177,60 @@ const ConnectWalletModal = ({ isOpen, onClose }) => {
               })}
             </div>
 
-            {/* 3. MORE WALLETS BUTTON */}
+            {/* MORE WALLETS */}
             <button
               onClick={() => handleFutureFeature("WalletConnect")}
-              className="w-full flex items-center justify-between p-3 sm:p-4 bg-gray-50 border border-gray-200 rounded-2xl hover:border-blue-400 hover:bg-blue-50/50 transition-all cursor-pointer group"
+              className="w-full flex items-center justify-between p-3.5 bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/80 rounded-2xl hover:border-blue-400 hover:bg-white dark:hover:bg-slate-800 transition-all cursor-pointer group"
             >
-              <div className="flex items-center gap-2">
-                <div className="flex -space-x-2">
-                  <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center border border-gray-200 shadow-sm z-40 group-hover:-translate-y-1 transition-transform duration-300">
-                    <img src="https://explorer-api.walletconnect.com/v3/logo/md/df2ce6fc-de91-4475-eb3e-8121625a6600?projectId=2f05ae7f1116030fde2d4ba50042e3f5" className="w-5 h-5 rounded-full" alt="WC" />
-                  </div>
-                  <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center border border-gray-200 shadow-sm z-30 group-hover:-translate-y-1 transition-transform duration-300 delay-75">
-                    <img src="https://avatars.githubusercontent.com/u/18060234?s=200&v=4" className="w-5 h-5 rounded-full" alt="CB" />
-                  </div>
-                  <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center border border-gray-200 shadow-sm z-20 group-hover:-translate-y-1 transition-transform duration-300 delay-100">
-                    <img src="https://cryptologos.cc/logos/safe-sfp-logo.png" className="w-5 h-5 rounded-full" alt="Safe" />
-                  </div>
-                </div>
-                <span className="text-xs font-bold text-gray-500 bg-gray-200 px-2.5 py-1 rounded-full ml-1 group-hover:bg-blue-100 group-hover:text-blue-600 transition-colors">+11</span>
+              <div className="flex items-center gap-2 text-xs font-semibold text-slate-700 dark:text-slate-300">
+                <Wallet className="w-4 h-4 text-blue-500" />
+                <span>Thêm phương thức kết nối khác</span>
               </div>
-              <div className="flex items-center gap-2 text-gray-700 font-bold text-sm">
-                More Wallets <i className="uil uil-angle-right-b text-lg text-gray-400 group-hover:text-blue-500"></i>
-              </div>
+              <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-blue-500 transition-colors" />
             </button>
-
           </div>
         </div>
 
-        {/* CỘT PHẢI: ĐỒ HỌA */}
-        <div className="w-full md:w-1/2 p-6 md:p-8 bg-gray-50 flex flex-col justify-between hidden md:flex relative border-l border-gray-100">
+        {/* CỘT PHẢI: GRAPHIC */}
+        <div className="w-full md:w-1/2 p-8 bg-slate-50/80 dark:bg-slate-800/40 flex flex-col justify-between hidden md:flex relative border-l border-slate-100 dark:border-slate-800">
           <button
             onClick={onClose}
-            className="absolute top-6 right-6 text-gray-400 hover:text-red-500 hover:bg-red-50 w-8 h-8 flex items-center justify-center rounded-full transition-colors cursor-pointer"
+            className="absolute top-6 right-6 p-2 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-white dark:hover:bg-slate-700 transition-colors"
           >
-            <i className="uil uil-multiply text-xl"></i>
+            <X className="w-5 h-5" />
           </button>
 
           <div className="flex-1 flex flex-col items-center justify-center text-center mt-4">
-            <div className="w-40 h-40 bg-white rounded-full flex items-center justify-center mb-6 shadow-md shadow-blue-100 border border-gray-100">
+            <div className="w-32 h-32 bg-white dark:bg-slate-900 rounded-3xl flex items-center justify-center mb-6 shadow-xl shadow-blue-500/10 border border-slate-200/80 dark:border-slate-800 relative">
               <img
                 src="https://upload.wikimedia.org/wikipedia/commons/0/05/Ethereum_logo_2014.svg"
                 alt="ETH Logo"
-                className="w-20 h-20 object-contain opacity-80 animate-pulse-slow"
+                className="w-16 h-16 object-contain opacity-85"
               />
+              <span className="absolute -bottom-2 -right-2 p-1.5 rounded-xl bg-blue-600 text-white shadow-md">
+                <ShieldCheck className="w-4 h-4" />
+              </span>
             </div>
-            <h3 className="text-xl font-bold text-gray-900 mb-2">Web3 Gateway</h3>
-            <p className="text-gray-500 text-sm mb-6 max-w-[250px] leading-relaxed">
-              Quản lý và lưu trữ tài sản mã hóa của bạn một cách an toàn. Đăng nhập để kích hoạt Smart Contract.
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">
+              Bảo mật Web3 Escrow
+            </h3>
+            <p className="text-slate-500 dark:text-slate-400 text-xs leading-relaxed max-w-xs">
+              Mọi giao dịch thanh toán đều được khóa an toàn trong Smart Contract và chỉ giải ngân khi người nhận phê duyệt.
             </p>
           </div>
 
-          <div className="mt-auto pt-6 border-t border-gray-200 text-center">
-            <p className="text-xs text-gray-500 font-medium">
-              Chưa có ví? <a href="https://metamask.io/download/" target="_blank" rel="noreferrer" className="text-blue-600 hover:underline font-bold">Tìm hiểu cách cài đặt</a>
+          <div className="mt-auto pt-6 border-t border-slate-200/80 dark:border-slate-700 text-center">
+            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+              Chưa có ví?{" "}
+              <a
+                href="https://metamask.io/download/"
+                target="_blank"
+                rel="noreferrer"
+                className="text-blue-600 dark:text-blue-400 hover:underline font-bold inline-flex items-center gap-1"
+              >
+                <span>Cài MetaMask</span>
+                <ExternalLink className="w-3 h-3" />
+              </a>
             </p>
           </div>
         </div>

@@ -16,21 +16,26 @@ const ContractFilters = ({ currentFilter, onFilterChange }) => {
   };
 
   return (
-    <div className="flex flex-wrap sm:flex-nowrap gap-1 bg-gray-100 p-1 mb-6 rounded-xl w-full sm:w-fit overflow-x-auto custom-scrollbar">
-      {filters.map((role) => (
-        <button
-          key={role}
-          onClick={() => onFilterChange(role)}
-          className={`px-3 py-2 sm:px-4 sm:py-2 text-xs sm:text-sm font-medium rounded-lg transition-all cursor-pointer whitespace-nowrap
-          ${currentFilter === role
-              ? "bg-white text-blue-600 shadow-sm"
-              : "text-gray-500 hover:text-gray-700"
+    <div className="flex items-center gap-1.5 p-1 bg-slate-100 dark:bg-slate-800/80 rounded-2xl w-full sm:w-fit overflow-x-auto border border-slate-200/60 dark:border-slate-700/60 shadow-xs mb-6">
+      {filters.map((role) => {
+        const isActive = currentFilter === role;
+        return (
+          <button
+            key={role}
+            onClick={() => onFilterChange(role)}
+            className={`px-3.5 py-1.5 text-xs sm:text-sm font-semibold rounded-xl transition-all cursor-pointer whitespace-nowrap select-none
+            ${
+              isActive
+                ? "bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-sm"
+                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
             }`}
-        >
-          {getFilterLabel(role)}
-        </button>
-      ))}
+          >
+            {getFilterLabel(role)}
+          </button>
+        );
+      })}
     </div>
   );
 };
+
 export default ContractFilters;

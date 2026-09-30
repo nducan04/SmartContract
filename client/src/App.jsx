@@ -17,15 +17,21 @@ import AIChatWidget from "./components/AIChatWidget";
 
 const App = () => {
   const location = useLocation();
-  // Ẩn Navbar/Footer khi ở Dashboard hoặc khi đang xem chi tiết Tracking (để giống app mobile)
+  // Ẩn Navbar/Footer khi ở Dashboard hoặc khi đang xem chi tiết Tracking (để tập trung vào trải nghiệm)
   const isDashboard = location.pathname.startsWith("/dashboard");
   const isTrackingDetail = /^\/tracking\/0x/.test(location.pathname);
-  const isHome = location.pathname === "/";
 
   return (
-    <div className="flex flex-col min-h-screen bg-white text-gray-800">
-      <Toaster position="top-center" reverseOrder={false} />
-      {/* Ẩn Navbar ở Dashboard và Trang chi tiết Tracking (để tập trung vào timeline) */}
+    <div className="flex flex-col min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 selection:bg-blue-500/20 selection:text-blue-600 transition-colors duration-200">
+      <Toaster
+        position="top-center"
+        reverseOrder={false}
+        toastOptions={{
+          className: "dark:bg-slate-800 dark:text-white dark:border-slate-700 shadow-xl",
+          duration: 3500,
+        }}
+      />
+      {/* Ẩn Navbar ở Dashboard và Trang chi tiết Tracking */}
       {!isDashboard && !isTrackingDetail && <Navbar />}
 
       <main className="grow">
@@ -34,7 +40,6 @@ const App = () => {
 
           <Route path="/tracking" element={<TrackingPage />} />
           <Route path="/tracking/:id" element={<TrackingPage />} />
-          {/* ------------------------- */}
 
           <Route path="/dashboard" element={<DashboardLayout />}>
             <Route index element={<DashboardOverview />} />

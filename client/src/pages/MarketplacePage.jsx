@@ -5,6 +5,17 @@ import { useWeb3 } from "../context/Web3Context";
 import AddressDisplay from "../components/AddressDisplay";
 import { ethers } from "ethers";
 import { useLanguage } from "../context/LanguageContext";
+import {
+  ShoppingBag,
+  Sparkles,
+  TrendingUp,
+  Clock,
+  ArrowRight,
+  PackageOpen,
+  ChevronLeft,
+  ChevronRight,
+  Coins
+} from "lucide-react";
 
 // HÀM GIẢI MÃ JSON
 const parseTerms = (termsString) => {
@@ -60,7 +71,7 @@ const ContractRow = ({ contract, walletAddress, navigate }) => {
   const parsedTerms = parseTerms(terms);
 
   const displayTitle = isSyncing
-    ? "⏳ Đang tải dữ liệu từ Blockchain..."
+    ? "⏳ Đang tải từ Blockchain..."
     : parsedTerms
       ? parsedTerms.art1_items
       : terms || "Chưa có nội dung";
@@ -68,29 +79,26 @@ const ContractRow = ({ contract, walletAddress, navigate }) => {
   const receiverName = parsedTerms ? parsedTerms.partyB_name : null;
 
   return (
-    <tr className="hover:bg-blue-50/50 transition-colors border-b border-gray-100">
-      {/* SỬA LẠI: Cho phép text tự xuống dòng (break-words, whitespace-normal) */}
-      <td className="px-4 py-5 align-top">
-        <p className="text-sm font-bold text-gray-800 whitespace-normal break-words leading-relaxed">
+    <tr className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition-colors border-b border-slate-100 dark:border-slate-800/80">
+      <td className="px-5 py-4 align-middle">
+        <p className="text-sm font-bold text-slate-800 dark:text-slate-200 line-clamp-1 break-words">
           {displayTitle}
         </p>
-        <div className="flex items-center gap-2 mt-2">
-          <span className="text-[10px] bg-green-100 text-green-700 px-2 py-0.5 rounded font-bold border border-green-200">
+        <div className="flex items-center gap-2 mt-1.5">
+          <span className="text-[10px] bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 px-2 py-0.5 rounded-full font-bold border border-emerald-200/50 dark:border-emerald-800/50">
             {t("marketNew")}
           </span>
           <AddressDisplay address={contract.contractAddress} />
         </div>
       </td>
 
-      <td className="px-4 py-5 align-top">
+      <td className="px-5 py-4 align-middle">
         {clientName ? (
           <div>
-            <p
-              className="text-sm font-bold text-gray-800 whitespace-normal break-words leading-relaxed"
-            >
+            <p className="text-xs font-bold text-slate-800 dark:text-slate-200 line-clamp-1">
               {clientName}
             </p>
-            <div className="text-xs text-gray-400 mt-2">
+            <div className="mt-0.5">
               <AddressDisplay address={contract.client} />
             </div>
           </div>
@@ -99,15 +107,13 @@ const ContractRow = ({ contract, walletAddress, navigate }) => {
         )}
       </td>
 
-      <td className="px-4 py-5 align-top">
+      <td className="px-5 py-4 align-middle">
         {receiverName ? (
           <div>
-            <p
-              className="text-sm font-bold text-gray-800 whitespace-normal break-words leading-relaxed"
-            >
+            <p className="text-xs font-bold text-slate-800 dark:text-slate-200 line-clamp-1">
               {receiverName}
             </p>
-            <div className="text-xs text-gray-400 mt-2">
+            <div className="mt-0.5">
               <AddressDisplay address={contract.receiver} />
             </div>
           </div>
@@ -116,19 +122,19 @@ const ContractRow = ({ contract, walletAddress, navigate }) => {
         )}
       </td>
 
-      <td className="px-4 py-5 align-top">
-        <span className="text-lg font-bold text-blue-600 bg-blue-50 px-3 py-1 rounded-lg border border-blue-100 whitespace-nowrap">
-          {contract.amount} <span className="text-xs">ETH</span>
+      <td className="px-5 py-4 align-middle">
+        <span className="text-sm font-extrabold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/40 px-3 py-1 rounded-xl border border-blue-200/50 dark:border-blue-900/40 whitespace-nowrap">
+          {contract.amount} <span className="text-xs font-bold">ETH</span>
         </span>
       </td>
 
-      <td className="px-4 py-5 align-top text-center">
+      <td className="px-5 py-4 align-middle text-right">
         {isClient ? (
-          <span className="text-xs font-bold text-gray-400 bg-gray-100 px-3 py-1.5 rounded-lg cursor-not-allowed">
+          <span className="text-xs font-semibold text-slate-400 bg-slate-100 dark:bg-slate-800 px-3 py-1.5 rounded-xl cursor-not-allowed">
             {t("marketYourContract")}
           </span>
         ) : isReceiver ? (
-          <span className="text-xs font-bold text-purple-600 bg-purple-50 px-3 py-1.5 rounded-lg border border-purple-100">
+          <span className="text-xs font-semibold text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-950/40 px-3 py-1.5 rounded-xl border border-purple-200/50 dark:border-purple-800/50">
             {t("marketYouAreReceiver")}
           </span>
         ) : (
@@ -136,9 +142,10 @@ const ContractRow = ({ contract, walletAddress, navigate }) => {
             onClick={() =>
               navigate(`/dashboard/contract/${contract.contractAddress}`)
             }
-            className="bg-blue-600 text-white px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-blue-700 hover:shadow-lg transition-all cursor-pointer whitespace-nowrap"
+            className="inline-flex items-center gap-1.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-md shadow-blue-500/20 hover:shadow-lg transition-all active:scale-95 cursor-pointer whitespace-nowrap"
           >
-            {t("marketTakeJob")}
+            <span>{t("marketTakeJob")}</span>
+            <ArrowRight className="w-3.5 h-3.5" />
           </button>
         )}
       </td>
@@ -170,12 +177,10 @@ const MarketplacePage = () => {
         );
 
         let data = [];
-        // Mới: API trả về { data, pagination }
         if (response.data && response.data.data) {
           data = response.data.data;
           setPagination(response.data.pagination);
         } else {
-          // Fallback nếu api cũ
           data = response.data;
         }
 
@@ -195,48 +200,78 @@ const MarketplacePage = () => {
   }, [filter, pagination.page]);
 
   return (
-    <div className="p-2 md:p-6">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4 w-full">
-        <div className="flex bg-gray-100 p-1 rounded-xl w-full md:w-auto">
+    <div className="space-y-6 animate-fade-in">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-2 border-b border-slate-200/80 dark:border-slate-800">
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+            <span className="p-1 rounded-md bg-blue-100 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400">
+              <ShoppingBag className="w-3.5 h-3.5" />
+            </span>
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
+              Sàn hợp đồng công khai
+            </span>
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+            Thị trường đơn hàng & Hợp đồng
+          </h1>
+          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
+            Nhận việc vận chuyển hoặc kiểm tra các thỏa thuận mua bán mở trên toàn hệ thống
+          </p>
+        </div>
+
+        {/* Filter buttons */}
+        <div className="flex bg-slate-100 dark:bg-slate-800/80 p-1 rounded-2xl border border-slate-200/60 dark:border-slate-700/60 shadow-xs">
           <button
             onClick={() => setFilter("newest")}
-            className={`flex-1 md:flex-none px-4 py-2 text-sm font-medium rounded-lg transition-all cursor-pointer ${filter === "newest" ? "bg-white text-blue-600 shadow-sm" : "text-gray-500 hover:text-gray-800"}`}
+            className={`flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold rounded-xl transition-all cursor-pointer ${
+              filter === "newest"
+                ? "bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-sm"
+                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+            }`}
           >
-            {t("marketFilterNewest")}
+            <Clock className="w-3.5 h-3.5" />
+            <span>{t("marketFilterNewest")}</span>
           </button>
           <button
             onClick={() => setFilter("high-price")}
-            className={`flex-1 md:flex-none px-4 py-2 text-sm font-medium rounded-lg transition-all cursor-pointer ${filter === "high-price" ? "bg-white text-blue-600 shadow-sm" : "text-gray-500 hover:text-gray-800"}`}
+            className={`flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold rounded-xl transition-all cursor-pointer ${
+              filter === "high-price"
+                ? "bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-sm"
+                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+            }`}
           >
-            {t("marketFilterHighPrice")}
+            <TrendingUp className="w-3.5 h-3.5" />
+            <span>{t("marketFilterHighPrice")}</span>
           </button>
         </div>
       </div>
 
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+      {/* Main Table */}
+      <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-slate-200/80 dark:border-slate-800 overflow-hidden">
         {loading ? (
-          <div className="text-center py-20">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+          <div className="text-center py-24 flex flex-col items-center justify-center gap-3">
+            <div className="animate-spin rounded-full h-8 w-8 border-2 border-blue-600 border-t-transparent"></div>
+            <p className="text-xs font-semibold text-slate-400">Đang tải sàn hợp đồng...</p>
           </div>
         ) : contracts.length === 0 ? (
-          <div className="text-center py-16 text-gray-400">
-            <i className="uil uil-box text-4xl mb-2"></i>
-            <p>{t("marketEmpty")}</p>
+          <div className="text-center py-20 text-slate-400">
+            <PackageOpen className="w-12 h-12 mx-auto mb-3 opacity-40" />
+            <p className="text-sm font-semibold">{t("marketEmpty")}</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
-            {/* THÊM table-fixed VÀ CHIA % ĐỘ RỘNG CÁC CỘT ĐỂ TRÁNH XÔ LỆCH BẢNG */}
-            <table className="w-full text-left border-collapse table-fixed min-w-[1000px]">
+            <table className="w-full text-left border-collapse table-fixed min-w-[950px]">
               <thead>
-                <tr className="bg-gray-50 border-b border-gray-200 text-xs uppercase text-gray-500 font-bold tracking-wider">
-                  <th className="px-4 py-4 w-[32%]">{t("marketOrderContent")}</th>
-                  <th className="px-4 py-4 w-[24%]">{t("marketPartyA")}</th>
-                  <th className="px-4 py-4 w-[24%]">{t("marketPartyB")}</th>
-                  <th className="px-4 py-4 w-[10%]">{t("marketDeposit")}</th>
-                  <th className="px-4 py-4 w-[10%] text-center">{t("marketAction")}</th>
+                <tr className="bg-slate-50/80 dark:bg-slate-800/60 border-b border-slate-200/80 dark:border-slate-800 text-[11px] uppercase text-slate-500 dark:text-slate-400 font-bold tracking-wider">
+                  <th className="px-5 py-4 w-[34%]">{t("marketOrderContent")}</th>
+                  <th className="px-5 py-4 w-[22%]">{t("marketPartyA")}</th>
+                  <th className="px-5 py-4 w-[22%]">{t("marketPartyB")}</th>
+                  <th className="px-5 py-4 w-[11%]">{t("marketDeposit")}</th>
+                  <th className="px-5 py-4 w-[11%] text-right">{t("marketAction")}</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
                 {contracts.map((contract) => (
                   <ContractRow
                     key={contract._id}
@@ -250,10 +285,10 @@ const MarketplacePage = () => {
           </div>
         )}
 
-        {/* Điều khiển Phân trang */}
+        {/* Phân trang */}
         {pagination.totalPages > 1 && (
-          <div className="p-4 border-t border-gray-100 flex items-center justify-between bg-gray-50/50">
-            <span className="text-sm text-gray-500 font-medium">
+          <div className="p-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-800/30">
+            <span className="text-xs text-slate-500 dark:text-slate-400 font-semibold">
               {t("listPage")} {pagination.page} / {pagination.totalPages}
             </span>
             <div className="flex gap-2">
@@ -262,18 +297,18 @@ const MarketplacePage = () => {
                 onClick={() =>
                   setPagination((p) => ({ ...p, page: p.page - 1 }))
                 }
-                className="px-4 py-2 text-sm font-medium border border-gray-200 bg-white rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="p-2 text-xs font-semibold border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
               >
-                {t("listPrev")}
+                <ChevronLeft className="w-4 h-4" />
               </button>
               <button
                 disabled={pagination.page >= pagination.totalPages}
                 onClick={() =>
                   setPagination((p) => ({ ...p, page: p.page + 1 }))
                 }
-                className="cursor-pointer px-4 py-2 text-sm font-medium border border-gray-200 bg-white rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="p-2 text-xs font-semibold border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
               >
-                {t("listNext")}
+                <ChevronRight className="w-4 h-4" />
               </button>
             </div>
           </div>

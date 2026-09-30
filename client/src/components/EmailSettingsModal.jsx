@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { ethers } from "ethers";
+import { Mail, X, CheckCircle2, AlertCircle, ShieldCheck } from "lucide-react";
 
 const EmailSettingsModal = ({ isOpen, onClose, walletAddress }) => {
   const [email, setEmail] = useState("");
@@ -13,11 +14,9 @@ const EmailSettingsModal = ({ isOpen, onClose, walletAddress }) => {
 
   useEffect(() => {
     if (isOpen && walletAddress) {
-      // Reset state mỗi lần mở modal
       setMessage("");
       setError("");
 
-      // Gọi API lấy email hiện tại
       axios
         .get(`${backendUrl}/api/users/settings/${walletAddress}`)
         .then((res) => {
@@ -41,7 +40,6 @@ const EmailSettingsModal = ({ isOpen, onClose, walletAddress }) => {
     setLoading(true);
 
     try {
-      // Yêu cầu user ký xác nhận bằng MetaMask
       if (!window.ethereum) throw new Error("Vui lòng cài đặt MetaMask");
 
       const provider = new ethers.BrowserProvider(window.ethereum);
@@ -50,7 +48,7 @@ const EmailSettingsModal = ({ isOpen, onClose, walletAddress }) => {
       const messageToSign = `Cập nhật email nhận thông báo: ${email}`;
       const signature = await signer.signMessage(messageToSign);
 
-      const response = await axios.post(`${backendUrl}/api/users/settings`, {
+      await axios.post(`${backendUrl}/api/users/settings`, {
         walletAddress,
         email,
         signature,
@@ -60,7 +58,7 @@ const EmailSettingsModal = ({ isOpen, onClose, walletAddress }) => {
       setTimeout(() => {
         onClose();
         setMessage("");
-      }, 2000);
+      }, 1500);
     } catch (err) {
       console.error(err);
       setError(
@@ -76,55 +74,81 @@ const EmailSettingsModal = ({ isOpen, onClose, walletAddress }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black bg-opacity-50 animation-fade-in">
-      <div className="bg-white rounded-2xl shadow-2xl p-6 w-[400px] relative">
+    <div
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/70 backdrop-blur-sm p-4 animate-fade-in"
+      onClick={onClose}
+    >
+      <div
+        className="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl p-6 sm:p-7 w-full max-w-md relative border border-slate-200/80 dark:border-slate-800"
+        onClick={(e) => e.stopPropagation()}
+      >
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 transition-colors"
+          className="absolute top-5 right-5 p-1.5 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
         >
-          <i className="uil uil-times text-2xl"></i>
+          <X className="w-5 h-5" />
         </button>
 
-        <h3 className="text-xl font-bold text-gray-800 mb-2">
-          Cài đặt thông báo
+        <div className="w-12 h-12 rounded-2xl bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 flex items-center justify-center mb-4">
+          <Mail className="w-6 h-6" />
+        </div>
+
+        <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-1.5">
+          Cài đặt nhận thông báo
         </h3>
-        <p className="text-sm text-gray-500 mb-6">
-          Nhận email nhắc nhở khi hợp đồng vận chuyển sắp đến hạn chót (trước 48
-          giờ).
+        <p className="text-xs text-slate-500 dark:text-slate-400 mb-5 leading-relaxed">
+          Nhận email cảnh báo tự động khi hợp đồng vận chuyển sắp đến hạn chót (trước 48 giờ).
         </p>
 
         <div className="mb-4">
-          <label className="block text-sm font-semibold text-gray-700 mb-2">
-            Địa chỉ Email
+          <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
+            Địa chỉ Email của bạn
           </label>
           <input
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
-            placeholder="vd: nguyenvanA@gmail.com"
+            placeholder="example@gmail.com"
+            className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-900 dark:text-slate-100 outline-none focus:border-blue-500 transition-all font-medium"
           />
         </div>
 
-        {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
-        {message && (
-          <p className="text-green-500 text-sm mb-4 font-semibold">{message}</p>
+        {error && (
+          <div className="mb-4 p-3 bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 rounded-xl text-xs font-semibold border border-rose-200 dark:border-rose-900/50 flex items-center gap-2">
+            <AlertCircle className="w-4 h-4 shrink-0" />
+            <span>{error}</span>
+          </div>
         )}
 
-        <button
-          onClick={handleSave}
-          disabled={loading}
-          className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl transition-colors flex items-center justify-center cursor-pointer"
-        >
-          {loading ? (
-            <span className="flex items-center">
-              <i className="uil uil-spinner-alt animate-spin text-xl mr-2"></i>
-              Đang xử lý...
-            </span>
-          ) : (
-            "Lưu Thiết Lập"
-          )}
-        </button>
+        {message && (
+          <div className="mb-4 p-3 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 rounded-xl text-xs font-semibold border border-emerald-200 dark:border-emerald-900/50 flex items-center gap-2">
+            <CheckCircle2 className="w-4 h-4 shrink-0" />
+            <span>{message}</span>
+          </div>
+        )}
+
+        <div className="flex justify-end gap-3 mt-6">
+          <button
+            onClick={onClose}
+            className="px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 font-semibold text-xs sm:text-sm transition-colors cursor-pointer"
+          >
+            Hủy
+          </button>
+          <button
+            onClick={handleSave}
+            disabled={loading}
+            className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-xs sm:text-sm shadow-md shadow-blue-500/20 transition-all active:scale-95 disabled:opacity-50 cursor-pointer flex items-center gap-2"
+          >
+            {loading ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                <span>Đang ký ví...</span>
+              </>
+            ) : (
+              <span>Lưu cài đặt</span>
+            )}
+          </button>
+        </div>
       </div>
     </div>
   );

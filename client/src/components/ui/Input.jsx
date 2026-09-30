@@ -1,21 +1,8 @@
 import React from "react";
+import { AlertCircle, UploadCloud } from "lucide-react";
 
 /**
- * Reusable Input component with consistent styling.
- *
- * Usage:
- *   <Input
- *     label="Receiver Wallet"
- *     placeholder="0x..."
- *     value={value}
- *     onChange={(e) => setValue(e.target.value)}
- *     error="Invalid address"
- *     required
- *   />
- *
- *   <Input.Textarea label="Terms" rows={4} />
- *   <Input.Select label="Status" options={[...]} />
- *   <Input.File label="Upload" onFileChange={handler} />
+ * Modern Accessible Form Input with dark mode, glow focus ring, and helper states.
  */
 const Input = React.forwardRef(
   (
@@ -31,7 +18,7 @@ const Input = React.forwardRef(
       helperText,
       required = false,
       disabled = false,
-      icon,
+      icon: Icon,
       className = "",
       inputClassName = "",
       ...rest
@@ -45,16 +32,20 @@ const Input = React.forwardRef(
         {label && (
           <label
             htmlFor={inputId}
-            className="block text-xs font-semibold text-gray-600 uppercase tracking-wider"
+            className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider"
           >
             {label}
-            {required && <span className="text-red-500 ml-1">*</span>}
+            {required && <span className="text-rose-500 ml-1 font-bold">*</span>}
           </label>
         )}
         <div className="relative">
-          {icon && (
-            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none z-10">
-              <i className={`uil ${icon} text-lg`}></i>
+          {Icon && (
+            <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 pointer-events-none z-10">
+              {typeof Icon === "function" || typeof Icon === "object" ? (
+                <Icon className="w-4 h-4" />
+              ) : (
+                <i className={`uil ${Icon} text-lg`}></i>
+              )}
             </div>
           )}
           <input
@@ -68,12 +59,16 @@ const Input = React.forwardRef(
             onBlur={onBlur}
             disabled={disabled}
             className={`
-              w-full bg-gray-50/80 border rounded-xl px-4 py-2.5
-              text-gray-800 text-base placeholder-gray-400
+              w-full bg-slate-50/70 dark:bg-slate-900/70 border rounded-xl px-4 py-2.5
+              text-slate-900 dark:text-slate-100 text-sm placeholder-slate-400 dark:placeholder-slate-500
               outline-none transition-all duration-200
-              focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-100
-              ${icon ? "pl-10" : ""}
-              ${error ? "border-red-400 focus:border-red-500 focus:ring-red-100" : "border-gray-200"}
+              focus:bg-white dark:focus:bg-slate-900 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10
+              ${Icon ? "pl-10" : ""}
+              ${
+                error
+                  ? "border-rose-400 dark:border-rose-500/70 focus:border-rose-500 focus:ring-rose-500/10"
+                  : "border-slate-200 dark:border-slate-800"
+              }
               ${disabled ? "opacity-50 cursor-not-allowed" : ""}
               ${inputClassName}
             `}
@@ -81,13 +76,13 @@ const Input = React.forwardRef(
           />
         </div>
         {error && (
-          <p className="text-xs text-red-600 font-medium flex items-center gap-1">
-            <i className="uil uil-exclamation-octagon"></i>
-            {error}
+          <p className="text-xs text-rose-600 dark:text-rose-400 font-medium flex items-center gap-1.5 mt-1">
+            <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+            <span>{error}</span>
           </p>
         )}
         {helperText && (
-          <p className="text-xs text-gray-500">{helperText}</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{helperText}</p>
         )}
       </div>
     );
@@ -105,10 +100,10 @@ Input.Textarea = React.forwardRef(
         {label && (
           <label
             htmlFor={inputId}
-            className="block text-xs font-semibold text-gray-600 uppercase tracking-wider"
+            className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider"
           >
             {label}
-            {required && <span className="text-red-500 ml-1">*</span>}
+            {required && <span className="text-rose-500 ml-1 font-bold">*</span>}
           </label>
         )}
         <textarea
@@ -120,21 +115,25 @@ Input.Textarea = React.forwardRef(
           onChange={onChange}
           rows={rows}
           className={`
-            w-full bg-gray-50/80 border rounded-xl px-4 py-3
-            text-gray-800 text-base placeholder-gray-400
+            w-full bg-slate-50/70 dark:bg-slate-900/70 border rounded-xl px-4 py-3
+            text-slate-900 dark:text-slate-100 text-sm placeholder-slate-400 dark:placeholder-slate-500
             outline-none transition-all duration-200 resize-y
-            focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-100
-            ${error ? "border-red-400 focus:border-red-500 focus:ring-red-100" : "border-gray-200"}
+            focus:bg-white dark:focus:bg-slate-900 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10
+            ${
+              error
+                ? "border-rose-400 dark:border-rose-500/70 focus:border-rose-500 focus:ring-rose-500/10"
+                : "border-slate-200 dark:border-slate-800"
+            }
           `}
           {...rest}
         />
         {error && (
-          <p className="text-xs text-red-600 font-medium flex items-center gap-1">
-            <i className="uil uil-exclamation-octagon"></i>
-            {error}
+          <p className="text-xs text-rose-600 dark:text-rose-400 font-medium flex items-center gap-1.5 mt-1">
+            <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+            <span>{error}</span>
           </p>
         )}
-        {helperText && <p className="text-xs text-gray-500">{helperText}</p>}
+        {helperText && <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{helperText}</p>}
       </div>
     );
   },
@@ -150,10 +149,10 @@ Input.Select = React.forwardRef(
         {label && (
           <label
             htmlFor={inputId}
-            className="block text-xs font-semibold text-gray-600 uppercase tracking-wider"
+            className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider"
           >
             {label}
-            {required && <span className="text-red-500 ml-1">*</span>}
+            {required && <span className="text-rose-500 ml-1 font-bold">*</span>}
           </label>
         )}
         <select
@@ -163,16 +162,16 @@ Input.Select = React.forwardRef(
           value={value}
           onChange={onChange}
           className={`
-            w-full bg-gray-50/80 border rounded-xl px-4 py-2.5
-            text-gray-800 text-base outline-none transition-all duration-200
-            focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-100
+            w-full bg-slate-50/70 dark:bg-slate-900/70 border rounded-xl px-4 py-2.5
+            text-slate-900 dark:text-slate-100 text-sm outline-none transition-all duration-200
+            focus:bg-white dark:focus:bg-slate-900 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10
             appearance-none cursor-pointer
-            ${error ? "border-red-400" : "border-gray-200"}
+            ${error ? "border-rose-400" : "border-slate-200 dark:border-slate-800"}
           `}
           {...rest}
         >
           {options.map((opt) => (
-            <option key={opt.value} value={opt.value}>
+            <option key={opt.value} value={opt.value} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">
               {opt.label}
             </option>
           ))}
@@ -192,17 +191,21 @@ Input.File = React.forwardRef(
         {label && (
           <label
             htmlFor={inputId}
-            className="block text-xs font-semibold text-gray-600 uppercase tracking-wider"
+            className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider"
           >
             {label}
-            <span className="text-red-500 ml-1">*</span>
+            <span className="text-rose-500 ml-1 font-bold">*</span>
           </label>
         )}
         <div
           className={`
-            relative border-2 border-dashed rounded-xl p-6 text-center cursor-pointer
+            relative border-2 border-dashed rounded-2xl p-6 text-center cursor-pointer
             transition-all duration-200
-            ${error ? "border-red-300 bg-red-50/30" : "border-gray-200 bg-gray-50/50 hover:border-blue-400 hover:bg-blue-50/30"}
+            ${
+              error
+                ? "border-rose-300 bg-rose-50/30 dark:bg-rose-950/20"
+                : "border-slate-200 dark:border-slate-800 bg-slate-50/40 dark:bg-slate-900/40 hover:border-blue-400 dark:hover:border-blue-500 hover:bg-blue-50/30 dark:hover:bg-blue-950/20"
+            }
           `}
         >
           <input
@@ -215,16 +218,20 @@ Input.File = React.forwardRef(
             className="hidden"
             {...rest}
           />
-          <i className="uil uil-upload-alt text-3xl text-gray-400 mb-3"></i>
-          <label htmlFor={inputId} className="block text-sm font-medium text-gray-700 cursor-pointer">
-            {label || "Chọn file"}
-          </label>
-          <p className="text-xs text-gray-500 mt-1">{helperText || "PDF, DOC, DOCX, hoặc ảnh"}</p>
+          <div className="flex flex-col items-center justify-center">
+            <div className="w-12 h-12 rounded-xl bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 flex items-center justify-center mb-3">
+              <UploadCloud className="w-6 h-6" />
+            </div>
+            <label htmlFor={inputId} className="block text-sm font-semibold text-slate-800 dark:text-slate-200 cursor-pointer hover:text-blue-600">
+              {label || "Chọn tệp từ máy tính"}
+            </label>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{helperText || "Hỗ trợ PDF, DOC, DOCX, hoặc hình ảnh (PNG, JPG)"}</p>
+          </div>
         </div>
         {error && (
-          <p className="text-xs text-red-600 font-medium flex items-center gap-1">
-            <i className="uil uil-exclamation-octagon"></i>
-            {error}
+          <p className="text-xs text-rose-600 dark:text-rose-400 font-medium flex items-center gap-1.5 mt-1">
+            <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+            <span>{error}</span>
           </p>
         )}
       </div>

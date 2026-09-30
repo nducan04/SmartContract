@@ -1,76 +1,123 @@
 import React from "react";
+import { useLanguage } from "../../context/LanguageContext";
 
 /**
- * StatusPill — vertical badge for contract lifecycle status.
- *
- * Usage:
- *   <StatusPill status={2} />              // numeric (0-5)
- *   <StatusPill status="completed" />       // string keyword
- *
- * Props:
- *   status (number|string) - contract status code or keyword
- *   size?  ("sm"|"md")      - default "md"
- *   showLabel? (bool)       - default true
+ * Modern StatusPill component with pulsing dot, dark mode tokens and i18n support.
  */
-const STATUS_CONFIG = [
-  { label: "Mới tạo",       color: "bg-gray-100 text-gray-700",   dot: "bg-gray-400" },
-  { label: "Đã chấp nhận",  color: "bg-purple-100 text-purple-700", dot: "bg-purple-500" },
-  { label: "Đang vận chuyển", color: "bg-amber-100 text-amber-700", dot: "bg-amber-500" },
-  { label: "Đã hoàn thành", color: "bg-green-100 text-green-700",  dot: "bg-green-500" },
-  { label: "Đã thanh toán", color: "bg-blue-100 text-blue-700",   dot: "bg-blue-500" },
-  { label: "Đã hủy",       color: "bg-red-100 text-red-700",      dot: "bg-red-500" },
-];
+const StatusPill = ({ status, size = "md", showLabel = true, className = "" }) => {
+  const { t } = useLanguage();
 
-// Map string keywords to numeric indices
-const STATUS_MAP = {
-  created: 0,
-  pending: 0,
-  accepted: 1,
-  confirm: 1,
-  shipping: 2,
-  shipping_status: 2,
-  in_transit: 2,
-  completed: 3,
-  finished: 3,
-  paid: 4,
-  cancelled: 5,
-  cancelled_status: 5,
-  cancelled_vn: 5,
-  active: 2,
-  warning: 2,
-  error: 5,
-  info: 1,
-};
+  const STATUS_KEYS = [
+    "statusCreated",
+    "statusAccepted",
+    "statusShipping",
+    "statusCompleted",
+    "statusPaid",
+    "statusCancelled",
+  ];
 
-const StatusPill = ({ status, size = "md", showLabel = true }) => {
-  // Resolve string keyword to numeric index
+  const STATUS_CONFIG = [
+    {
+      fallbackLabel: "Mới tạo",
+      key: "statusCreated",
+      color: "bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700",
+      dot: "bg-slate-400",
+      pulse: false,
+    },
+    {
+      fallbackLabel: "Đã chấp nhận",
+      key: "statusAccepted",
+      color: "bg-purple-50 text-purple-700 border-purple-200/60 dark:bg-purple-950/40 dark:text-purple-300 dark:border-purple-800/60",
+      dot: "bg-purple-500",
+      pulse: true,
+    },
+    {
+      fallbackLabel: "Đang vận chuyển",
+      key: "statusShipping",
+      color: "bg-amber-50 text-amber-700 border-amber-200/60 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800/60",
+      dot: "bg-amber-500",
+      pulse: true,
+    },
+    {
+      fallbackLabel: "Đã hoàn thành",
+      key: "statusCompleted",
+      color: "bg-emerald-50 text-emerald-700 border-emerald-200/60 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800/60",
+      dot: "bg-emerald-500",
+      pulse: false,
+    },
+    {
+      fallbackLabel: "Đã thanh toán",
+      key: "statusPaid",
+      color: "bg-blue-50 text-blue-700 border-blue-200/60 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-800/60",
+      dot: "bg-blue-500",
+      pulse: false,
+    },
+    {
+      fallbackLabel: "Đã hủy",
+      key: "statusCancelled",
+      color: "bg-rose-50 text-rose-700 border-rose-200/60 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800/60",
+      dot: "bg-rose-500",
+      pulse: false,
+    },
+  ];
+
+  const STATUS_MAP = {
+    created: 0,
+    pending: 0,
+    accepted: 1,
+    confirm: 1,
+    shipping: 2,
+    shipping_status: 2,
+    in_transit: 2,
+    completed: 3,
+    finished: 3,
+    paid: 4,
+    cancelled: 5,
+    cancelled_status: 5,
+    cancelled_vn: 5,
+    active: 2,
+    warning: 2,
+    error: 5,
+    info: 1,
+  };
+
   let safeStatus;
   if (typeof status === "string") {
     safeStatus = STATUS_MAP[status.toLowerCase()];
-    if (safeStatus === undefined) {
-      safeStatus = 0; // default to "created"
-    }
+    if (safeStatus === undefined) safeStatus = 0;
   } else {
     safeStatus = Math.min(Math.max(status || 0, 0), 5);
   }
 
   const cfg = STATUS_CONFIG[safeStatus] || STATUS_CONFIG[0];
+  const label = t ? t(cfg.key) || cfg.fallbackLabel : cfg.fallbackLabel;
 
   const sizeClasses = {
-    sm: "px-2 py-0.5 text-[10px]",
-    md: "px-3 py-1 text-xs",
+    sm: "px-2 py-0.5 text-[11px]",
+    md: "px-2.5 py-1 text-xs",
   };
 
   return (
     <span
       className={`
-        inline-flex items-center gap-1.5 font-bold rounded-full
+        inline-flex items-center gap-1.5 font-semibold rounded-full border
+        transition-colors
         ${sizeClasses[size] || sizeClasses.md}
         ${cfg.color}
+        ${className}
       `}
     >
-      <span className={`w-1.5 h-1.5 rounded-full ${cfg.dot}`}></span>
-      {showLabel && cfg.label}
+      <span className="relative flex h-2 w-2">
+        {cfg.pulse && (
+          <span
+            className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${cfg.dot}`}
+          ></span>
+        )}
+        <span
+          className={`relative inline-flex rounded-full h-2 w-2 ${cfg.dot}`}
+        ></span>
+      </span>
+      {showLabel && <span>{label}</span>}
     </span>
   );
 };

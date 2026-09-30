@@ -1,118 +1,107 @@
 import React, { useState } from "react";
 import { QRCodeCanvas } from "qrcode.react";
+import { QrCode, X, Copy, Check, ExternalLink, Printer } from "lucide-react";
 
 const QRModal = ({ show, onClose, contractId }) => {
   const [copySuccess, setCopySuccess] = useState(false);
 
   if (!show) return null;
 
-  // Lấy domain hiện tại
   const currentDomain = window.location.origin;
-  // Tạo link đích
   const qrUrl = `${currentDomain}/tracking/${contractId}`;
 
-  // Hàm xử lý copy
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(contractId);
       setCopySuccess(true);
-      setTimeout(() => setCopySuccess(false), 2000); // Reset sau 2s
+      setTimeout(() => setCopySuccess(false), 2000);
     } catch (err) {
       console.error("Failed to copy!", err);
     }
   };
 
-  // Hàm in mã QR (Mô phỏng in tem)
   const handlePrint = () => {
     window.print();
   };
 
   return (
-    <div className="fixed inset-0 z-9999 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 print:p-0 print:bg-white print:absolute">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden animate-fade-in-up print:shadow-none print:w-full print:max-w-none">
-        {/* Header - Ẩn khi in */}
-        <div className="bg-gray-50 px-6 py-4 border-b border-gray-100 flex justify-between items-center print:hidden">
-          <h3 className="font-bold text-gray-800 flex items-center gap-2">
-            <i className="uil uil-qrcode-scan text-blue-600 text-xl"></i>
-            Mã QR Định Danh
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/70 backdrop-blur-sm p-4 print:p-0 print:bg-white print:absolute animate-fade-in">
+      <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl w-full max-w-sm overflow-hidden animate-scale-in border border-slate-200/80 dark:border-slate-800 print:shadow-none print:w-full print:max-w-none">
+        {/* Header */}
+        <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center print:hidden">
+          <h3 className="font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2 text-sm">
+            <QrCode className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+            <span>Mã QR Định Danh Blockchain</span>
           </h3>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-red-500 transition-colors text-2xl cursor-pointer w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100"
+            className="p-1 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
           >
-            &times;
+            <X className="w-4 h-4" />
           </button>
         </div>
 
         {/* Body */}
-        <div className="p-8 flex flex-col items-center text-center">
-          {/* Khung chứa QR */}
-          <div className="p-4 bg-white border-2 border-blue-100 rounded-xl shadow-sm mb-5 print:border-4 print:border-black">
+        <div className="p-6 sm:p-8 flex flex-col items-center text-center">
+          {/* QR Canvas Container */}
+          <div className="p-4 bg-white rounded-2xl shadow-md border border-slate-200 mb-5 print:border-4 print:border-black">
             <QRCodeCanvas
               value={qrUrl}
-              size={220}
+              size={200}
               level={"H"}
               includeMargin={true}
             />
           </div>
 
-          <p className="text-sm text-gray-500 mb-6 print:text-black print:font-bold">
-            Quét mã để xem chi tiết hợp đồng.
+          <p className="text-xs text-slate-500 dark:text-slate-400 mb-5 print:text-black">
+            Quét mã để tra cứu hành trình & điều khoản hợp đồng.
           </p>
 
-          {/* Địa chỉ rút gọn + Nút Copy */}
-          <div className="flex flex-col items-center gap-2 mb-6 w-full print:hidden">
-            <span className="text-xs text-gray-400 uppercase tracking-wide font-bold">
-              Contract Address
+          {/* Contract Address + Copy */}
+          <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-800 px-3.5 py-1.5 rounded-full border border-slate-200 dark:border-slate-700 mb-5 print:hidden max-w-full">
+            <span className="font-mono font-bold text-blue-600 dark:text-blue-400 text-xs truncate">
+              {contractId
+                ? `${contractId.slice(0, 8)}...${contractId.slice(-6)}`
+                : "..."}
             </span>
 
-            <div className="flex items-center justify-center gap-2 bg-gray-50 pl-4 pr-2 py-1.5 rounded-full border border-gray-100 max-w-full mt-1.5">
-              <span className="font-mono font-bold text-blue-500 text-sm truncate">
-                {contractId
-                  ? `${contractId.slice(0, 8)}...${contractId.slice(-6)}`
-                  : "..."}
-              </span>
-
-              <button
-                onClick={handleCopy}
-                className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white hover:shadow-sm text-gray-400 
-                hover:text-blue-600 transition-all cursor-pointer relative"
-                title="Sao chép toàn bộ địa chỉ"
-              >
-                {copySuccess ? (
-                  <i className="uil uil-check text-green-500"></i>
-                ) : (
-                  <i className="uil uil-copy"></i>
-                )}
-              </button>
-            </div>
+            <button
+              onClick={handleCopy}
+              className="p-1 text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+              title="Sao chép địa chỉ"
+            >
+              {copySuccess ? (
+                <Check className="w-3.5 h-3.5 text-emerald-500" />
+              ) : (
+                <Copy className="w-3.5 h-3.5" />
+              )}
+            </button>
           </div>
 
-          {/* Nút mở link trực tiếp - Ẩn khi in */}
           <a
             href={qrUrl}
             target="_blank"
             rel="noreferrer"
-            className="inline-flex items-center gap-2 text-blue-600 bg-blue-50 px-4 py-2 rounded-lg text-sm font-bold hover:bg-blue-100 
-            transition-colors print:hidden"
+            className="inline-flex items-center gap-1.5 text-blue-600 dark:text-blue-400 text-xs font-bold hover:underline print:hidden"
           >
-            <i className="uil uil-external-link-alt"></i>
-            Mở liên kết
+            <span>Mở liên kết tra cứu</span>
+            <ExternalLink className="w-3 h-3" />
           </a>
         </div>
 
-        {/* Footer - Ẩn khi in */}
-        <div className="bg-gray-50 px-6 py-4 flex justify-between gap-3 border-t border-gray-100 print:hidden">
+        {/* Footer */}
+        <div className="bg-slate-50 dark:bg-slate-800/50 px-6 py-4 flex gap-3 border-t border-slate-100 dark:border-slate-800 print:hidden">
           <button
             onClick={handlePrint}
-            className="flex-1 px-4 py-2 bg-white border border-gray-300 text-gray-700 font-bold rounded-lg hover:bg-gray-100 hover:text-black transition-colors flex items-center justify-center gap-2 cursor-pointer shadow-sm"
+            className="flex-1 py-2.5 px-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 font-bold rounded-xl text-xs hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors flex items-center justify-center gap-2 shadow-xs cursor-pointer"
           >
-            <i className="uil uil-print"></i> In mã
+            <Printer className="w-3.5 h-3.5" />
+            <span>In tem</span>
           </button>
 
           <button
             onClick={onClose}
-            className="flex-1 px-4 py-2 bg-gray-800 text-white font-bold rounded-lg hover:bg-gray-900 transition-colors shadow-lg shadow-gray-200 cursor-pointer"
+            className="flex-1 py-2.5 px-4 bg-slate-900 dark:bg-slate-700 text-white font-bold rounded-xl text-xs hover:bg-slate-800 transition-colors shadow-sm cursor-pointer"
           >
             Đóng
           </button>
