@@ -173,7 +173,7 @@ const Sidebar = ({ isMobileOpen, closeMobileMenu }) => {
                 className={`px-2 py-0.5 rounded-md transition-all duration-200 ${
                   language === "vi"
                     ? "bg-white text-blue-600 shadow-xs"
-                    : "text-gray-400 hover:text-gray-600"
+                    : "text-gray-500 hover:text-gray-600 dark:hover:bg-gray-700"
                 }`}
               >
                 VIE
@@ -182,7 +182,7 @@ const Sidebar = ({ isMobileOpen, closeMobileMenu }) => {
                 className={`px-2 py-0.5 rounded-md transition-all duration-200 ${
                   language === "en"
                     ? "bg-white text-blue-600 shadow-xs"
-                    : "text-gray-400 hover:text-gray-600"
+                    : "text-gray-500 hover:text-gray-600 dark:hover:bg-gray-700"
                 }`}
               >
                 ENG
@@ -191,20 +191,21 @@ const Sidebar = ({ isMobileOpen, closeMobileMenu }) => {
           </div>
 
           {/* Dark Mode Toggle */}
-          <div className="flex items-center justify-between bg-gray-100 dark:bg-gray-800 p-1.5 rounded-xl border border-gray-200 dark:border-gray-700/80 cursor-pointer select-none transition-all hover:border-blue-300 shadow-xs">
+          <div
+            onClick={toggleTheme}
+            className="flex items-center justify-between bg-gray-100 dark:bg-gray-800 p-1.5 rounded-xl border border-gray-200 dark:border-gray-700/80 cursor-pointer select-none transition-all hover:border-blue-300 shadow-xs active:scale-[0.98]"
+            title={theme === "dark" ? "Chuyển sang giao diện sáng" : "Chuyển sang giao diện tối"}
+          >
             <div className="flex items-center gap-1.5 pl-1 text-gray-600 dark:text-gray-300 text-xs font-semibold">
               <i className={`uil ${theme === "dark" ? "uil-sun text-yellow-400" : "uil-moon"} text-lg`}></i>
               <span>{theme === "dark" ? "Sáng" : "Tối"}</span>
             </div>
-            <div
-              onClick={toggleTheme}
-              className="flex items-center text-xs font-bold bg-gray-200 dark:bg-gray-600 p-0.5 rounded-lg transition-all cursor-pointer"
-            >
+            <div className="flex items-center text-xs font-bold bg-gray-200 dark:bg-gray-600 p-0.5 rounded-lg transition-all">
               <span
                 className={`px-2 py-0.5 rounded-md transition-all duration-200 ${
                   theme === "light"
                     ? "bg-white text-blue-600 shadow-xs"
-                    : "text-gray-400 hover:text-gray-600"
+                    : "text-gray-500 hover:text-gray-600 dark:hover:bg-gray-700"
                 }`}
               >
                 ☀️
@@ -213,7 +214,7 @@ const Sidebar = ({ isMobileOpen, closeMobileMenu }) => {
                 className={`px-2 py-0.5 rounded-md transition-all duration-200 ${
                   theme === "dark"
                     ? "bg-white text-blue-600 shadow-xs"
-                    : "text-gray-400 hover:text-gray-600"
+                    : "text-gray-500 hover:text-gray-600 dark:hover:bg-gray-700"
                 }`}
               >
                 🌙
