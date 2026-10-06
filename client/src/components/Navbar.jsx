@@ -173,7 +173,7 @@ const Navbar = () => {
           <button
             onClick={toggleTheme}
             className="p-2 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-yellow-400 border border-slate-200/80 dark:border-slate-700/80 transition-all active:scale-95 shadow-xs"
-            title={theme === "dark" ? "Chuyển sang giao diện sáng" : "Chuyển sang giao diện tối"}
+            title={theme === "dark" ? t("themeToLight") : t("themeToDark")}
             aria-label="Toggle theme"
           >
             {theme === "dark" ? (
@@ -229,7 +229,7 @@ const Navbar = () => {
                           <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
                         </span>
                         <p className="text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">
-                          Đã kết nối ví
+                          {t("userConnectedWallet")}
                         </p>
                       </div>
                       <p className="text-sm font-bold text-slate-900 dark:text-slate-100 mt-0.5 truncate">
@@ -241,7 +241,7 @@ const Navbar = () => {
                   {/* Wallet address & Copy */}
                   <div className="px-4 py-3 bg-slate-50/50 dark:bg-slate-800/40">
                     <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 mb-1">
-                      <span>Địa chỉ ví</span>
+                      <span>{t("userWalletAddress")}</span>
                       <button
                         onClick={copyAddress}
                         className="flex items-center gap-1 text-blue-600 dark:text-blue-400 hover:underline font-medium"
@@ -249,12 +249,12 @@ const Navbar = () => {
                         {copied ? (
                           <>
                             <Check className="w-3 h-3 text-emerald-500" />
-                            <span className="text-emerald-500">Đã sao chép</span>
+                            <span className="text-emerald-500">{t("userCopied")}</span>
                           </>
                         ) : (
                           <>
                             <Copy className="w-3 h-3" />
-                            <span>Sao chép</span>
+                            <span>{t("userCopy")}</span>
                           </>
                         )}
                       </button>

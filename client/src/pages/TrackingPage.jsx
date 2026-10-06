@@ -5,6 +5,7 @@ import axios from "axios";
 import AddressDisplay from "../components/AddressDisplay";
 import QRModal from "../components/QRModal";
 import CheckpointMap from "../components/CheckpointMap";
+import { useLanguage } from "../context/LanguageContext";
 import {
   Boxes,
   CheckCircle2,
@@ -31,52 +32,53 @@ import {
 
 // --- COMPONENT MODAL CHI TIẾT BƯỚC ---
 const StepDetailModal = ({ step, contractData, onClose }) => {
+  const { t } = useLanguage();
   if (!step) return null;
 
   const getStepContent = () => {
     switch (step.id) {
       case 0:
         return {
-          title: "Khởi tạo hợp đồng",
-          actor: "Người gửi (Client)",
+          title: t("trackStep0Title"),
+          actor: t("trackStep0Actor"),
           address: contractData.client,
-          desc: "Hợp đồng được triển khai lên mạng Sepolia. Các điều khoản và tiền ký quỹ đã được khóa an toàn.",
+          desc: t("trackStep0Desc"),
           Icon: Boxes,
           color: "text-blue-500 bg-blue-500/10",
         };
       case 1:
         return {
-          title: "Đơn vị vận chuyển xác nhận",
-          actor: "Vận chuyển (Provider)",
+          title: t("trackStep1Title"),
+          actor: t("trackStep1Actor"),
           address: contractData.provider,
-          desc: "Đơn vị vận chuyển đã đồng ý các điều khoản và cam kết thực hiện đơn hàng đúng cam kết.",
+          desc: t("trackStep1Desc"),
           Icon: CheckCircle2,
           color: "text-amber-500 bg-amber-500/10",
         };
       case 2:
         return {
-          title: "Đang trong quá trình vận chuyển",
-          actor: "Vận chuyển (Provider)",
+          title: t("trackStep2Title"),
+          actor: t("trackStep2Actor"),
           address: contractData.provider,
-          desc: "Hàng hóa đang được vận chuyển tới địa chỉ người nhận theo lộ trình được định tuyến.",
+          desc: t("trackStep2Desc"),
           Icon: Truck,
           color: "text-indigo-500 bg-indigo-500/10",
         };
       case 3:
         return {
-          title: "Giao hàng thành công",
-          actor: "Vận chuyển (Provider)",
+          title: t("trackStep3Title"),
+          actor: t("trackStep3Actor"),
           address: contractData.provider,
-          desc: "Đơn vị vận chuyển xác nhận đã giao hàng đến điểm đích thành công.",
+          desc: t("trackStep3Desc"),
           Icon: PackageCheck,
           color: "text-emerald-500 bg-emerald-500/10",
         };
       case 4:
         return {
-          title: "Xác nhận & Thanh toán",
-          actor: "Người nhận (Receiver)",
+          title: t("trackStep4Title"),
+          actor: t("trackStep4Actor"),
           address: contractData.receiver,
-          desc: `Người nhận đã xác nhận hàng hóa. Smart Contract tự động giải ngân ${contractData.amount} ETH cho đơn vị vận chuyển.`,
+          desc: `${t("trackStep4Desc")} (${contractData.amount} ETH)`,
           Icon: Receipt,
           color: "text-emerald-600 bg-emerald-600/10",
         };
@@ -114,7 +116,7 @@ const StepDetailModal = ({ step, contractData, onClose }) => {
           </div>
           <div className="space-y-1.5">
             <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
-              Mô tả trên Blockchain
+              {t("trackDescOnBlockchain")}
             </p>
             <p className="text-slate-700 dark:text-slate-300 text-sm leading-relaxed bg-slate-50 dark:bg-slate-800/60 p-3.5 rounded-2xl border border-slate-200/60 dark:border-slate-700/60">
               {content.desc}
@@ -122,7 +124,7 @@ const StepDetailModal = ({ step, contractData, onClose }) => {
           </div>
           <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 pt-3 border-t border-slate-100 dark:border-slate-800">
             <Clock className="w-3.5 h-3.5 text-blue-500" />
-            <span>Dữ liệu được xác thực bất biến trên Ethereum Sepolia</span>
+            <span>{t("trackDataImmutable")}</span>
           </div>
         </div>
         <div className="p-4 bg-slate-50 dark:bg-slate-800/40 text-center border-t border-slate-100 dark:border-slate-800">
@@ -132,7 +134,7 @@ const StepDetailModal = ({ step, contractData, onClose }) => {
             rel="noreferrer"
             className="text-blue-600 dark:text-blue-400 text-sm font-bold hover:underline inline-flex items-center justify-center gap-1.5"
           >
-            <span>Xem trên Etherscan</span>
+            <span>{t("trackViewOnEtherscan")}</span>
             <ExternalLink className="w-4 h-4" />
           </a>
         </div>
@@ -143,10 +145,11 @@ const StepDetailModal = ({ step, contractData, onClose }) => {
 
 // --- COMPONENT HIỂN THỊ CHI TIẾT HỢP ĐỒNG ---
 const TermsDisplay = ({ terms }) => {
+  const { t } = useLanguage();
   if (!terms)
     return (
       <span className="text-slate-400 dark:text-slate-500 italic text-sm">
-        Không có thông tin chi tiết
+        {t("trackNoDetails")}
       </span>
     );
 
@@ -169,19 +172,19 @@ const TermsDisplay = ({ terms }) => {
 
     const articles = {
       art1_items: {
-        label: "Chi tiết Hàng hóa / Dịch vụ",
+        label: t("trackArtItems"),
         value: data.art1_items,
       },
       art3_price: {
-        label: "Giá trị hợp đồng & Thanh toán",
+        label: t("trackArtPrice"),
         value: data.art3_price,
       },
       art4_delivery: {
-        label: "Thời gian & Địa điểm giao nhận",
+        label: t("trackArtDelivery"),
         value: data.art4_delivery,
       },
       art5_payment: {
-        label: "Phương thức thanh toán",
+        label: t("trackArtPayment"),
         value: data.art5_payment,
       },
     };
@@ -193,21 +196,21 @@ const TermsDisplay = ({ terms }) => {
           <div className="flex items-center gap-2 mb-1">
             <Building2 className="w-4 h-4 text-blue-500" />
             <p className="text-xs font-black text-blue-600 dark:text-blue-400 uppercase tracking-wider">
-              THÔNG TIN BÊN A (Giao)
+              {t("trackCardPartyA")}
             </p>
           </div>
           <div>
-            <p className="text-[10px] font-bold text-slate-400 uppercase">Tên đơn vị</p>
+            <p className="text-[10px] font-bold text-slate-400 uppercase">{t("trackUnitName")}</p>
             <p className="text-sm text-slate-800 dark:text-slate-100 font-bold">
               {partyA.name || "---"}
             </p>
           </div>
           <div>
-            <p className="text-[10px] font-bold text-slate-400 uppercase">Địa chỉ</p>
+            <p className="text-[10px] font-bold text-slate-400 uppercase">{t("trackAddress")}</p>
             <p className="text-sm text-slate-600 dark:text-slate-300">{partyA.address || "---"}</p>
           </div>
           <div>
-            <p className="text-[10px] font-bold text-slate-400 uppercase">Người đại diện</p>
+            <p className="text-[10px] font-bold text-slate-400 uppercase">{t("trackRepresentative")}</p>
             <p className="text-sm text-slate-600 dark:text-slate-300">{partyA.rep || "---"}</p>
           </div>
         </div>
@@ -217,21 +220,21 @@ const TermsDisplay = ({ terms }) => {
           <div className="flex items-center gap-2 mb-1">
             <UserCheck className="w-4 h-4 text-indigo-500" />
             <p className="text-xs font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-wider">
-              THÔNG TIN BÊN B (Nhận/Vận chuyển)
+              {t("trackCardPartyB")}
             </p>
           </div>
           <div>
-            <p className="text-[10px] font-bold text-slate-400 uppercase">Tên đơn vị</p>
+            <p className="text-[10px] font-bold text-slate-400 uppercase">{t("trackUnitName")}</p>
             <p className="text-sm text-slate-800 dark:text-slate-100 font-bold">
               {partyB.name || "---"}
             </p>
           </div>
           <div>
-            <p className="text-[10px] font-bold text-slate-400 uppercase">Địa chỉ</p>
+            <p className="text-[10px] font-bold text-slate-400 uppercase">{t("trackAddress")}</p>
             <p className="text-sm text-slate-600 dark:text-slate-300">{partyB.address || "---"}</p>
           </div>
           <div>
-            <p className="text-[10px] font-bold text-slate-400 uppercase">Người đại diện</p>
+            <p className="text-[10px] font-bold text-slate-400 uppercase">{t("trackRepresentative")}</p>
             <p className="text-sm text-slate-600 dark:text-slate-300">{partyB.rep || "---"}</p>
           </div>
         </div>
@@ -271,6 +274,7 @@ const TermsDisplay = ({ terms }) => {
 const TrackingPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const [contractData, setContractData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -284,11 +288,11 @@ const TrackingPage = () => {
   const [selectedContractAddress, setSelectedContractAddress] = useState(null);
 
   const steps = [
-    { id: 0, label: "Khởi tạo hợp đồng" },
-    { id: 1, label: "Đã chấp nhận" },
-    { id: 2, label: "Đang thực hiện" },
-    { id: 3, label: "Hoàn thành" },
-    { id: 4, label: "Đã thanh toán" },
+    { id: 0, label: t("trackStep0Title") },
+    { id: 1, label: t("statusAccepted") },
+    { id: 2, label: t("listFilterStatus2") },
+    { id: 3, label: t("statusCompleted") },
+    { id: 4, label: t("statusPaid") },
   ];
 
   useEffect(() => {
@@ -369,7 +373,7 @@ const TrackingPage = () => {
       } catch (err) {
         console.error(err);
         setError(
-          "Không thể tải dữ liệu. Mã hợp đồng không tồn tại hoặc lỗi mạng RPC."
+          t("trackFailed") + ". " + (t("notFoundDesc") || "")
         );
       } finally {
         setLoading(false);
@@ -377,7 +381,7 @@ const TrackingPage = () => {
     };
 
     fetchContractData();
-  }, [id]);
+  }, [id, t]);
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -428,11 +432,11 @@ const TrackingPage = () => {
             className="flex items-center justify-center gap-1.5 w-full py-2 bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 font-bold text-xs rounded-xl border border-blue-200/60 dark:border-blue-500/20 hover:bg-blue-100 dark:hover:bg-blue-500/20 hover:shadow-sm transition-all"
           >
             <ExternalLink className="w-3.5 h-3.5" />
-            <span>Xem chứng từ IPFS</span>
+            <span>{t("trackViewIpfs")}</span>
           </a>
         ) : (
           <div className="w-full py-2 bg-slate-100 dark:bg-slate-800/80 text-slate-400 dark:text-slate-500 font-semibold text-xs rounded-xl text-center border border-slate-200/60 dark:border-slate-700/60">
-            Chưa có chứng từ
+            {t("trackNoProof")}
           </div>
         )}
       </div>
@@ -448,7 +452,7 @@ const TrackingPage = () => {
           <Boxes className="w-6 h-6 text-blue-600 absolute inset-0 m-auto" />
         </div>
         <p className="text-sm font-semibold text-slate-600 dark:text-slate-400">
-          Đang truy vấn dữ liệu từ Blockchain...
+          {t("trackQuerying")}
         </p>
       </div>
     );
@@ -462,14 +466,14 @@ const TrackingPage = () => {
             <AlertCircle className="w-8 h-8" />
           </div>
           <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100 mb-2">
-            Tra cứu thất bại
+            {t("trackFailed")}
           </h2>
           <p className="text-rose-500 dark:text-rose-400 mb-6 text-sm">{error}</p>
           <button
             onClick={() => navigate("/tracking")}
             className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-2xl transition-all shadow-md shadow-blue-500/20 cursor-pointer"
           >
-            Thử lại
+            {t("trackRetry")}
           </button>
         </div>
       </div>
@@ -487,10 +491,10 @@ const TrackingPage = () => {
             <Search className="w-7 h-7" />
           </div>
           <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight mb-2">
-            Tra cứu hợp đồng
+            {t("trackSearchTitle")}
           </h2>
           <p className="text-slate-500 dark:text-slate-400 mb-6 text-sm max-w-sm mx-auto">
-            Nhập mã smart contract để kiểm tra tiến trình chuỗi cung ứng minh bạch trên Ethereum.
+            {t("trackSearchSubtitle")}
           </p>
           <form
             onSubmit={handleSearch}
@@ -498,7 +502,7 @@ const TrackingPage = () => {
           >
             <input
               type="text"
-              placeholder="Nhập địa chỉ hợp đồng (0x...)"
+              placeholder={t("trackSearchPlaceholder")}
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               className="flex-1 px-4 py-3 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-2xl outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 text-sm font-mono text-slate-800 dark:text-slate-100 transition-all min-w-0"
@@ -509,7 +513,7 @@ const TrackingPage = () => {
               className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-3 rounded-2xl transition-all shadow-md shadow-blue-500/25 flex items-center justify-center gap-2 cursor-pointer w-full sm:w-auto"
             >
               <Search className="w-4 h-4" />
-              <span>Tra cứu ngay</span>
+              <span>{t("trackSearchBtn")}</span>
             </button>
           </form>
         </div>
@@ -519,7 +523,7 @@ const TrackingPage = () => {
             <div className="flex flex-col items-center">
               <h3 className="text-xs font-bold text-slate-400 dark:text-slate-500 mb-4 uppercase tracking-wider flex items-center gap-1.5">
                 <Sparkles className="w-4 h-4 text-amber-500" />
-                Chưa có mã? Khám phá hợp đồng thực tế:
+                {t("trackExploreSample")}
               </h3>
               <div className="flex flex-wrap justify-center gap-3">
                 {allContracts.slice(0, 3).map((contract, index) => (
@@ -532,7 +536,7 @@ const TrackingPage = () => {
                     type="button"
                   >
                     <span className="text-[11px] font-bold text-blue-600 dark:text-blue-400 mb-1">
-                      Mẫu số #{index + 1}
+                      {t("trackSampleNo")}{index + 1}
                     </span>
                     <span className="text-xs text-slate-700 dark:text-slate-300 font-mono group-hover:text-blue-600 dark:group-hover:text-blue-400">
                       {contract.contractAddress.substring(0, 8)}...
@@ -570,7 +574,7 @@ const TrackingPage = () => {
                 SupplyChain Track
               </h1>
               <p className="opacity-80 text-xs sm:text-sm mt-0.5">
-                Xác thực minh bạch bất biến trên Blockchain
+                {t("trackHeaderSub")}
               </p>
             </div>
           </div>
@@ -578,10 +582,10 @@ const TrackingPage = () => {
           <button
             onClick={() => navigate("/tracking")}
             className="bg-white/15 hover:bg-white/25 border border-white/20 p-2 sm:px-4 sm:py-2.5 rounded-2xl transition-all cursor-pointer w-full sm:w-auto flex justify-center items-center gap-2 text-sm font-bold backdrop-blur-md"
-            title="Tra cứu mã khác"
+            title={t("trackSearchOther")}
           >
             <Search className="w-4 h-4" />
-            <span>Tra cứu mã khác</span>
+            <span>{t("trackSearchOther")}</span>
           </button>
         </div>
 
@@ -591,7 +595,7 @@ const TrackingPage = () => {
             <div className="bg-slate-50 dark:bg-slate-800/60 p-4 rounded-2xl border border-slate-200/60 dark:border-slate-700/60 hover:border-blue-500/40 transition-colors">
               <p className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-2 flex items-center gap-1.5">
                 <Boxes className="w-4 h-4 text-blue-500" />
-                <span>Người gửi (Client)</span>
+                <span>{t("trackRoleClient")}</span>
               </p>
               <AddressDisplay address={contractData.client} />
             </div>
@@ -599,7 +603,7 @@ const TrackingPage = () => {
             <div className="bg-slate-50 dark:bg-slate-800/60 p-4 rounded-2xl border border-slate-200/60 dark:border-slate-700/60 hover:border-amber-500/40 transition-colors">
               <p className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-2 flex items-center gap-1.5">
                 <Truck className="w-4 h-4 text-amber-500" />
-                <span>Đơn vị Vận chuyển</span>
+                <span>{t("trackRoleCarrier")}</span>
               </p>
               <AddressDisplay address={contractData.provider} />
             </div>
@@ -607,7 +611,7 @@ const TrackingPage = () => {
             <div className="bg-slate-50 dark:bg-slate-800/60 p-4 rounded-2xl border border-slate-200/60 dark:border-slate-700/60 hover:border-emerald-500/40 transition-colors">
               <p className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-2 flex items-center gap-1.5">
                 <MapPin className="w-4 h-4 text-emerald-500" />
-                <span>Người nhận (Receiver)</span>
+                <span>{t("trackRoleReceiver")}</span>
               </p>
               <AddressDisplay address={contractData.receiver} />
             </div>
@@ -617,7 +621,7 @@ const TrackingPage = () => {
           <div className="grid gap-6 md:grid-cols-2 mb-6 pb-6 border-b border-slate-100 dark:border-slate-800 items-center">
             <div className="flex flex-col min-w-0">
               <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase mb-2">
-                Mã hợp đồng (Smart Contract)
+                {t("trackContractIdLabel")}
               </p>
               <div className="flex items-center gap-2 min-w-0">
                 <div className="font-mono text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 px-3.5 py-2.5 rounded-2xl truncate w-full border border-slate-200/80 dark:border-slate-700">
@@ -626,7 +630,7 @@ const TrackingPage = () => {
                 <button
                   onClick={handleCopy}
                   className="bg-slate-100 hover:bg-blue-50 dark:bg-slate-800 dark:hover:bg-blue-500/10 text-slate-500 hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400 p-2.5 rounded-2xl border border-slate-200/80 dark:border-slate-700 transition-colors cursor-pointer shrink-0"
-                  title="Copy mã hợp đồng"
+                  title={t("userCopy")}
                 >
                   {copied ? (
                     <CheckCircle2 className="w-5 h-5 text-emerald-500" />
@@ -639,7 +643,7 @@ const TrackingPage = () => {
 
             <div className="flex flex-col md:items-end mt-2 md:mt-0">
               <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase mb-2 w-full md:text-right">
-                Phí dịch vụ ký quỹ
+                {t("trackEscrowFeeLabel")}
               </p>
               <div className="flex items-baseline gap-1.5 bg-blue-50/80 dark:bg-blue-500/10 px-4 py-2 rounded-2xl border border-blue-200/60 dark:border-blue-500/20">
                 <span className="text-2xl sm:text-3xl font-black text-blue-700 dark:text-blue-400 tracking-tight leading-none">
@@ -655,7 +659,7 @@ const TrackingPage = () => {
           {/* Row 3: Hàng hoá & Điều khoản */}
           <div className="flex flex-col">
             <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase mb-2">
-              Thông tin hợp đồng & điều khoản
+              {t("trackTermsSectionLabel")}
             </p>
             <TermsDisplay terms={contractData.terms} />
           </div>
@@ -669,7 +673,7 @@ const TrackingPage = () => {
           <div>
             <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 mb-4 flex items-center gap-2">
               <MapPin className="w-5 h-5 text-rose-500" />
-              <span>Bản đồ Hành trình (Tracking)</span>
+              <span>{t("trackMapTitle")}</span>
             </h3>
             <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-xl border border-slate-200/80 dark:border-slate-800 p-2 z-0 relative overflow-hidden">
               <CheckpointMap trackingHistory={contractData.trackingHistory} />
@@ -680,10 +684,10 @@ const TrackingPage = () => {
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
                 <ShieldCheck className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                <span>Tiến độ thực hiện</span>
+                <span>{t("trackProgressTitle")}</span>
               </h3>
               <span className="text-xs font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-500/10 px-3 py-1 rounded-full border border-blue-200/60 dark:border-blue-500/20">
-                Bấm vào bước để xem chi tiết
+                {t("trackClickStepHint")}
               </span>
             </div>
 
@@ -738,13 +742,13 @@ const TrackingPage = () => {
                               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
                               <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
                             </span>
-                            Đang xử lý ở bước này
+                            {t("trackStepProcessing")}
                           </p>
                         )}
                         {isCompleted && !isCurrent && (
                           <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-0.5 flex items-center gap-1">
                             <CheckCircle2 className="w-3.5 h-3.5" />
-                            <span>Đã hoàn thành</span>
+                            <span>{t("trackStepCompleted")}</span>
                           </p>
                         )}
                       </div>
@@ -766,35 +770,40 @@ const TrackingPage = () => {
         <div>
           <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 mb-4 flex items-center gap-2">
             <FileCheck2 className="w-5 h-5 text-indigo-500" />
-            <span>Hồ sơ & Minh chứng Pháp lý IPFS</span>
+            <span>{t("trackProofTitle")}</span>
           </h3>
           <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-xl border border-slate-200/80 dark:border-slate-800 p-6 sm:p-8">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {renderProofCard(
                 "step0",
-                "1. Khởi tạo hợp đồng",
-                "Bản gốc điều khoản có chữ ký",
+                t("trackProofCard0"),
+                t("trackProofCard0Sub"),
                 0
               )}
               {renderProofCard(
                 "step1",
-                "2. Xác nhận nhận việc",
-                "Lệnh điều động xe / xuất kho",
+                t("trackProofCard1"),
+                t("trackProofCard1Sub"),
                 1
               )}
               {renderProofCard(
                 "step2",
-                "3. Đang vận chuyển",
-                "Vận đơn / Hình ảnh bốc xếp",
+                t("trackProofCard2"),
+                t("trackProofCard2Sub"),
                 2
               )}
               {renderProofCard(
                 "step3",
-                "4. Bàn giao hoàn thành",
-                "Biên bản bàn giao kho đích",
+                t("trackProofCard3"),
+                t("trackProofCard3Sub"),
                 3
               )}
-              {renderProofCard("step4", "5. Thanh toán", "Hóa đơn VAT hoàn tất", 4)}
+              {renderProofCard(
+                "step4",
+                t("trackProofCard4"),
+                t("trackProofCard4Sub"),
+                4
+              )}
             </div>
           </div>
         </div>
@@ -809,7 +818,7 @@ const TrackingPage = () => {
       )}
 
       <div className="text-center mt-10 text-xs text-slate-400 dark:text-slate-500 font-bold tracking-wider uppercase">
-        <p>XÁC THỰC BỞI ETHEREUM SEPOLIA TESTNET</p>
+        <p>{t("trackVerifiedBy")}</p>
       </div>
     </div>
   );

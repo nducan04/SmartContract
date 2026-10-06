@@ -1,8 +1,10 @@
 import React, { useState } from "react";
 import { QRCodeCanvas } from "qrcode.react";
 import { QrCode, X, Copy, Check, ExternalLink, Printer } from "lucide-react";
+import { useLanguage } from "../context/LanguageContext";
 
 const QRModal = ({ show, onClose, contractId }) => {
+  const { t } = useLanguage();
   const [copySuccess, setCopySuccess] = useState(false);
 
   if (!show) return null;
@@ -31,7 +33,7 @@ const QRModal = ({ show, onClose, contractId }) => {
         <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center print:hidden">
           <h3 className="font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2 text-sm">
             <QrCode className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-            <span>Mã QR Định Danh Blockchain</span>
+            <span>{t("qrModalTitle")}</span>
           </h3>
           <button
             onClick={onClose}
@@ -54,7 +56,7 @@ const QRModal = ({ show, onClose, contractId }) => {
           </div>
 
           <p className="text-xs text-slate-500 dark:text-slate-400 mb-5 print:text-black">
-            Quét mã để tra cứu hành trình & điều khoản hợp đồng.
+            {t("qrModalSub")}
           </p>
 
           {/* Contract Address + Copy */}
@@ -68,7 +70,7 @@ const QRModal = ({ show, onClose, contractId }) => {
             <button
               onClick={handleCopy}
               className="p-1 text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-              title="Sao chép địa chỉ"
+              title={t("qrModalCopyTooltip")}
             >
               {copySuccess ? (
                 <Check className="w-3.5 h-3.5 text-emerald-500" />
@@ -84,7 +86,7 @@ const QRModal = ({ show, onClose, contractId }) => {
             rel="noreferrer"
             className="inline-flex items-center gap-1.5 text-blue-600 dark:text-blue-400 text-xs font-bold hover:underline print:hidden"
           >
-            <span>Mở liên kết tra cứu</span>
+            <span>{t("qrModalOpenLink")}</span>
             <ExternalLink className="w-3 h-3" />
           </a>
         </div>
@@ -96,14 +98,14 @@ const QRModal = ({ show, onClose, contractId }) => {
             className="flex-1 py-2.5 px-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 font-bold rounded-xl text-xs hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors flex items-center justify-center gap-2 shadow-xs cursor-pointer"
           >
             <Printer className="w-3.5 h-3.5" />
-            <span>In tem</span>
+            <span>{t("qrModalPrint")}</span>
           </button>
 
           <button
             onClick={onClose}
             className="flex-1 py-2.5 px-4 bg-slate-900 dark:bg-slate-700 text-white font-bold rounded-xl text-xs hover:bg-slate-800 transition-colors shadow-sm cursor-pointer"
           >
-            Đóng
+            {t("qrModalClose")}
           </button>
         </div>
       </div>

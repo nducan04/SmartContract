@@ -1,4 +1,5 @@
 import React from "react";
+import { useLanguage } from "../context/LanguageContext";
 import {
   FileText,
   Truck,
@@ -23,6 +24,7 @@ const ICON_MAP = {
 };
 
 const StatsCard = ({ title, value, icon, color = "blue", subtitle, trend }) => {
+  const { t } = useLanguage();
   const colorStyles = {
     blue: {
       bg: "bg-blue-500/15 text-blue-600 dark:text-blue-400 border-blue-200/60 dark:border-blue-500/30",
@@ -94,7 +96,7 @@ const StatsCard = ({ title, value, icon, color = "blue", subtitle, trend }) => {
 
       {(subtitle || trend) && (
         <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-800/60 flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
-          <span>{subtitle || "Cập nhật realtime"}</span>
+          <span>{subtitle || t("statRealtime")}</span>
           {trend && (
             <span className="inline-flex items-center text-emerald-600 dark:text-emerald-400 font-semibold gap-0.5">
               <span>{trend}</span>

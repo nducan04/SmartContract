@@ -162,7 +162,7 @@ const DashboardOverview = () => {
       ) : loading ? (
         <div className="h-64 flex flex-col items-center justify-center gap-3">
           <div className="animate-spin rounded-full h-10 w-10 border-2 border-blue-600 border-t-transparent"></div>
-          <p className="text-xs font-semibold text-slate-400">Đang đồng bộ dữ liệu blockchain...</p>
+          <p className="text-xs font-semibold text-slate-400">{t("dashSyncing") || "Đang đồng bộ dữ liệu blockchain..."}</p>
         </div>
       ) : (
         <>
@@ -255,7 +255,7 @@ const DashboardOverview = () => {
                   to="/dashboard/contracts"
                   className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
                 >
-                  <span>Xem tất cả</span>
+                  <span>{t("dashViewAll") || "Xem tất cả"}</span>
                   <ArrowRight className="w-3.5 h-3.5" />
                 </Link>
               </div>
@@ -342,7 +342,7 @@ const DashboardOverview = () => {
 
                             <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mt-2.5 text-xs text-slate-500 dark:text-slate-400">
                               <div className="flex items-center gap-1.5">
-                                <span className="font-semibold text-slate-400">Hợp đồng:</span>
+                                <span className="font-semibold text-slate-400">{t("dashContractLabel") || "Hợp đồng:"}</span>
                                 <AddressDisplay address={contract.contractAddress} />
                               </div>
                               {partnerAddr && (
@@ -356,7 +356,7 @@ const DashboardOverview = () => {
 
                           <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 px-4 py-2.5 rounded-xl border border-blue-100 dark:border-blue-900/40 text-right shrink-0 w-full sm:w-auto flex sm:flex-col justify-between items-center sm:items-end">
                             <span className="text-[10px] font-bold text-blue-500 uppercase tracking-wider">
-                              Giá trị ký quỹ
+                              {t("dashEscrowValue") || "Giá trị ký quỹ"}
                             </span>
                             <span className="text-slate-900 dark:text-white font-extrabold text-base sm:text-lg">
                               {contract.amount} <span className="text-xs text-blue-600 dark:text-blue-400 font-bold">ETH</span>

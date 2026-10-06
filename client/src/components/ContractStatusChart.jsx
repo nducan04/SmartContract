@@ -109,11 +109,11 @@ const ContractStatusChart = ({
             </h3>
           </div>
           <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400">
-            {total} hợp đồng
+            {total} {t("chartContractsUnit") || "hợp đồng"}
           </span>
         </div>
         <p className="text-xs text-slate-400 dark:text-slate-500 mb-4">
-          Tỷ lệ hợp đồng theo các giai đoạn thực hiện
+          {t("chartSubtitle") || "Tỷ lệ hợp đồng theo các giai đoạn thực hiện"}
         </p>
       </div>
 
@@ -127,14 +127,14 @@ const ContractStatusChart = ({
             {t("chartNoData") || "Chưa có dữ liệu biểu đồ"}
           </p>
           <p className="text-xs text-slate-400 dark:text-slate-500 mt-1 max-w-[220px]">
-            Tạo hợp đồng mới hoặc nhận việc để xem tỷ lệ phân bố trạng thái
+            {t("chartNoDataSub") || "Tạo hợp đồng mới hoặc nhận việc để xem tỷ lệ phân bố trạng thái"}
           </p>
           <Link
             to="/dashboard/create"
             className="mt-4 inline-flex items-center gap-1.5 text-xs font-bold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300"
           >
             <PlusCircle className="w-3.5 h-3.5" />
-            <span>Tạo hợp đồng ngay</span>
+            <span>{t("chartCreateNow") || "Tạo hợp đồng ngay"}</span>
           </Link>
         </div>
       ) : (
@@ -170,7 +170,7 @@ const ContractStatusChart = ({
                     fontWeight="700"
                     letterSpacing="0.05em"
                   >
-                    TỔNG SỐ
+                    {t("chartTotalLabel") || "TỔNG SỐ"}
                   </tspan>
                   <tspan
                     x="50%"
@@ -185,7 +185,7 @@ const ContractStatusChart = ({
                 </text>
 
                 <Tooltip
-                  formatter={(value, name) => [`${value} hợp đồng`, name]}
+                  formatter={(value, name) => [`${value} ${t("chartContractsUnit") || "hợp đồng"}`, name]}
                   contentStyle={{
                     borderRadius: "16px",
                     border: "1px solid rgba(226, 232, 240, 0.8)",
