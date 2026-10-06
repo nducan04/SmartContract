@@ -1,12 +1,10 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { assets } from "../assets/assets";
-import EmailSettingsModal from "./EmailSettingsModal";
-import { Copy, Mail, LogOut, CheckCircle2 } from "lucide-react";
+import { Copy, LogOut, CheckCircle2 } from "lucide-react";
 
 const UserDropdown = ({ walletAddress, walletBalance, disconnectWallet }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   const dropdownRef = useRef(null);
 
@@ -110,16 +108,6 @@ const UserDropdown = ({ walletAddress, walletBalance, disconnectWallet }) => {
           {/* Các nút chức năng */}
           <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex flex-col space-y-1.5">
             <button
-              onClick={() => {
-                setIsOpen(false);
-                setIsEmailModalOpen(true);
-              }}
-              className="flex items-center gap-2.5 text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50/70 dark:hover:bg-blue-500/10 p-2.5 rounded-xl w-full transition-colors text-sm font-medium cursor-pointer"
-            >
-              <Mail className="w-4 h-4 text-blue-500" />
-              <span>Cài đặt Email Thông Báo</span>
-            </button>
-            <button
               onClick={disconnectWallet}
               className="flex items-center gap-2.5 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/10 p-2.5 rounded-xl w-full transition-colors text-sm font-medium cursor-pointer"
             >
@@ -129,13 +117,6 @@ const UserDropdown = ({ walletAddress, walletBalance, disconnectWallet }) => {
           </div>
         </div>
       )}
-
-      {/* Thêm Modal Cài đặt Email */}
-      <EmailSettingsModal
-        isOpen={isEmailModalOpen}
-        onClose={() => setIsEmailModalOpen(false)}
-        walletAddress={walletAddress}
-      />
     </div>
   );
 };

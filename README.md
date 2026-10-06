@@ -17,7 +17,7 @@ Developed as an **Outstanding University Scientific Research Project (Đề tài
 * **Smart Contract Escrow:** Locks transportation funds securely on the blockchain. Funds are automatically released upon successful delivery or deducted if penalties apply.
 * **Immutable Proof of Delivery:** Uses **IPFS** to store sensitive delivery evidence (documents, images). Documents are tamper-proof via unique Content Identifiers (CIDs).
 * **Hybrid Web2.5 Architecture:** Strategically separates on-chain logic (finances, strict rules) from off-chain data (GPS tracking history, UI states) to achieve a seamless user experience with minimal gas fees.
-* **Real-time Tracking & Notifications:** Integrates dynamic mapping for route tracking and automated email reminders for overdue deliveries via Node.js cron jobs.
+* **Real-time Tracking:** Integrates dynamic mapping for route tracking and checkpoint updates.
 * **Secure Web3 Authentication:** Passwordless login and transaction signing utilizing **MetaMask**.
 
 ---
@@ -104,9 +104,6 @@ MONGO_URI=your_mongodb_connection_string
 PORT=5000
 SEPOLIA_RPC_URL=your_alchemy_or_infura_url
 ADMIN_WALLETS=your_metamask_wallet_address_here
-SMTP_EMAIL=your_email@gmail.com
-SMTP_PASSWORD=your_google_app_password
-
 ```
 
 **4. Run the Application:**
