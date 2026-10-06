@@ -94,13 +94,19 @@ export const translations = {
     tutFinish: "Hoàn tất",
 
     // Sidebar & Dashboard Layout
+    sideMainNav: "Điều hướng chính",
     sideOverview: "Tổng quan",
     sideContracts: "Quản lý hợp đồng",
     sideMarketplace: "Sàn hợp đồng",
     sideCreate: "Tạo hợp đồng mới",
+    sideAdminSection: "Quản trị viên",
     sideAdmin: "Quản trị hệ thống",
     sideAccount: "Tài khoản",
     sideOnline: "Online",
+    sideGuest: "Khách",
+    themeLight: "Sáng",
+    themeDark: "Tối",
+    backToHome: "Về trang chủ",
 
     // Dashboard Overview
     dashOverviewTitle: "Tổng quan hệ thống",
@@ -350,13 +356,19 @@ export const translations = {
     tutFinish: "Finish",
 
     // Sidebar & Dashboard Layout
+    sideMainNav: "Main Navigation",
     sideOverview: "Overview",
     sideContracts: "Contract Management",
     sideMarketplace: "Marketplace",
     sideCreate: "Create New Contract",
+    sideAdminSection: "Administrator",
     sideAdmin: "Admin Management",
     sideAccount: "Account",
     sideOnline: "Online",
+    sideGuest: "Guest",
+    themeLight: "Light",
+    themeDark: "Dark",
+    backToHome: "Back to Home",
 
     // Dashboard Overview
     dashOverviewTitle: "System Overview",
