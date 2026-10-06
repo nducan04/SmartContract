@@ -214,6 +214,28 @@ const ContractDetailsPage = () => {
     if (!searchQuery.trim()) return;
     setIsSearching(true);
     try {
+      // Ưu tiên Photon API (nhanh, hỗ trợ tiếng Việt, không bị chặn bởi ISP)
+      let found = false;
+      try {
+        const photonRes = await axios.get(
+          `https://photon.komoot.io/api/?q=${encodeURIComponent(searchQuery)}&limit=1`,
+        );
+        if (photonRes.data?.features?.length > 0) {
+          const first = photonRes.data.features[0];
+          const [lng, lat] = first.geometry.coordinates;
+          const name = first.properties.name || first.properties.city || searchQuery;
+          setManualLatLng({ lat, lng });
+          setSelectedCheckpoint("");
+          setCustomLocationName(name);
+          toast.success(`Tìm thấy: ${name}`);
+          found = true;
+          return;
+        }
+      } catch (err) {
+        console.warn("Photon search fallback:", err);
+      }
+
+      // Fallback Nominatim
       const res = await axios.get(
         `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}`,
       );
@@ -225,7 +247,7 @@ const ContractDetailsPage = () => {
         setSelectedCheckpoint("");
         setCustomLocationName(first.display_name.split(",")[0]);
         toast.success(`Tìm thấy: ${first.display_name.split(",")[0]}`);
-      } else {
+      } else if (!found) {
         toast.error("Không tìm thấy địa điểm này!");
       }
     } catch (e) {
