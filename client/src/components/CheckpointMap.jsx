@@ -94,8 +94,9 @@ const CheckpointMap = ({ trackingHistory = [], onMapClick, manualMarker }) => {
         <MapEventHandler onMapClick={onMapClick} />
         <MapPanTo latlng={manualMarker} />
         <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          attribution="Dữ liệu bản đồ &copy; Google"
+          url="https://mt1.google.com/vt/lyrs=m&hl=vi&x={x}&y={y}&z={z}"
+          maxZoom={20}
         />
 
         {positions.length > 0 && (
