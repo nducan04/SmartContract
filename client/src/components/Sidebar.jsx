@@ -99,7 +99,7 @@ const Sidebar = ({ isMobileOpen, closeMobileMenu }) => {
         {/* NAVIGATION LINKS */}
         <nav className="flex-1 py-6 px-4 space-y-1.5 overflow-y-auto">
           <div className="px-3 pb-2 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
-            Điều hướng chính
+            {t("sideMainNav") || "Điều hướng chính"}
           </div>
 
           {NAV_ITEMS.map((item) => {
@@ -138,7 +138,7 @@ const Sidebar = ({ isMobileOpen, closeMobileMenu }) => {
           {isAdmin && (
             <div className="pt-4 mt-4 border-t border-slate-100 dark:border-slate-800/80">
               <div className="px-3 pb-2 text-[10px] font-bold text-rose-500 dark:text-rose-400 uppercase tracking-wider">
-                Quản trị viên
+                {t("sideAdminSection") || "Quản trị viên"}
               </div>
               <NavLink
                 to="/dashboard/admin"
@@ -180,12 +180,12 @@ const Sidebar = ({ isMobileOpen, closeMobileMenu }) => {
               {theme === "dark" ? (
                 <>
                   <Sun className="w-3.5 h-3.5 text-yellow-400" />
-                  <span>Sáng</span>
+                  <span>{t("themeLight") || "Sáng"}</span>
                 </>
               ) : (
                 <>
                   <Moon className="w-3.5 h-3.5 text-slate-600" />
-                  <span>Tối</span>
+                  <span>{t("themeDark") || "Tối"}</span>
                 </>
               )}
             </button>
@@ -207,7 +207,7 @@ const Sidebar = ({ isMobileOpen, closeMobileMenu }) => {
                     <span className={`relative inline-flex rounded-full h-1.5 w-1.5 ${walletAddress ? "bg-emerald-500" : "bg-slate-400"}`}></span>
                   </span>
                   <span className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">
-                    {walletAddress ? "Web3 Online" : "Khách"}
+                    {walletAddress ? "Web3 Online" : (t("sideGuest") || "Khách")}
                   </span>
                 </div>
               </div>
@@ -216,7 +216,7 @@ const Sidebar = ({ isMobileOpen, closeMobileMenu }) => {
             <Link
               to="/"
               className="text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 p-1 rounded-lg hover:bg-white dark:hover:bg-slate-700 transition-colors"
-              title="Về trang chủ"
+              title={t("backToHome") || "Về trang chủ"}
             >
               <ExternalLink className="w-3.5 h-3.5" />
             </Link>

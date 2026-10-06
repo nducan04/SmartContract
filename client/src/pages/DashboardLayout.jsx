@@ -2,21 +2,23 @@ import React, { useState } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import { useTheme } from "../context/ThemeContext";
+import { useLanguage } from "../context/LanguageContext";
 import { Menu, Sun, Moon } from "lucide-react";
 
 const DashboardLayout = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { theme, toggleTheme } = useTheme();
+  const { t } = useLanguage();
   const location = useLocation();
 
   const getPageTitle = () => {
     const path = location.pathname;
-    if (path === "/dashboard") return "Tổng quan";
-    if (path.includes("/contracts")) return "Danh sách hợp đồng";
-    if (path.includes("/create")) return "Tạo hợp đồng mới";
-    if (path.includes("/marketplace")) return "Thị trường mẫu hợp đồng";
-    if (path.includes("/contract/")) return "Chi tiết hợp đồng";
-    if (path.includes("/admin")) return "Quản trị viên";
+    if (path === "/dashboard") return t("sideOverview") || "Tổng quan";
+    if (path.includes("/contracts")) return t("sideContracts") || "Danh sách hợp đồng";
+    if (path.includes("/create")) return t("sideCreate") || "Tạo hợp đồng mới";
+    if (path.includes("/marketplace")) return t("sideMarketplace") || "Thị trường mẫu hợp đồng";
+    if (path.includes("/contract/")) return t("detailContractTitle") || "Chi tiết hợp đồng";
+    if (path.includes("/admin")) return t("sideAdminSection") || "Quản trị viên";
     return "Dashboard";
   };
 
