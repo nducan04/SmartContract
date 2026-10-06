@@ -49,7 +49,7 @@ const DashboardLayout = () => {
             <button
               onClick={toggleTheme}
               className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-yellow-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all"
-              title={theme === "dark" ? "Chuyển sang giao diện sáng" : "Chuyển sang giao diện tối"}
+              title={theme === "dark" ? t("themeToLight") : t("themeToDark")}
             >
               {theme === "dark" ? (
                 <Sun className="w-4 h-4" />

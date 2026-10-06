@@ -1,5 +1,6 @@
 import React from "react";
 import { AlertCircle, UploadCloud } from "lucide-react";
+import { useLanguage } from "../../context/LanguageContext";
 
 /**
  * Modern Accessible Form Input with dark mode, glow focus ring, and helper states.
@@ -185,6 +186,7 @@ Input.Select.displayName = "Input.Select";
 /* File sub-component */
 Input.File = React.forwardRef(
   ({ label, name, onFileChange, error, helperText, accept = "image/*,.pdf,.doc,.docx", className = "", ...rest }, ref) => {
+    const { t } = useLanguage();
     const inputId = `file-${name || Math.random().toString(36).slice(2)}`;
     return (
       <div className={`space-y-1.5 ${className}`}>
@@ -223,9 +225,9 @@ Input.File = React.forwardRef(
               <UploadCloud className="w-6 h-6" />
             </div>
             <label htmlFor={inputId} className="block text-sm font-semibold text-slate-800 dark:text-slate-200 cursor-pointer hover:text-blue-600">
-              {label || "Chọn tệp từ máy tính"}
+              {label || t("chooseFilePrompt")}
             </label>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{helperText || "Hỗ trợ PDF, DOC, DOCX, hoặc hình ảnh (PNG, JPG)"}</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{helperText || t("chooseFileSupported")}</p>
           </div>
         </div>
         {error && (

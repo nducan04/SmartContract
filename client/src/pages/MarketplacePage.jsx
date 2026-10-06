@@ -71,10 +71,10 @@ const ContractRow = ({ contract, walletAddress, navigate }) => {
   const parsedTerms = parseTerms(terms);
 
   const displayTitle = isSyncing
-    ? "⏳ Đang tải từ Blockchain..."
+    ? t("dashSyncing")
     : parsedTerms
       ? parsedTerms.art1_items
-      : terms || "Chưa có nội dung";
+      : terms || t("adminNoContent");
   const clientName = parsedTerms ? parsedTerms.partyA_name : null;
   const receiverName = parsedTerms ? parsedTerms.partyB_name : null;
 

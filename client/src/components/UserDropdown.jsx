@@ -1,12 +1,14 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { assets } from "../assets/assets";
+import { useLanguage } from "../context/LanguageContext";
 import { Copy, LogOut, CheckCircle2 } from "lucide-react";
 
 const UserDropdown = ({ walletAddress, walletBalance, disconnectWallet }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   const dropdownRef = useRef(null);
+  const { t } = useLanguage();
 
   // Logic click ra ngoài để đóng menu
   useEffect(() => {
@@ -53,7 +55,7 @@ const UserDropdown = ({ walletAddress, walletBalance, disconnectWallet }) => {
             />
             <div className="min-w-0 flex-1">
               <p className="font-bold text-slate-900 dark:text-slate-100 text-sm truncate">
-                Tài khoản Web3
+                {t("userWeb3Account") || "Tài khoản Web3"}
               </p>
               <div className="flex items-center gap-1.5 mt-0.5">
                 <span className="relative flex h-2 w-2">
@@ -61,7 +63,7 @@ const UserDropdown = ({ walletAddress, walletBalance, disconnectWallet }) => {
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
                 </span>
                 <span className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">
-                  Đang kết nối
+                  {t("userConnected") || "Đang kết nối"}
                 </span>
               </div>
             </div>
@@ -71,7 +73,7 @@ const UserDropdown = ({ walletAddress, walletBalance, disconnectWallet }) => {
           <div className="space-y-3 py-4">
             <div>
               <p className="text-[11px] text-slate-400 dark:text-slate-500 uppercase font-semibold tracking-wider">
-                Địa chỉ ví
+                {t("userWalletAddress") || "Địa chỉ ví"}
               </p>
               <div className="flex justify-between items-center bg-slate-50 dark:bg-slate-800/80 p-2.5 rounded-xl mt-1.5 border border-slate-200/60 dark:border-slate-700/60">
                 <p className="text-xs font-mono text-slate-700 dark:text-slate-300 truncate w-52">
@@ -80,7 +82,7 @@ const UserDropdown = ({ walletAddress, walletBalance, disconnectWallet }) => {
                 <button
                   onClick={handleCopy}
                   className="p-1 rounded-lg text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-200/60 dark:hover:bg-slate-700 transition-colors cursor-pointer"
-                  title="Sao chép"
+                  title={t("userCopy") || "Sao chép"}
                 >
                   {copied ? (
                     <CheckCircle2 className="w-4 h-4 text-emerald-500" />
@@ -92,7 +94,7 @@ const UserDropdown = ({ walletAddress, walletBalance, disconnectWallet }) => {
             </div>
             <div>
               <p className="text-[11px] text-slate-400 dark:text-slate-500 uppercase font-semibold tracking-wider">
-                Số dư hiện tại
+                {t("userBalance") || "Số dư hiện tại"}
               </p>
               <div className="mt-1 flex items-baseline gap-1.5">
                 <p className="text-2xl font-black text-blue-600 dark:text-blue-400 tracking-tight">
@@ -112,7 +114,7 @@ const UserDropdown = ({ walletAddress, walletBalance, disconnectWallet }) => {
               className="flex items-center gap-2.5 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/10 p-2.5 rounded-xl w-full transition-colors text-sm font-medium cursor-pointer"
             >
               <LogOut className="w-4 h-4" />
-              <span>Ngắt kết nối ví</span>
+              <span>{t("navDisconnect") || "Ngắt kết nối ví"}</span>
             </button>
           </div>
         </div>

@@ -110,11 +110,11 @@ const ContractListPage = () => {
   const handleExportExcel = () => {
     if (filteredContracts.length === 0) {
       Swal.fire({
-        title: "Không có dữ liệu",
-        text: "Không có dữ liệu nào phù hợp với bộ lọc hiện tại để xuất!",
+        title: t("alertNoDataTitle") || "Không có dữ liệu",
+        text: t("alertNoDataText") || "Không có dữ liệu nào phù hợp với bộ lọc hiện tại để xuất!",
         icon: "warning",
         confirmButtonColor: "#3085d6",
-        confirmButtonText: "Đã hiểu",
+        confirmButtonText: t("alertUnderstandBtn") || "Đã hiểu",
       });
       return;
     }

@@ -199,7 +199,7 @@ const Sidebar = ({ isMobileOpen, closeMobileMenu }) => {
               </div>
               <div className="truncate">
                 <p className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">
-                  {walletAddress ? `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}` : t("sideAccount") || "Chưa kết nối ví"}
+                  {walletAddress ? `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}` : (t("dashNotConnected") || "Chưa kết nối ví")}
                 </p>
                 <div className="flex items-center gap-1.5 mt-0.5">
                   <span className="relative flex h-1.5 w-1.5">
