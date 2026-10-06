@@ -7,15 +7,12 @@ import { useTheme } from "../context/ThemeContext";
 import Blockies from "./Blockies";
 import AddressDisplay from "./AddressDisplay";
 import ConnectWalletModal from "./ConnectWalletModal";
-import EmailSettingsModal from "./EmailSettingsModal";
-import axios from "axios";
 import {
   Search,
   Sun,
   Moon,
   Wallet,
   LogOut,
-  Mail,
   CheckCircle2,
   Menu,
   X,
@@ -33,29 +30,7 @@ const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
-  const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
-  const [linkedEmail, setLinkedEmail] = useState("");
   const [copied, setCopied] = useState(false);
-
-  const backendUrl =
-    import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
-
-  useEffect(() => {
-    if (walletAddress) {
-      axios
-        .get(`${backendUrl}/api/users/settings/${walletAddress}`)
-        .then((res) => {
-          if (res.data.email) {
-            setLinkedEmail(res.data.email);
-          } else {
-            setLinkedEmail("");
-          }
-        })
-        .catch(() => setLinkedEmail(""));
-    } else {
-      setLinkedEmail("");
-    }
-  }, [walletAddress, backendUrl, isEmailModalOpen]);
 
   const dropdownRef = useRef(null);
   const location = useLocation();
@@ -289,26 +264,7 @@ const Navbar = () => {
                     </p>
                   </div>
 
-                  {/* Email & Settings */}
-                  <div className="p-2 space-y-1">
-                    <button
-                      onClick={() => {
-                        setShowDropdown(false);
-                        setIsEmailModalOpen(true);
-                      }}
-                      className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors text-left"
-                    >
-                      <Mail className="w-4 h-4 text-blue-500" />
-                      <div className="truncate">
-                        <span>{linkedEmail ? "Email thông báo" : t("navEmailSettings")}</span>
-                        {linkedEmail && (
-                          <span className="block text-[11px] font-normal text-emerald-600 dark:text-emerald-400 truncate">
-                            {linkedEmail}
-                          </span>
-                        )}
-                      </div>
-                    </button>
-
+                  <div className="p-2">
                     <button
                       onClick={() => {
                         disconnectWallet();
@@ -425,13 +381,7 @@ const Navbar = () => {
         onClose={() => setIsWalletModalOpen(false)}
       />
 
-      {/* EMAIL SETTINGS MODAL */}
-      <EmailSettingsModal
-        isOpen={isEmailModalOpen}
-        onClose={() => setIsEmailModalOpen(false)}
-        walletAddress={walletAddress}
-      />
-    </header>
+      </header>
   );
 };
 

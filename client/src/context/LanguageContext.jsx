@@ -11,7 +11,6 @@ export const translations = {
     navSearchPlaceholder: "Tìm kiếm theo ID...",
     navConnectWallet: "Kết nối ví",
     navDisconnect: "Đăng xuất",
-    navEmailSettings: "Cài đặt Email",
     navWalletTitle: "Thông tin ví",
     navLangLabel: "VI",
 
@@ -268,7 +267,6 @@ export const translations = {
     navSearchPlaceholder: "Search by ID...",
     navConnectWallet: "Connect Wallet",
     navDisconnect: "Disconnect",
-    navEmailSettings: "Email Settings",
     navWalletTitle: "Wallet Info",
     navLangLabel: "EN",
 
