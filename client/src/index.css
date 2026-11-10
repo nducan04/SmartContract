@@ -56,6 +56,16 @@
   --animate-mascot-float: mascot-float 4s ease-in-out infinite;
   --animate-spin-slow: spin 12s linear infinite;
   --animate-bubble-pop: bubble-pop 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  --animate-slide-left: slide-left 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+
+  @keyframes slide-left {
+    0% {
+      transform: translateX(100%);
+    }
+    100% {
+      transform: translateX(0);
+    }
+  }
 
   @keyframes fade-in {
     0% { opacity: 0; }

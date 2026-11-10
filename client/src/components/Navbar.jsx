@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { assets, menuLinks } from "../assets/assets";
 import { useWeb3 } from "../context/Web3Context";
@@ -47,6 +48,23 @@ const Navbar = () => {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  // Khóa cuộn trang khi menu mobile mở
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [mobileMenuOpen]);
+
+  // Tự động đóng menu mobile khi đổi trang
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [location.pathname]);
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -301,79 +319,216 @@ const Navbar = () => {
       </div>
 
       {/* MOBILE DRAWER */}
-      {mobileMenuOpen && (
-        <div className="fixed inset-0 z-50 md:hidden flex">
-          {/* Backdrop */}
-          <div
-            className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm transition-opacity"
-            onClick={() => setMobileMenuOpen(false)}
-          ></div>
+      {mobileMenuOpen &&
+        typeof document !== "undefined" &&
+        createPortal(
+          <div className="fixed inset-0 z-50 md:hidden flex justify-end animate-fade-in">
+            {/* Backdrop */}
+            <div
+              className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm transition-opacity"
+              onClick={() => setMobileMenuOpen(false)}
+              aria-hidden="true"
+            ></div>
 
-          {/* Drawer content */}
-          <div className="relative ml-auto w-full max-w-xs bg-white dark:bg-slate-900 h-full p-6 shadow-2xl flex flex-col justify-between overflow-y-auto animate-fade-in border-l border-slate-200 dark:border-slate-800">
-            <div>
-              <div className="flex items-center justify-between pb-6 border-b border-slate-100 dark:border-slate-800">
-                <span className="font-extrabold text-lg gradient-text">Menu</span>
-                <button
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-
-              {/* Mobile Search */}
-              <form onSubmit={handleSearch} className="mt-4">
-                <div className="flex items-center gap-2 bg-slate-100 dark:bg-slate-800 px-3.5 py-2 rounded-xl text-sm border border-slate-200 dark:border-slate-700">
-                  <Search className="w-4 h-4 text-slate-400" />
-                  <input
-                    type="text"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    placeholder={t("navSearchPlaceholder")}
-                    className="w-full bg-transparent outline-none text-slate-800 dark:text-slate-200"
-                  />
+            {/* Drawer content */}
+            <div className="relative w-full max-w-[320px] bg-white dark:bg-slate-900 h-full h-dvh p-5 shadow-2xl flex flex-col justify-between overflow-y-auto animate-slide-left border-l border-slate-200 dark:border-slate-800 z-10">
+              <div>
+                {/* Header */}
+                <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800">
+                  <Link
+                    to="/"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center gap-2.5"
+                  >
+                    <div className="w-8 h-8 rounded-xl bg-blue-500/10 dark:bg-slate-800 border border-blue-500/20 flex items-center justify-center">
+                      <img
+                        src={assets.iconLogo}
+                        alt="Logo"
+                        className="w-5 h-5 object-contain"
+                      />
+                    </div>
+                    <span className="font-extrabold text-base text-slate-900 dark:text-white">
+                      Smart<span className="text-blue-600 dark:text-blue-400">Contract</span>
+                    </span>
+                  </Link>
+                  <button
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                    aria-label="Close menu"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
                 </div>
-              </form>
 
-              {/* Nav links */}
-              <div className="mt-6 space-y-1">
-                {menuLinks.map((link, index) => {
-                  let label = link.name;
-                  if (link.path === "/") label = t("navHome");
-                  else if (link.path === "/tracking") label = t("navTracking");
+                {/* Mobile Search */}
+                <form onSubmit={handleSearch} className="mt-4">
+                  <div className="flex items-center gap-2 bg-slate-100 dark:bg-slate-800 px-3.5 py-2 rounded-xl text-sm border border-slate-200 dark:border-slate-700 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20">
+                    <Search className="w-4 h-4 text-slate-400 shrink-0" />
+                    <input
+                      type="text"
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      placeholder={t("navSearchPlaceholder")}
+                      className="w-full bg-transparent outline-none text-slate-800 dark:text-slate-200 text-xs placeholder-slate-400 dark:placeholder-slate-500"
+                    />
+                  </div>
+                </form>
 
-                  return (
-                    <Link
-                      key={index}
-                      to={link.path}
-                      onClick={() => setMobileMenuOpen(false)}
-                      className="block px-4 py-2.5 rounded-xl font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800"
+                {/* Mobile Wallet Status Card */}
+                <div className="mt-4 p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60">
+                  {walletAddress ? (
+                    <div className="space-y-2.5">
+                      <div className="flex items-center gap-2.5">
+                        <div className="rounded-full overflow-hidden ring-2 ring-blue-500/40 w-9 h-9 shrink-0">
+                          <Blockies
+                            seed={walletAddress.toLowerCase()}
+                            size={9}
+                            scale={4}
+                          />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider flex items-center gap-1">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                            {t("userConnectedWallet")}
+                          </p>
+                          <p className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                            {walletBalance} ETH
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between gap-2 pt-2 border-t border-slate-200/60 dark:border-slate-700/60 text-xs">
+                        <span className="font-mono text-[11px] text-slate-500 dark:text-slate-400 truncate">
+                          {walletAddress.slice(0, 6)}...{walletAddress.slice(-4)}
+                        </span>
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          <button
+                            onClick={copyAddress}
+                            className="p-1 rounded-md text-slate-500 hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400 transition-colors cursor-pointer"
+                            title={t("userCopy")}
+                          >
+                            {copied ? (
+                              <Check className="w-3.5 h-3.5 text-emerald-500" />
+                            ) : (
+                              <Copy className="w-3.5 h-3.5" />
+                            )}
+                          </button>
+                          <button
+                            onClick={() => {
+                              disconnectWallet();
+                              setMobileMenuOpen(false);
+                            }}
+                            className="p-1 rounded-md text-rose-500 hover:text-rose-600 transition-colors cursor-pointer"
+                            title={t("navDisconnect")}
+                          >
+                            <LogOut className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => {
+                        setMobileMenuOpen(false);
+                        setIsWalletModalOpen(true);
+                      }}
+                      className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white py-2.5 px-4 rounded-xl text-xs font-bold shadow-md shadow-blue-500/20 active:scale-95 transition-all cursor-pointer"
                     >
-                      {label}
-                    </Link>
-                  );
-                })}
+                      <Wallet className="w-4 h-4" />
+                      <span>{t("navConnectWallet")}</span>
+                    </button>
+                  )}
+                </div>
 
-                <Link
-                  to="/dashboard"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800"
-                >
-                  <LayoutDashboard className="w-4 h-4 text-blue-500" />
-                  <span>{t("navDashboard")}</span>
-                </Link>
+                {/* Nav links */}
+                <div className="mt-5 space-y-1">
+                  <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider px-3 mb-1.5">
+                    Menu
+                  </p>
+                  {menuLinks.map((link, index) => {
+                    let label = link.name;
+                    if (link.path === "/") label = t("navHome");
+                    else if (link.path === "/tracking") label = t("navTracking");
+
+                    const isActive = location.pathname === link.path;
+
+                    return (
+                      <Link
+                        key={index}
+                        to={link.path}
+                        onClick={() => setMobileMenuOpen(false)}
+                        className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl font-semibold text-xs sm:text-sm transition-all ${
+                          isActive
+                            ? "bg-blue-50 text-blue-600 dark:bg-blue-950/50 dark:text-blue-400 font-bold"
+                            : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                        }`}
+                      >
+                        <span>{label}</span>
+                        {isActive && (
+                          <span className="w-1.5 h-1.5 rounded-full bg-blue-600 dark:bg-blue-400"></span>
+                        )}
+                      </Link>
+                    );
+                  })}
+
+                  <Link
+                    to="/dashboard"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl font-semibold text-xs sm:text-sm transition-all ${
+                      location.pathname.startsWith("/dashboard")
+                        ? "bg-blue-50 text-blue-600 dark:bg-blue-950/50 dark:text-blue-400 font-bold"
+                        : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <LayoutDashboard className="w-4 h-4 text-blue-500" />
+                      <span>{t("navDashboard")}</span>
+                    </div>
+                    {location.pathname.startsWith("/dashboard") && (
+                      <span className="w-1.5 h-1.5 rounded-full bg-blue-600 dark:bg-blue-400"></span>
+                    )}
+                  </Link>
+                </div>
+              </div>
+
+              {/* Controls row & Footer: Language & Theme */}
+              <div className="pt-4 border-t border-slate-100 dark:border-slate-800 space-y-3">
+                <div className="grid grid-cols-2 gap-2">
+                  {/* Language toggle */}
+                  <button
+                    onClick={toggleLanguage}
+                    className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold transition-colors border border-slate-200/60 dark:border-slate-700/60 cursor-pointer"
+                  >
+                    <span>{language === "vi" ? "Tiếng Việt" : "English"}</span>
+                  </button>
+
+                  {/* Theme toggle */}
+                  <button
+                    onClick={toggleTheme}
+                    className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold transition-colors border border-slate-200/60 dark:border-slate-700/60 cursor-pointer"
+                  >
+                    {theme === "dark" ? (
+                      <>
+                        <Sun className="w-3.5 h-3.5 text-yellow-400" />
+                        <span>Sáng</span>
+                      </>
+                    ) : (
+                      <>
+                        <Moon className="w-3.5 h-3.5 text-slate-600" />
+                        <span>Tối</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+
+                <p className="text-[11px] text-center text-slate-400 dark:text-slate-500 font-medium">
+                  Smart Contract Platform © 2026
+                </p>
               </div>
             </div>
-
-            <div className="pt-6 border-t border-slate-100 dark:border-slate-800">
-              <p className="text-xs text-center text-slate-400">
-                Smart Contract Platform © 2026
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
+          </div>,
+          document.body
+        )}
 
       {/* WALLET CONNECT MODAL */}
       <ConnectWalletModal
